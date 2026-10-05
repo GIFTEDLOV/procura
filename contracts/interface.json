@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "PROCUREMENT_V1",
+  "methods": [
+    "create_tender", "add_requirement", "add_certification_requirement", "freeze_tender", "fund_tender", "cancel_tender",
+    "submit_bid", "add_bid_evidence", "begin_bid_evaluation", "adjudicate_requirement", "finalize_bid_evaluation",
+    "award_bid", "accept_award", "post_supplier_bond", "create_delivery", "add_delivery_evidence", "begin_inspection",
+    "adjudicate_delivery", "accept_delivery", "reject_delivery", "release_milestone", "settle_award", "refund_buyer",
+    "open_dispute", "resolve_dispute", "get_tender", "get_requirements", "get_bids", "get_evidence", "get_adjudication",
+    "get_award", "get_delivery", "get_delivery_adjudication", "get_payments", "get_refunds", "get_audit_events",
+    "get_accounting", "get_protocol_info", "get_tender_ids"
+  ]
+}
