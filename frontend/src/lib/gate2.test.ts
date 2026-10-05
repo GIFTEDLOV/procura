@@ -1,0 +1,43 @@
+import { describe, expect, it } from "vitest";
+import { buildAction, normalizeHash, normalizeU256, semanticCellTone, settlementState } from "./domain";
+import { bidArgsSchema, serializeBid } from "./serialization";
+import { isSuccessfulSettlement, markExecution, persistHash, recoverAfterRefresh, reconcileHash } from "./transactions";
+
+const bid = { bidId: "BID-1", tenderId: "TND-1", price: 100, currency: "USDC", deliveryCommitment: "30 days", requirementResponses: "frozen", submittedAt: "2026-10-05T09:00:00+01:00", bidHash: "a".repeat(64) };
+
+describe("Procura domain boundary", () => {
+  it("normalizes lowercase contract hashes", () => expect(normalizeHash("a".repeat(64))).toBe("a".repeat(64)));
+  it("rejects prefixed contract hashes", () => expect(() => normalizeHash(`0x${"a".repeat(64)}`)).toThrow());
+  it("rejects uppercase contract hashes", () => expect(() => normalizeHash("A".repeat(64))).toThrow());
+  it("normalizes numeric u256 values", () => expect(normalizeU256("420000")).toBe(420000n));
+  it("normalizes bigint u256 values", () => expect(normalizeU256(12n)).toBe(12n));
+  it("rejects negative u256 values", () => expect(() => normalizeU256(-1)).toThrow());
+  it("builds the frozen payable funding action", () => expect(buildAction("fund_tender", ["TND-1"], { requestId: "r1", value: 420000 }).value).toBe(420000n));
+  it("requires value for payable actions", () => expect(() => buildAction("fund_tender", ["TND-1"], { requestId: "r1" })).toThrow());
+  it("rejects value for non-payable actions", () => expect(() => buildAction("freeze_tender", ["TND-1"], { requestId: "r1", value: 1 })).toThrow());
+  it("checks canonical argument count", () => expect(() => buildAction("freeze_tender", [], { requestId: "r1" })).toThrow());
+  it("rejects unknown contract methods", () => expect(() => buildAction("not_a_method", [], { requestId: "r1" })).toThrow());
+  it("preserves action argument order", () => expect(buildAction("submit_bid", ["B", "T", 10, "USDC", "30d", "response", "time", "a".repeat(64)], { requestId: "r1" }).args[0]).toBe("B"));
+  it("serializes bid arguments in contract order", () => expect(serializeBid(bid)).toEqual(["BID-1", "TND-1", 100, "USDC", "30 days", "frozen", "2026-10-05T09:00:00+01:00", "a".repeat(64)]));
+  it("rejects negative bid prices", () => expect(() => bidArgsSchema.parse({ ...bid, price: -1 })).toThrow());
+  it("rejects non-integer bid prices", () => expect(() => bidArgsSchema.parse({ ...bid, price: 1.5 })).toThrow());
+  it("rejects missing bid evidence response", () => expect(() => bidArgsSchema.parse({ ...bid, requirementResponses: "" })).toThrow());
+  it("rejects invalid bid timestamps", () => expect(() => bidArgsSchema.parse({ ...bid, submittedAt: "tomorrow" })).toThrow());
+  it("maps compliant semantic result to pass", () => expect(semanticCellTone("COMPLIANT")).toBe("PASS"));
+  it("maps accepted delivery to pass", () => expect(semanticCellTone("DELIVERY_ACCEPTED")).toBe("PASS"));
+  it("maps non-compliant result to fail", () => expect(semanticCellTone("MATERIALLY_NON_COMPLIANT")).toBe("FAIL"));
+  it("maps delivery mismatch to fail", () => expect(semanticCellTone("MATERIAL_DELIVERY_MISMATCH")).toBe("FAIL"));
+  it("maps unavailable result to review", () => expect(semanticCellTone("INSUFFICIENT_EVIDENCE")).toBe("REVIEW"));
+  it("conserves an untouched funded escrow", () => expect(settlementState({ buyerFunded: 420000, supplierPaid: 0, buyerRefunded: 0 }).remainingLiability).toBe(420000));
+  it("reduces liability after supplier payout", () => expect(settlementState({ buyerFunded: 420000, supplierPaid: 120000, buyerRefunded: 0 }).remainingLiability).toBe(300000));
+  it("reduces liability after buyer refund", () => expect(settlementState({ buyerFunded: 420000, supplierPaid: 0, buyerRefunded: 420000 }).remainingLiability).toBe(0));
+  it("marks negative accounting as unconserved", () => expect(settlementState({ buyerFunded: 10, supplierPaid: 11, buyerRefunded: 0 }).conserved).toBe(false));
+  it("persists the first returned transaction hash", () => expect(persistHash({ requestId: "r1", method: "fund_tender", args: [], phase: "BROADCAST_ONCE" }, "0xabc").txHash).toBe("0xabc"));
+  it("reconciles the same hash after refresh", () => expect(recoverAfterRefresh({ requestId: "r1", method: "fund_tender", args: [], txHash: "0xabc", phase: "PERSIST_HASH" }).phase).toBe("RECONCILE_SAME_HASH"));
+  it("rejects a different hash on reconciliation", () => expect(() => reconcileHash({ requestId: "r1", method: "fund_tender", args: [], txHash: "0xabc", phase: "PERSIST_HASH" }, "0xdef")).toThrow());
+  it("requires finality before execution status", () => expect(() => markExecution({ requestId: "r1", method: "fund_tender", args: [], phase: "BROADCAST_ONCE" }, "SUCCESS")).toThrow());
+  it("records execution failure after finality", () => expect(markExecution({ requestId: "r1", method: "fund_tender", args: [], phase: "FINALITY", finality: "FINALIZED" }, "ERROR").execution).toBe("ERROR"));
+  it("does not treat finalized unknown execution as success", () => expect(isSuccessfulSettlement({ requestId: "r1", method: "settle_award", args: [], phase: "FINALITY", finality: "FINALIZED", execution: "UNKNOWN" })).toBe(false));
+  it("treats finalized successful execution as success", () => expect(isSuccessfulSettlement({ requestId: "r1", method: "settle_award", args: [], phase: "CANONICAL_READBACK", finality: "FINALIZED", execution: "SUCCESS" })).toBe(true));
+  it("prevents recovery without a persisted hash", () => expect(() => recoverAfterRefresh({ requestId: "r1", method: "fund_tender", args: [], phase: "BROADCAST_ONCE" })).toThrow());
+});

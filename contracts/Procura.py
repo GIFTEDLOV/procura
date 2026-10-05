@@ -185,6 +185,7 @@ class Award:
     bond_slashed: u256
     payout_exited: bool
     refund_exited: bool
+    released_milestones: str
 
 
 @allow_storage
@@ -386,6 +387,58 @@ class Procura(gl.Contract):
         key = self._entity_key(entity_type, entity_id)
         self.evidence_ids_by_entity.get_or_insert_default(key).append(evidence_id)
         self._audit("evidence", evidence_id, "EVIDENCE_AUTHENTICATED", entity_type + ":" + entity_id)
+
+    def _validate_milestones(self, payment_milestones: str, maximum: u256) -> None:
+        if not payment_milestones:
+            _fail("payment milestones are required")
+        total = u256(0)
+        parts = payment_milestones.split(",")
+        for part in parts:
+            if not part or not part.isdigit():
+                _fail("payment milestone must be a non-negative integer")
+            amount = u256(int(part))
+            if amount == u256(0):
+                _fail("payment milestone must be positive")
+            total += amount
+        if total > maximum:
+            _fail("payment milestones exceed awarded price")
+
+    def _milestone_was_released(self, award: Award, milestone_index: u32) -> bool:
+        for released in award.released_milestones.split(","):
+            if released and u32(int(released)) == milestone_index:
+                return True
+        return False
+
+    def _bond_amount_from_policy(self, policy: str, awarded_price: u256) -> u256:
+        if policy == "" or policy == "NONE":
+            return u256(0)
+        parts = policy.split(":")
+        if len(parts) != 2 or parts[1] == "" or not parts[1].isdigit():
+            _fail("supplier bond policy is malformed")
+        value = u256(int(parts[1]))
+        if parts[0] == "FIXED":
+            return value
+        if parts[0] == "PERCENT" and value <= u256(100):
+            return (awarded_price * value) // u256(100)
+        _fail("supplier bond policy is outside canonical form")
+        return u256(0)
+
+    def _return_bond(self, award: Award) -> None:
+        if award.bond_amount == u256(0):
+            return
+        if award.bond_returned != u256(0) or award.bond_slashed != u256(0):
+            _fail("bond already exited")
+        award.bond_returned = award.bond_amount
+        self.total_bond_returns += award.bond_amount
+        _emit_external_transfer(award.supplier, award.bond_amount)
+
+    def _slash_bond(self, award: Award) -> None:
+        if award.bond_amount == u256(0):
+            return
+        if award.bond_returned != u256(0) or award.bond_slashed != u256(0):
+            _fail("bond already exited")
+        award.bond_slashed = award.bond_amount
+        self.total_bond_slashes += award.bond_amount
 
     def _parse_bid_vector(self, raw: str) -> dict:
         try:
@@ -714,11 +767,12 @@ class Procura(gl.Contract):
         _hash(award_hash, "award_hash")
         if bid.price > tender.total_funded:
             _fail("award price exceeds funded escrow")
+        self._validate_milestones(payment_milestones, bid.price)
         self.awards[award_id] = Award(
             award_id, tender_id, winning_bid_id, bid.supplier, bid.price,
             awarded_specification, award_hash, payment_milestones, delivery_deadline,
             "AWARDED_PENDING_ACCEPTANCE", u256(0), u256(0), u256(0), u256(0),
-            u256(0), u256(0), u256(0), False, False
+            u256(0), u256(0), u256(0), False, False, ""
         )
         self.award_ids.append(award_id)
         bid.state = BID_AWARDED
@@ -745,7 +799,9 @@ class Procura(gl.Contract):
         if award.supplier != gl.message.sender_address or award.state != "ACCEPTED":
             _fail("bond precondition failed")
         amount = _u(gl.message.value)
-        if amount != _u(expected_bond_amount) or award.bond_amount != u256(0):
+        tender = self._require_tender(award.tender_id)
+        frozen_amount = self._bond_amount_from_policy(tender.supplier_bond_policy, award.awarded_price)
+        if amount != _u(expected_bond_amount) or amount != frozen_amount or award.bond_amount != u256(0):
             _fail("bond amount is not frozen or already posted")
         award.bond_amount = amount
         self.total_supplier_bonds += amount
@@ -857,8 +913,11 @@ class Procura(gl.Contract):
             _fail("award already exited")
         if amount == u256(0) or amount > award.escrow_remaining:
             _fail("invalid payout amount")
+        if self.escrow_liability < amount:
+            _fail("escrow liability underflow")
         award.escrow_remaining -= amount
         award.paid_amount += amount
+        self.escrow_liability -= amount
         self.total_supplier_payouts += amount
         _emit_external_transfer(award.supplier, amount)
 
@@ -867,9 +926,12 @@ class Procura(gl.Contract):
             _fail("award already exited")
         if amount == u256(0) or amount > award.escrow_remaining:
             _fail("invalid refund amount")
+        if self.escrow_liability < amount:
+            _fail("escrow liability underflow")
         award.escrow_remaining -= amount
         award.refunded_amount += amount
         award.refund_exited = True
+        self.escrow_liability -= amount
         self.total_buyer_refunds += amount
         _emit_external_transfer(self._require_tender(award.tender_id).buyer, amount)
 
@@ -886,8 +948,15 @@ class Procura(gl.Contract):
         parts = award.payment_milestones.split(",")
         if milestone_index >= u32(len(parts)):
             _fail("unknown payment milestone")
+        if self._milestone_was_released(award, milestone_index):
+            _fail("payment milestone already released")
         amount = _u(u256(int(parts[milestone_index])))
         self._emit_payout(award, amount)
+        award.released_milestones = award.released_milestones + str(milestone_index) + ","
+        if award.escrow_remaining == u256(0):
+            award.payout_exited = True
+            award.state = "SETTLED"
+            self._return_bond(award)
         self._audit("award", award_id, "MILESTONE_RELEASED", str(milestone_index))
 
     @gl.public.write
@@ -903,10 +972,7 @@ class Procura(gl.Contract):
         self._emit_payout(award, award.escrow_remaining)
         award.payout_exited = True
         award.state = "SETTLED"
-        if award.bond_amount > u256(0):
-            award.bond_returned = award.bond_amount
-            self.total_bond_returns += award.bond_amount
-            _emit_external_transfer(award.supplier, award.bond_amount)
+        self._return_bond(award)
         self._audit("award", award_id, "AWARD_SETTLED", "value exit emitted")
 
     @gl.public.write
@@ -922,9 +988,7 @@ class Procura(gl.Contract):
         amount = award.escrow_remaining
         self._emit_refund(award, amount)
         award.state = "REFUNDED"
-        if award.bond_amount > u256(0):
-            award.bond_slashed = award.bond_amount
-            self.total_bond_slashes += award.bond_amount
+        self._slash_bond(award)
         self._audit("award", award_id, "BUYER_REFUNDED", "rejected delivery")
 
     @gl.public.write
@@ -949,9 +1013,11 @@ class Procura(gl.Contract):
             self._emit_payout(award, award.escrow_remaining)
             award.payout_exited = True
             award.state = "SETTLED"
+            self._return_bond(award)
         elif decision == "REFUND":
             self._emit_refund(award, award.escrow_remaining)
             award.state = "REFUNDED"
+            self._slash_bond(award)
         self._audit("award", award_id, "DISPUTE_RESOLVED", decision)
 
     @gl.public.view

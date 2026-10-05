@@ -1,0 +1,19 @@
+{
+  "project": "Procura",
+  "schemaVersion": "PROCUREMENT_V1",
+  "contract": "contracts/Procura.py",
+  "contractSha256": "bea503d083f8f13266d3ae20590bde74c2bb6e1d640a6172dd1870dd426cad3a",
+  "publicMethodCount": 39,
+  "frontendPort": 3001,
+  "e2eQualificationPort": 3002,
+  "e2ePortReason": "3001 was occupied by unrelated node process 18584; it was not terminated",
+  "runtimeRpc": "http://127.0.0.1:4000/api",
+  "runtimeStatus": "BLOCKED_JSONRPC_WEB_GENVM_STARTUP",
+  "runtimeError": "missing field session_create_request",
+  "pythonExecutionEnvironment": "WSL Ubuntu 24.04 / Python 3.12.3 / isolated venv",
+  "windowsDirectRunnerRetried": false,
+  "pushPerformed": false,
+  "studioDevDeploymentPerformed": false,
+  "vercelPerformed": false,
+  "liveWritesPerformed": false
+}
