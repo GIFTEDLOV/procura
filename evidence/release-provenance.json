@@ -2,7 +2,7 @@
   "project": "Procura",
   "schemaVersion": "PROCUREMENT_V1",
   "contract": "contracts/Procura.py",
-  "contractSha256": "bea503d083f8f13266d3ae20590bde74c2bb6e1d640a6172dd1870dd426cad3a",
+  "contractSha256": "6d8e29e0de7c0ab01e1555ef81b59f682d6fdeb2a8597a797ed04f4d59747e76",
   "publicMethodCount": 39,
   "frontendPort": 3001,
   "e2eQualificationPort": 3002,

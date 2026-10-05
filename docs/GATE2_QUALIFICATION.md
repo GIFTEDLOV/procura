@@ -22,7 +22,7 @@ to have proven GEN funding, payout, or refund execution.
 
 - Contract source compiles; GenVM lint and SDK validation pass.
 - Public interface remains 39 methods and `PROCUREMENT_V1`.
-- 110 Python policy/adversarial/property/mutation/schema tests pass; one legacy direct-runtime test is explicitly skipped.
+- 136 Python policy/adversarial/property/mutation/schema tests pass; one legacy direct-runtime test is explicitly skipped.
 - 46 frontend unit/integration tests pass.
 - 16 Playwright tests pass at all four requested viewport sizes.
 - TypeScript typecheck and production build pass.

@@ -53,6 +53,27 @@ def test_wrong_byte_length_is_rejected():
 
 
 @pytest.mark.adversarial
+def test_malformed_url_is_rejected():
+    assert 'source_url must be an http(s) URL' in SOURCE
+
+
+@pytest.mark.adversarial
+def test_oversized_evidence_is_rejected():
+    assert 'evidence content exceeds maximum size' in SOURCE
+
+
+@pytest.mark.adversarial
+def test_late_evidence_is_rejected():
+    assert 'bid evidence was submitted after bid timestamp' in SOURCE
+    assert 'delivery evidence was submitted after delivery timestamp' in SOURCE
+
+
+@pytest.mark.adversarial
+def test_invalid_published_observed_order_is_rejected():
+    assert 'published_at cannot be after observed_at' in SOURCE
+
+
+@pytest.mark.adversarial
 def test_duplicate_evidence_is_rejected():
     assert "evidence id already exists" in SOURCE
 
@@ -122,4 +143,3 @@ def test_transport_failure_does_not_become_delivery_mismatch():
 @pytest.mark.adversarial
 def test_zero_address_recipient_guard_exists():
     assert "ZERO_ADDRESS" in SOURCE and "_nonzero" in SOURCE
-

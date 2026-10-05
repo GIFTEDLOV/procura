@@ -17,6 +17,7 @@ from genlayer import *
 SCHEMA_VERSION = "PROCUREMENT_V1"
 ZERO_ADDRESS = "0x" + "0" * 40
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+MAX_EVIDENCE_BYTES = u256(10_000_000)
 
 TENDER_DRAFT = "DRAFT"
 TENDER_FROZEN = "FROZEN"
@@ -251,6 +252,14 @@ def _hash(value: str, field: str) -> str:
     return value
 
 
+def _source_url(value: str) -> str:
+    if not isinstance(value, str) or not (value.startswith("https://") or value.startswith("http://")):
+        _fail("source_url must be an http(s) URL")
+    if " " in value or len(value) <= len("https://"):
+        _fail("source_url is malformed")
+    return value
+
+
 def _allowed(value: str, values: tuple, field: str) -> None:
     if value not in values:
         _fail(field + " outside canonical enum")
@@ -365,12 +374,17 @@ class Procura(gl.Contract):
     ) -> None:
         _nonzero(owner)
         _hash(content_sha256, "content_sha256")
+        _source_url(source_url)
         if evidence_id in self.evidence:
             _fail("evidence id already exists")
         if content_byte_length == u256(0):
             _fail("evidence content cannot be empty")
-        if not source_url or not authority:
+        if content_byte_length > MAX_EVIDENCE_BYTES:
+            _fail("evidence content exceeds maximum size")
+        if not authority or not evidence_type:
             _fail("evidence authority and source_url are required")
+        if published_at > observed_at:
+            _fail("published_at cannot be after observed_at")
         self.evidence[evidence_id] = Evidence(
             evidence_id,
             owner,
@@ -689,6 +703,8 @@ class Procura(gl.Contract):
         bid = self.bids[bid_id]
         if bid.supplier != gl.message.sender_address:
             _fail("supplier permission required")
+        if observed_at > bid.submitted_at:
+            _fail("bid evidence was submitted after bid timestamp")
         self._record_evidence(evidence_id, bid.supplier, "BID", bid_id, authority, source_url, content_sha256, content_byte_length, observed_at, published_at, evidence_type)
 
     @gl.public.write
@@ -835,6 +851,8 @@ class Procura(gl.Contract):
         delivery = self.deliveries[delivery_id]
         if delivery.supplier != gl.message.sender_address:
             _fail("supplier permission required")
+        if observed_at > delivery.submitted_at:
+            _fail("delivery evidence was submitted after delivery timestamp")
         self._record_evidence(evidence_id, delivery.supplier, "DELIVERY", delivery_id, authority, source_url, content_sha256, content_byte_length, observed_at, published_at, evidence_type)
 
     @gl.public.write

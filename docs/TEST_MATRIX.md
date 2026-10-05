@@ -24,7 +24,7 @@ module is repaired or replaced.
 
 Coverage executed in the recovery pass:
 
-- 110 Python tests pass, with one legacy Windows direct-runner test skipped because it is explicitly guarded for the known DecodingError;
+- 136 Python tests pass, with one legacy Windows direct-runner test skipped because it is explicitly guarded for the known DecodingError;
 - 46 frontend unit/integration tests pass;
 - 16 Playwright tests pass at 1440, 1024, 430, and 390 viewport sizes;
 - GenVM linter: 3 checks and SDK validation pass;

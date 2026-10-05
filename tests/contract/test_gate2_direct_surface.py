@@ -103,6 +103,20 @@ def test_evidence_duplicate_ids_are_rejected():
 
 
 @pytest.mark.direct
+def test_evidence_url_and_size_are_authenticated():
+    body = _body("_record_evidence")
+    assert "_source_url(source_url)" in body
+    assert "MAX_EVIDENCE_BYTES" in body
+
+
+@pytest.mark.direct
+def test_evidence_temporal_order_is_authenticated():
+    assert "published_at > observed_at" in _body("_record_evidence")
+    assert "observed_at > bid.submitted_at" in _body("add_bid_evidence")
+    assert "observed_at > delivery.submitted_at" in _body("add_delivery_evidence")
+
+
+@pytest.mark.direct
 def test_evidence_is_bound_to_entity_and_owner():
     assert "owner: Address" in _body("_record_evidence")
     assert "entity_type: str" in _body("_record_evidence")
