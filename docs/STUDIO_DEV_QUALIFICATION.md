@@ -32,7 +32,9 @@ The transaction finalized with consensus accepted but GenVM
 confirmed no tender or value state was created. The exact decoded calldata
 shows the 64-character all-numeric `tender_hash` was serialized as an integer
 by the CLI argument parser. Procura's existing `_hash` guard correctly
-rejected it because the public argument must be a string. No retry was sent.
+rejected it because the public argument must be a string. The validator error
+was `tender_hash must be exactly 64 lowercase hexadecimal characters`. No
+retry was sent.
 
 The direct pre-award cancellation path was therefore not reached. No funding,
 refund, payout, supplier settlement, or live balance-delta proof exists. The
@@ -45,5 +47,25 @@ It finalized accepted with no state mutation; it is retained in provenance
 for transparency and was not rebroadcast.
 
 Release status: NOT READY FOR PUBLICATION. The failed live setup must be
-corrected and re-qualified in a later authorized pass; no deployment #4 is
-authorized by this pass.
+corrected and re-qualified; no deployment #4 is authorized by this pass.
+
+## Typed SDK recovery attempt
+
+The qualification client was replaced with the installed `genlayer-py
+0.19.0rc2` high-level SDK in
+`scripts/qualification/studio_live_qualification.py`. It validates the
+deployed `create_tender` schema, keeps `tender_hash` as Python `str`, lowers
+named values to the schema's positional order (`kwparams: {}`), requests a
+fee quote for the exact write, and refuses to broadcast unless that preflight
+passes. It journals a submitted hash before reconciliation and has no retry
+path.
+
+The focused regression test passes for numeric-only, all-zero, and mixed-case
+64-character SHA-256-compatible strings. The exact new refund-case
+`create_tender` preflight was then run with a fresh unique candidate ID. The
+SDK calldata path preserved the hash as a string, but Studio-dev returned
+`sim_estimateTransactionFees failed (code=-32000): execution failed` before
+any transaction was submitted. A separate exact `sim_call` using the same
+typed arguments also returned `execution failed`. Therefore this pass stopped
+before broadcast: no refund or payout qualification transaction was sent, and
+the existing deployed state remains unchanged.

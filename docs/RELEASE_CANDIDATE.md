@@ -27,3 +27,12 @@ and blocker are recorded in `docs/DEPLOYMENT_PROVENANCE.md` and
 `docs/STUDIO_DEV_QUALIFICATION.md`.
 
 Release gate: NOT READY FOR PUBLICATION.
+
+## Qualification-client recovery status
+
+The failed CLI write is not being worked around in the contract. The new
+qualification helper uses `genlayer-py 0.19.0rc2` typed SDK writes and the
+numeric-hash regression test passes. The required exact-write Studio-dev
+preflight still fails before broadcast (`sim_estimateTransactionFees`,
+`code=-32000`, `execution failed`; exact `sim_call` also fails). No additional
+deployment or live qualification write was attempted.

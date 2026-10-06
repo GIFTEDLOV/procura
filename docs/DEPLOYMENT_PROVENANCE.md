@@ -32,3 +32,13 @@ No funding, refund, payout, or settlement proof was completed. The only live
 case setup write failed because the CLI treated an all-numeric hash argument as
 an integer. The contract remained unchanged by that failed call. No further
 live write was sent after the failure.
+
+The recovery pass added a type-safe `genlayer-py 0.19.0rc2` qualification
+helper and a regression test proving numeric-only 64-character hash strings
+remain strings through the SDK calldata encoder. The exact new `create_tender`
+write was preflighted with schema-ordered typed arguments. Studio-dev rejected
+the non-transactional `sim_estimateTransactionFees` call with
+`code=-32000: execution failed`; a separate exact `sim_call` also failed.
+The helper correctly stopped before broadcast. Consequently no live value
+qualification has been claimed, and the release remains blocked on a
+successful exact SDK preflight.
