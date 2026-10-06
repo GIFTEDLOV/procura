@@ -32,7 +32,7 @@ from web3 import Web3
 NETWORK = "studio-dev"
 CHAIN_ID = 61997
 RPC = "https://studio-dev.genlayer.com/api"
-CONTRACT_ADDRESS = "0x25cDb9C8Bf6A647Cf964dA999d82fD802057f835"
+CONTRACT_ADDRESS = "0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA"
 BUYER_ADDRESS = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 SUPPLIER_ADDRESS = "0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8"
 LIVE_TEST_AMOUNT = 1_000_000_000_000_000
@@ -68,7 +68,11 @@ def _json_safe(value: Any) -> Any:
         return "0x" + value.hex()
     if isinstance(value, int):
         return str(value)
-    return value
+    if value is None or isinstance(value, (str, float, bool)):
+        return value
+    # genlayer-py returns typed wrapper values (for example CalldataAddress)
+    # from canonical reads. Keep journaling safe after a finalized write.
+    return str(value)
 
 
 _SENSITIVE_KEYS = {"private_key", "privateKey", "api_key", "apiKey", "password", "secret"}
@@ -191,6 +195,31 @@ class StudioLiveQualification:
     def balance(self, address: str) -> int:
         return int(self.client.w3.eth.get_balance(Web3.to_checksum_address(address)))
 
+    def wait_for_balance_deltas(
+        self,
+        expectations: dict[str, tuple[int, int]],
+        *,
+        label: str,
+        retries: int = 24,
+        interval: float = 5.0,
+    ) -> dict[str, int]:
+        """Wait for finalized external message effects without rebroadcasting."""
+        for attempt in range(retries):
+            current = {address: self.balance(address) for address in expectations}
+            if all(current[address] - before == delta for address, (before, delta) in expectations.items()):
+                return current
+            if attempt + 1 < retries:
+                time.sleep(interval)
+        details = {
+            address: {
+                "before": before,
+                "expectedDelta": delta,
+                "actualDelta": current[address] - before,
+            }
+            for address, (before, delta) in expectations.items()
+        }
+        raise QualificationError(f"{label} external transfer effect did not settle: {details}")
+
     def fee_profile(self, function_name: str) -> dict[str, Any]:
         path = Path(os.environ.get("PROCURA_FEE_PROFILE", DEFAULT_FEE_PROFILE))
         if not path.exists():
@@ -207,8 +236,6 @@ class StudioLiveQualification:
             "validatorTimeunitsAllocation",
             "executionBudgetPerRound",
             "totalMessageFees",
-            "appealRounds",
-            "rotations",
         )
         missing = [key for key in required if key not in profile]
         if missing:
@@ -292,6 +319,20 @@ class StudioLiveQualification:
                 f"gen_call response missing result: {json.dumps(_json_safe(response), sort_keys=True)}"
             )
         raw_result = response["result"]
+        if raw_result == "00":
+            return {
+                "request": request,
+                "response": response,
+                "result": {"status": {"code": 0, "message": "00"}},
+                "statusCode": 0,
+                "statusMessage": "00",
+                "calldataSha256": hashlib.sha256(encoded.calldata_bytes).hexdigest(),
+                "calldataLength": len(encoded.calldata_bytes),
+                "rpcDataSha256": hashlib.sha256(bytes.fromhex(encoded.rpc_data[2:])).hexdigest(),
+                "rpcDataLength": len(bytes.fromhex(encoded.rpc_data[2:])),
+                "decodedCalldata": encoded.decoded_calldata,
+                "messages": [],
+            }
         status_code = self._status_code(raw_result)
         if status_code is None:
             raise QualificationError(
@@ -328,7 +369,22 @@ class StudioLiveQualification:
         }
 
     def quote(self, profile: dict[str, Any]) -> dict[str, Any]:
-        estimate = self.client.estimate_transaction_fees(options=profile)
+        appeal_rounds = int(profile.get("appealRounds", 0))
+        rotations = profile.get("rotations")
+        if rotations is None:
+            rotations_per_round = int(profile.get("rotationsPerRound", 3))
+            rotations = [rotations_per_round] * (appeal_rounds + 1)
+        options = {
+            "leaderTimeunitsAllocation": int(profile["leaderTimeunitsAllocation"]),
+            "validatorTimeunitsAllocation": int(profile["validatorTimeunitsAllocation"]),
+            "executionBudgetPerRound": int(profile["executionBudgetPerRound"]),
+            "totalMessageFees": int(profile.get("totalMessageFees", 0)),
+            "appealRounds": appeal_rounds,
+            "rotations": [int(value) for value in rotations],
+        }
+        if profile.get("messageAllocations") is not None:
+            options["messageAllocations"] = profile["messageAllocations"]
+        estimate = self.client.estimate_transaction_fees(options=options)
         fee_value = int(estimate["feeValue"])
         distribution = estimate.get("distribution")
         if fee_value <= 0:
@@ -339,6 +395,7 @@ class StudioLiveQualification:
             "feeValue": fee_value,
             "distribution": distribution,
             "profile": profile,
+            "estimateOptions": options,
         }
 
     def send_once(
@@ -346,10 +403,11 @@ class StudioLiveQualification:
         spec: WriteSpec,
         *,
         profile: dict[str, Any] | None = None,
+        preflight_result: dict[str, Any] | None = None,
         readback: Callable[[], Any] | None = None,
         label: str,
     ) -> dict[str, Any]:
-        preflight = self.preflight(spec)
+        preflight = preflight_result or self.preflight(spec)
         profile = profile or self.fee_profile(spec.function_name)
         quote = self.quote(profile)
         fees = {"distribution": quote["distribution"], "feeValue": quote["feeValue"]}
@@ -459,6 +517,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--keystore", required=True, help="Encrypted keystore for the active signer")
     parser.add_argument("--supplier-keystore", help="Encrypted supplier keystore for payout mode")
     parser.add_argument("--case-id")
+    parser.add_argument("--resume-create-tx", help="Resume after an already-finalized create_tender hash")
     parser.add_argument("--supplier-password-env", default=PASSWORD_ENV)
     parser.add_argument("--journal", type=Path)
     return parser
@@ -481,17 +540,33 @@ def _assert_sender(helper: StudioLiveQualification, expected: str) -> None:
         raise QualificationError(f"wrong signer: expected {expected}, got {helper.account.address}")
 
 
-def run_refund(helper: StudioLiveQualification, case_id: str) -> dict[str, Any]:
+def run_refund(
+    helper: StudioLiveQualification,
+    case_id: str,
+    *,
+    resume_create_tx: str | None = None,
+) -> dict[str, Any]:
     _assert_sender(helper, BUYER_ADDRESS)
-    if case_id in helper.read("get_tender_ids"):
+    if not resume_create_tx and case_id in helper.read("get_tender_ids"):
         raise QualificationError(f"case already exists: {case_id}")
 
     create = WriteSpec("create_tender", create_tender_kwargs(case_id))
-    result: dict[str, Any] = {"caseId": case_id, "create": helper.send_once(
-        create,
-        readback=lambda: helper.read("get_tender", {"tender_id": case_id}),
-        label="refund.create_tender",
-    )}
+    if resume_create_tx:
+        existing = helper.read("get_tender", {"tender_id": case_id})
+        if not existing:
+            raise QualificationError(f"cannot resume: canonical tender readback is empty: {case_id}")
+        _append_journal(
+            helper.journal,
+            {"event": "resume_finalized", "label": "refund.create_tender", "txHash": resume_create_tx},
+        )
+        create_result = {"txHash": resume_create_tx, "readback": existing}
+    else:
+        create_result = helper.send_once(
+            create,
+            readback=lambda: helper.read("get_tender", {"tender_id": case_id}),
+            label="refund.create_tender",
+        )
+    result: dict[str, Any] = {"caseId": case_id, "create": create_result}
 
     requirement = WriteSpec("add_requirement", requirement_kwargs(case_id))
     result["addRequirement"] = helper.send_once(
@@ -542,8 +617,11 @@ def run_refund(helper: StudioLiveQualification, case_id: str) -> dict[str, Any]:
         "totalRefunds": int(accounting_after_fund["total_buyer_refunds"]),
     }
     cancel = WriteSpec("cancel_tender", {"tender_id": case_id})
+    cancel_preflight = helper.preflight(cancel)
+    result["refundPreflight"] = cancel_preflight
     result["refund"] = helper.send_once(
         cancel,
+        preflight_result=cancel_preflight,
         readback=lambda: {
             "tender": helper.read("get_tender", {"tender_id": case_id}),
             "accounting": helper.read("get_accounting"),
@@ -551,9 +629,16 @@ def run_refund(helper: StudioLiveQualification, case_id: str) -> dict[str, Any]:
         },
         label="refund.cancel_tender",
     )
+    settled_balances = helper.wait_for_balance_deltas(
+        {
+            BUYER_ADDRESS: (before_cancel["buyer"], LIVE_TEST_AMOUNT),
+            CONTRACT_ADDRESS: (before_cancel["contract"], -LIVE_TEST_AMOUNT),
+        },
+        label="refund",
+    )
     after_cancel = {
-        "buyer": helper.balance(BUYER_ADDRESS),
-        "contract": helper.balance(CONTRACT_ADDRESS),
+        "buyer": settled_balances[BUYER_ADDRESS],
+        "contract": settled_balances[CONTRACT_ADDRESS],
         "escrow": int(result["refund"]["readback"]["tender"]["escrow_liability"]),
         "liability": int(result["refund"]["readback"]["accounting"]["escrow_liability"]),
         "totalRefunds": int(result["refund"]["readback"]["accounting"]["total_buyer_refunds"]),
@@ -569,6 +654,7 @@ def run_refund(helper: StudioLiveQualification, case_id: str) -> dict[str, Any]:
     if any(value != expected for value in checks.values()):
         raise QualificationError(f"refund accounting/balance mismatch: {checks}")
     result["refundBalances"] = {"before": before_cancel, "after": after_cancel, "checks": checks}
+    result["refundExitMethod"] = "cancel_tender (the deployed contract performs the buyer refund here; refund_buyer requires an award and is not legal for this shortest path)"
     return result
 
 
@@ -731,8 +817,12 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
         "award": buyer.read("get_payments", {"award_id": award_id}),
         "accounting": buyer.read("get_accounting"),
     }
+    settle_spec = WriteSpec("settle_award", {"award_id": award_id})
+    settle_preflight = buyer.preflight(settle_spec)
+    result["settlePreflight"] = settle_preflight
     result["settle"] = buyer.send_once(
-        WriteSpec("settle_award", {"award_id": award_id}),
+        settle_spec,
+        preflight_result=settle_preflight,
         readback=lambda: {
             "award": buyer.read("get_payments", {"award_id": award_id}),
             "accounting": buyer.read("get_accounting"),
@@ -740,9 +830,16 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
         },
         label="payout.settle_award",
     )
+    settled_balances = buyer.wait_for_balance_deltas(
+        {
+            SUPPLIER_ADDRESS: (before["supplier"], LIVE_TEST_AMOUNT),
+            CONTRACT_ADDRESS: (before["contract"], -LIVE_TEST_AMOUNT),
+        },
+        label="payout",
+    )
     after = {
-        "supplier": buyer.balance(SUPPLIER_ADDRESS),
-        "contract": buyer.balance(CONTRACT_ADDRESS),
+        "supplier": settled_balances[SUPPLIER_ADDRESS],
+        "contract": settled_balances[CONTRACT_ADDRESS],
         "award": result["settle"]["readback"]["award"],
         "accounting": result["settle"]["readback"]["accounting"],
     }
@@ -795,7 +892,7 @@ def main() -> int:
         print(json.dumps(_redact_sensitive(_json_safe(output)), sort_keys=True))
         return 0 if preflight["statusCode"] == 0 else 1
     if args.mode == "refund":
-        result = run_refund(helper, case_id)
+        result = run_refund(helper, case_id, resume_create_tx=args.resume_create_tx)
     else:
         if not args.supplier_keystore:
             raise QualificationError("--supplier-keystore is required for payout mode")

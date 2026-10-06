@@ -1,6 +1,6 @@
 # Procura Release Candidate
 
-This local commit is the frozen API-migration candidate for operator review.
+This local commit is the frozen storage-remediation candidate for operator review.
 
 ## Included
 
@@ -15,15 +15,18 @@ This local commit is the frozen API-migration candidate for operator review.
 ## Release limits
 
 No GitHub push, Vercel deployment, or Portal submission was performed. The
-authorized Studio-dev deployment #3 succeeded and finalized. Live native GEN
-qualification did not complete: the first refund-case setup write failed
-because its all-numeric hash argument was CLI-serialized as an integer. No
-funding, refund, payout, or settlement write followed.
+Studio-dev deployment #4 succeeded and finalized at
+`0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA`. Live native GEN qualification
+did not complete: create, requirement, freeze, and funding finalized, but the
+single cancel/refund write failed with
+`Mode1MessageFeesRequireGenVMPerEmissionSupport` because the fee-bearing
+message lacked an allocation tree. No retry or payout write followed.
 
 ## Provenance
 
-The contract hash, interface manifest, test commands, toolchain, deployment,
-and blocker are recorded in `docs/DEPLOYMENT_PROVENANCE.md` and
+The corrected contract hash, interface manifest, test commands, toolchain,
+deployments, funding proof, and blocker are recorded in
+`docs/DEPLOYMENT_PROVENANCE.md` and
 `docs/STUDIO_DEV_QUALIFICATION.md`.
 
 Release gate: NOT READY FOR PUBLICATION.
@@ -33,7 +36,7 @@ Release gate: NOT READY FOR PUBLICATION.
 The failed CLI write is not being worked around in the contract. The new
 qualification helper uses `genlayer-py 0.19.0rc2` typed SDK writes and the
 numeric-hash regression test passes. The required raw `gen_call` type=`write`
-preflight reaches the frozen contract but fails before broadcast with
-`TypeError: this class can't be instantiated by user` at
-`gl.storage.DynArray[str]()` in `create_tender`. No fee quote, deployment, or
-live qualification write was attempted after that failure.
+preflight reaches the corrected contract and returns `00`. The subsequent
+value-exit write exposed the separate Studio-dev message-allocation-tree
+requirement; the qualification pass is stopped and remains NOT READY FOR
+PUBLICATION.

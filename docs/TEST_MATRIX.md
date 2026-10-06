@@ -28,20 +28,26 @@ The Gate 1 test suite is foundation-level and must be extended with live simulat
   positive for the current `gl.storage.allow` namespace, while target
   Studio-dev schema/deploy execution passed.
 
-Live value qualification remains incomplete and is a release blocker.
+Live value qualification remains incomplete and is a release blocker. The
+corrected storage probes, source deploy simulation, and create-tender write
+preflight pass. One live funding path passed; refund and payout value proofs
+do not.
 
 ## Qualification serialization regression
 
 - Numeric-only, all-zero, and mixed 64-character hash strings: PASS through
   the `genlayer-py 0.19.0rc2` calldata encoder.
-- Raw Studio-dev `gen_call` type=`write` `create_tender` preflight: BLOCKED
-  before broadcast. RPC `-32000` contained GenVM `execution_result: ERROR`
-  and `TypeError: this class can't be instantiated by user` at
-  `gl.storage.DynArray[str]()`.
-- Fee-profile lookup and `estimate_transaction_fees` were not reached because
-  the authoritative write preflight failed. No arbitrary fee profile was
-  invented.
-- No new live transaction was submitted by the SDK recovery attempt.
+- Raw Studio-dev `gen_call` type=`write` `create_tender` preflight: PASS (`00`)
+  against deployment #4.
+- Storage allocation probes and the full Procura-shaped allocation harness:
+  PASS (`00`).
+- Live funding: PASS; exact value `1000000000000000` wei was reflected in
+  escrow and global liability.
+- Live cancel/refund: BLOCKED after one broadcast. Final GenVM error:
+  `Mode1MessageFeesRequireGenVMPerEmissionSupport: fee-bearing GenVM messages
+  require a message allocation tree`.
+- Payout was not attempted. No refund recipient delta or payout delta is
+  claimed.
 # Gate 2 qualification update
 
 The Gate 2 recovery suite is now split into two explicit classes:
