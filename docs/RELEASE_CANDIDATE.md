@@ -32,7 +32,8 @@ Release gate: NOT READY FOR PUBLICATION.
 
 The failed CLI write is not being worked around in the contract. The new
 qualification helper uses `genlayer-py 0.19.0rc2` typed SDK writes and the
-numeric-hash regression test passes. The required exact-write Studio-dev
-preflight still fails before broadcast (`sim_estimateTransactionFees`,
-`code=-32000`, `execution failed`; exact `sim_call` also fails). No additional
-deployment or live qualification write was attempted.
+numeric-hash regression test passes. The required raw `gen_call` type=`write`
+preflight reaches the frozen contract but fails before broadcast with
+`TypeError: this class can't be instantiated by user` at
+`gl.storage.DynArray[str]()` in `create_tender`. No fee quote, deployment, or
+live qualification write was attempted after that failure.

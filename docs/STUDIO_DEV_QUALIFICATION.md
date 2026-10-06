@@ -55,17 +55,24 @@ The qualification client was replaced with the installed `genlayer-py
 0.19.0rc2` high-level SDK in
 `scripts/qualification/studio_live_qualification.py`. It validates the
 deployed `create_tender` schema, keeps `tender_hash` as Python `str`, lowers
-named values to the schema's positional order (`kwparams: {}`), requests a
-fee quote for the exact write, and refuses to broadcast unless that preflight
-passes. It journals a submitted hash before reconciliation and has no retry
+named values to the schema's positional order (`kwparams: {}`), and uses the
+raw Studio-dev `gen_call` RPC with `type: "write"` as the non-transactional
+preflight. It journals a submitted hash before reconciliation and has no retry
 path.
 
 The focused regression test passes for numeric-only, all-zero, and mixed-case
 64-character SHA-256-compatible strings. The exact new refund-case
-`create_tender` preflight was then run with a fresh unique candidate ID. The
-SDK calldata path preserved the hash as a string, but Studio-dev returned
-`sim_estimateTransactionFees failed (code=-32000): execution failed` before
-any transaction was submitted. A separate exact `sim_call` using the same
-typed arguments also returned `execution failed`. Therefore this pass stopped
-before broadcast: no refund or payout qualification transaction was sent, and
-the existing deployed state remains unchanged.
+`create_tender` raw `gen_call` preflight was then run with fresh candidate ID
+`PROCURA-LIVE-REFUND-20261007T000000Z`. The SDK calldata path preserved the
+hash as a string. Studio-dev returned RPC `-32000`, with an embedded GenVM
+`execution_result: ERROR` and normalized runtime status code `2`. The exact
+GenVM stderr was:
+
+`TypeError: this class can't be instantiated by user` at
+`gl.storage.DynArray[str]()` in the frozen `create_tender` implementation.
+
+Because the authoritative raw preflight failed, no fee profile was applied,
+no `estimate_transaction_fees` quote was used, and no live write was
+broadcast. Canonical readback remained empty: no tender, funding, refund,
+payout, or settlement state exists. The blocker is now a concrete frozen
+contract/runtime incompatibility; this pass does not modify the contract.

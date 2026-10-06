@@ -34,10 +34,13 @@ Live value qualification remains incomplete and is a release blocker.
 
 - Numeric-only, all-zero, and mixed 64-character hash strings: PASS through
   the `genlayer-py 0.19.0rc2` calldata encoder.
-- Exact SDK `create_tender` preflight: BLOCKED before broadcast because
-  Studio-dev `sim_estimateTransactionFees` returned
-  `code=-32000: execution failed`; an independent exact `sim_call` produced
-  the same execution failure.
+- Raw Studio-dev `gen_call` type=`write` `create_tender` preflight: BLOCKED
+  before broadcast. RPC `-32000` contained GenVM `execution_result: ERROR`
+  and `TypeError: this class can't be instantiated by user` at
+  `gl.storage.DynArray[str]()`.
+- Fee-profile lookup and `estimate_transaction_fees` were not reached because
+  the authoritative write preflight failed. No arbitrary fee profile was
+  invented.
 - No new live transaction was submitted by the SDK recovery attempt.
 # Gate 2 qualification update
 

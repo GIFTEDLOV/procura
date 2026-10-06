@@ -12,15 +12,17 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+import requests
 from eth_account import Account
 from genlayer_py import create_client
 from genlayer_py.abi import calldata
-from genlayer_py.abi.calldata.encoder import encode
+from genlayer_py.abi.transactions import serialize
 from genlayer_py.chains import studio_devnet
 from genlayer_py.contracts.utils import make_calldata_object
 from genlayer_py.transactions.actions import is_successful
@@ -36,6 +38,7 @@ SUPPLIER_ADDRESS = "0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8"
 LIVE_TEST_AMOUNT = 1_000_000_000_000_000
 PASSWORD_ENV = "PROCURA_QUALIFICATION_KEYSTORE_PASSWORD"
 DEFAULT_JOURNAL = Path(tempfile.gettempdir()) / "procura-studio-live-qualification.jsonl"
+DEFAULT_FEE_PROFILE = Path(__file__).resolve().parents[2] / "evidence" / "studio-dev-fee-profile.json"
 
 
 class QualificationError(RuntimeError):
@@ -49,6 +52,13 @@ class WriteSpec:
     value: int = 0
 
 
+@dataclass(frozen=True)
+class EncodedWrite:
+    calldata_bytes: bytes
+    rpc_data: str
+    decoded_calldata: Any
+
+
 def _json_safe(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(k): _json_safe(v) for k, v in value.items()}
@@ -58,6 +68,20 @@ def _json_safe(value: Any) -> Any:
         return "0x" + value.hex()
     if isinstance(value, int):
         return str(value)
+    return value
+
+
+_SENSITIVE_KEYS = {"private_key", "privateKey", "api_key", "apiKey", "password", "secret"}
+
+
+def _redact_sensitive(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            str(key): "[REDACTED]" if str(key) in _SENSITIVE_KEYS else _redact_sensitive(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_sensitive(item) for item in value]
     return value
 
 
@@ -167,49 +191,167 @@ class StudioLiveQualification:
     def balance(self, address: str) -> int:
         return int(self.client.w3.eth.get_balance(Web3.to_checksum_address(address)))
 
-    def preflight(self, spec: WriteSpec) -> dict[str, Any]:
+    def fee_profile(self, function_name: str) -> dict[str, Any]:
+        path = Path(os.environ.get("PROCURA_FEE_PROFILE", DEFAULT_FEE_PROFILE))
+        if not path.exists():
+            raise QualificationError(f"fee profile is missing: {path}")
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if document.get("network") != NETWORK or int(document.get("chainId", -1)) != CHAIN_ID:
+            raise QualificationError(f"fee profile targets the wrong network: {path}")
+        methods = document.get("methods", {})
+        profile = methods.get(function_name)
+        if not isinstance(profile, dict):
+            raise QualificationError(f"fee profile entry is missing for {function_name}: {path}")
+        required = (
+            "leaderTimeunitsAllocation",
+            "validatorTimeunitsAllocation",
+            "executionBudgetPerRound",
+            "totalMessageFees",
+            "appealRounds",
+            "rotations",
+        )
+        missing = [key for key in required if key not in profile]
+        if missing:
+            raise QualificationError(f"fee profile entry incomplete for {function_name}: {missing}")
+        if "feeValue" in profile:
+            raise QualificationError(f"fee profile must not hardcode feeValue: {function_name}")
+        return profile
+
+    def encode_write(self, spec: WriteSpec) -> EncodedWrite:
         self.validate_write(spec)
         args = self._ordered_args(spec.function_name, spec.kwargs)
-        try:
-            estimate = self.client.estimate_transaction_fees_for_write(
-                CONTRACT_ADDRESS,
-                spec.function_name,
-                account=self.account,
-                args=args,
-                value=spec.value,
-            )
-        except Exception as exc:
+        encoded = calldata.encode(
+            make_calldata_object(method=spec.function_name, args=args)
+        )
+        return EncodedWrite(
+            calldata_bytes=encoded,
+            rpc_data=serialize([encoded, False]),
+            decoded_calldata=calldata.decode(encoded),
+        )
+
+    @staticmethod
+    def _status_code(result: Any) -> int | None:
+        if not isinstance(result, dict):
+            return None
+        status = result.get("status")
+        if isinstance(status, dict) and status.get("code") is not None:
+            return int(status["code"])
+        for key in ("status_code", "statusCode", "code"):
+            if result.get(key) is not None:
+                return int(result[key])
+        return None
+
+    def gen_call_write(self, spec: WriteSpec) -> dict[str, Any]:
+        encoded = self.encode_write(spec)
+        request = {
+            "from": self.account.address,
+            "to": CONTRACT_ADDRESS,
+            "data": encoded.rpc_data,
+            "type": "write",
+            "value": hex(spec.value),
+            "status": "finalized",
+        }
+        response = requests.post(
+            RPC,
+            json={
+                "jsonrpc": "2.0",
+                "id": int(time.time() * 1000),
+                "method": "gen_call",
+                "params": [request],
+            },
+            headers={"Content-Type": "application/json", "User-Agent": "genlayer-py"},
+            timeout=120,
+        ).json()
+        response = _redact_sensitive(response)
+        if response.get("error"):
+            error = response["error"]
+            error_data = error.get("data") if isinstance(error, dict) else None
+            receipt = error_data.get("receipt") if isinstance(error_data, dict) else None
+            stderr = receipt.get("genvm_result", {}).get("stderr", "") if isinstance(receipt, dict) else ""
+            normalized_code = None
+            if isinstance(receipt, dict) and receipt.get("execution_result") == "ERROR":
+                normalized_code = 2 if "Traceback" in stderr or "TypeError" in stderr else 1
+            return {
+                "request": request,
+                "response": response,
+                "result": receipt,
+                "statusCode": normalized_code,
+                "statusCodeSource": "normalized from embedded GenVM execution_result; raw RPC status.code absent",
+                "statusMessage": error.get("message") if isinstance(error, dict) else None,
+                "rpcCode": error.get("code") if isinstance(error, dict) else None,
+                "rpcError": error,
+                "genvmResult": receipt,
+                "calldataSha256": hashlib.sha256(encoded.calldata_bytes).hexdigest(),
+                "calldataLength": len(encoded.calldata_bytes),
+                "rpcDataSha256": hashlib.sha256(bytes.fromhex(encoded.rpc_data[2:])).hexdigest(),
+                "rpcDataLength": len(bytes.fromhex(encoded.rpc_data[2:])),
+                "decodedCalldata": encoded.decoded_calldata,
+            }
+        if "result" not in response:
             raise QualificationError(
-                "exact SDK write preflight failed before broadcast: "
-                f"{type(exc).__name__}: {exc}"
-            ) from exc
-        fee_value_raw = estimate.get("feeValue")
-        if fee_value_raw is None:
-            fee_value_raw = estimate.get("fee_value")
-        if fee_value_raw is None:
-            raise QualificationError("fee quote did not contain feeValue")
-        fee_value = int(fee_value_raw)
+                f"gen_call response missing result: {json.dumps(_json_safe(response), sort_keys=True)}"
+            )
+        raw_result = response["result"]
+        status_code = self._status_code(raw_result)
+        if status_code is None:
+            raise QualificationError(
+                "gen_call result missing status.code: "
+                f"{json.dumps(_json_safe(raw_result), sort_keys=True)}"
+            )
+        return {
+            "request": request,
+            "response": response,
+            "result": raw_result,
+            "statusCode": status_code,
+            "calldataSha256": hashlib.sha256(encoded.calldata_bytes).hexdigest(),
+            "calldataLength": len(encoded.calldata_bytes),
+            "rpcDataSha256": hashlib.sha256(bytes.fromhex(encoded.rpc_data[2:])).hexdigest(),
+            "rpcDataLength": len(bytes.fromhex(encoded.rpc_data[2:])),
+            "decodedCalldata": encoded.decoded_calldata,
+        }
+
+    def preflight(self, spec: WriteSpec) -> dict[str, Any]:
+        result = self.gen_call_write(spec)
+        raw_result = result["result"]
+        status = raw_result.get("status", {}) if isinstance(raw_result, dict) else {}
+        if result["statusCode"] != 0:
+            raise QualificationError(
+                f"gen_call {spec.function_name} failed with normalized status.code={result['statusCode']} "
+                f"(RPC {result.get('rpcCode')}): "
+                f"{json.dumps(_json_safe(result.get('genvmResult') or result.get('rpcError')), sort_keys=True)}"
+            )
+        return {
+            **result,
+            "statusMessage": status.get("message") if isinstance(status, dict) else None,
+            "kwargsTypes": {key: type(value).__name__ for key, value in spec.kwargs.items()},
+            "argsTypes": [type(value).__name__ for value in self._ordered_args(spec.function_name, spec.kwargs)],
+        }
+
+    def quote(self, profile: dict[str, Any]) -> dict[str, Any]:
+        estimate = self.client.estimate_transaction_fees(options=profile)
+        fee_value = int(estimate["feeValue"])
+        distribution = estimate.get("distribution")
         if fee_value <= 0:
             raise QualificationError(f"non-positive fee quote: {fee_value}")
-        distribution = estimate.get("distribution")
         if not isinstance(distribution, dict) or not distribution:
             raise QualificationError("fee distribution is missing or empty")
         return {
             "feeValue": fee_value,
             "distribution": distribution,
-            "kwargsTypes": {key: type(value).__name__ for key, value in spec.kwargs.items()},
-            "argsTypes": [type(value).__name__ for value in args],
-            "args": args,
+            "profile": profile,
         }
 
     def send_once(
         self,
         spec: WriteSpec,
         *,
+        profile: dict[str, Any] | None = None,
         readback: Callable[[], Any] | None = None,
         label: str,
     ) -> dict[str, Any]:
-        quote = self.preflight(spec)
+        preflight = self.preflight(spec)
+        profile = profile or self.fee_profile(spec.function_name)
+        quote = self.quote(profile)
         fees = {"distribution": quote["distribution"], "feeValue": quote["feeValue"]}
         args = self._ordered_args(spec.function_name, spec.kwargs)
         canonical = {
@@ -222,8 +364,13 @@ class StudioLiveQualification:
             "args": args,
             "value": spec.value,
             "fees": fees,
+            "profile": profile,
             "sender": self.account.address,
         }
+        _append_journal(
+            self.journal,
+            {"event": "gen_call_preflight", "label": label, **preflight},
+        )
         _append_journal(self.journal, {"event": "fee_quote", "label": label, **canonical})
 
         tx_hash = self.client.write_contract(
@@ -340,7 +487,6 @@ def run_refund(helper: StudioLiveQualification, case_id: str) -> dict[str, Any]:
         raise QualificationError(f"case already exists: {case_id}")
 
     create = WriteSpec("create_tender", create_tender_kwargs(case_id))
-    helper.preflight(create)
     result: dict[str, Any] = {"caseId": case_id, "create": helper.send_once(
         create,
         readback=lambda: helper.read("get_tender", {"tender_id": case_id}),
@@ -623,20 +769,31 @@ def main() -> int:
     case_id = args.case_id or _utc_case_id("REFUND" if args.mode != "payout" else "PAYOUT")
     if args.mode == "preflight-create":
         spec = WriteSpec("create_tender", create_tender_kwargs(case_id))
-        quote = helper.preflight(spec)
-        print(json.dumps({
+        preflight = helper.gen_call_write(spec)
+        output = {
             "network": NETWORK,
             "chainId": CHAIN_ID,
             "rpc": RPC,
             "caseId": case_id,
             "schema": helper._expected_params("create_tender"),
-            "kwargsTypes": quote["kwargsTypes"],
+            "kwargsTypes": {key: type(value).__name__ for key, value in spec.kwargs.items()},
             "hashPythonType": type(spec.kwargs["tender_hash"]).__name__,
             "hashValue": spec.kwargs["tender_hash"],
-            "preflight": "PASS",
-            "feeValue": quote["feeValue"],
-        }, sort_keys=True))
-        return 0
+            "preflight": "PASS" if preflight["statusCode"] == 0 else "FAIL",
+            "statusCode": preflight["statusCode"],
+            "statusCodeSource": preflight.get("statusCodeSource", "raw status.code"),
+            "statusMessage": preflight.get("statusMessage"),
+            "rpcCode": preflight.get("rpcCode"),
+            "calldataSha256": preflight["calldataSha256"],
+            "calldataLength": preflight["calldataLength"],
+            "rpcDataSha256": preflight["rpcDataSha256"],
+            "rpcDataLength": preflight["rpcDataLength"],
+            "decodedCalldata": preflight["decodedCalldata"],
+            "genvm": preflight.get("genvmResult") or preflight.get("result"),
+            "rpcError": preflight.get("rpcError"),
+        }
+        print(json.dumps(_redact_sensitive(_json_safe(output)), sort_keys=True))
+        return 0 if preflight["statusCode"] == 0 else 1
     if args.mode == "refund":
         result = run_refund(helper, case_id)
     else:

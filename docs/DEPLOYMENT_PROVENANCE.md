@@ -36,9 +36,11 @@ live write was sent after the failure.
 The recovery pass added a type-safe `genlayer-py 0.19.0rc2` qualification
 helper and a regression test proving numeric-only 64-character hash strings
 remain strings through the SDK calldata encoder. The exact new `create_tender`
-write was preflighted with schema-ordered typed arguments. Studio-dev rejected
-the non-transactional `sim_estimateTransactionFees` call with
-`code=-32000: execution failed`; a separate exact `sim_call` also failed.
-The helper correctly stopped before broadcast. Consequently no live value
-qualification has been claimed, and the release remains blocked on a
-successful exact SDK preflight.
+write was preflighted with schema-ordered typed arguments through raw
+Studio-dev `gen_call` with `type: "write"`. Studio-dev returned RPC
+`-32000`; the embedded GenVM result was `execution_result: ERROR`, with
+`TypeError: this class can't be instantiated by user` at
+`gl.storage.DynArray[str]()` in `create_tender`. The normalized runtime
+classification is status code `2`. The helper stopped before broadcast, so no
+fee quote or live value qualification was performed. The frozen contract and
+deployment remain unchanged.
