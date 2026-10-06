@@ -9,12 +9,12 @@ Low: 0
 
 ### Medium — Local native value execution is unqualified
 
-The installed Local Studio JSON-RPC service does not complete startup because
-its web GenVM module reports `missing field session_create_request`. This
-prevents proof of native balance movement. The application therefore keeps
-settlement visibly blocked in controlled-demo mode and the qualification
-driver refuses non-loopback endpoints unless explicitly invoked with
-`--execute`.
+Target Studio-dev deployment and GenVM execution succeeded, but native value
+movement is still unqualified. The first controlled refund-case setup write
+failed before state creation because the CLI serialized an all-numeric hash as
+an integer; no funding, refund, payout, or settlement proof was completed.
+The local Windows/Python 3.14 direct-runner limitation remains tooling
+provenance, not a Procura security finding.
 
 ## Controls verified
 
@@ -27,3 +27,7 @@ driver refuses non-loopback endpoints unless explicitly invoked with
 - frozen bond policy forms and single bond exit;
 - transaction hash persistence and same-hash recovery without rebroadcast;
 - explicit LIVE versus CONTROLLED DEMO boundary in the frontend.
+
+The failed live setup is release-blocking until a later authorized pass uses a
+correctly typed string hash and completes exact refund/payout balance and
+accounting reconciliation. No source or guard was weakened to bypass it.
