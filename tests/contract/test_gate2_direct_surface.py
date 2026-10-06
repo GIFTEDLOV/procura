@@ -62,7 +62,7 @@ def test_requirements_freeze_before_bidding():
 
 @pytest.mark.direct
 def test_freeze_requires_at_least_one_requirement():
-    assert 'len(self.requirement_ids_by_tender.get(tender_id, DynArray[str]())) == 0' in _body("freeze_tender")
+    assert 'len(self.requirement_ids_by_tender.get(tender_id, gl.storage.DynArray[str]())) == 0' in _body("freeze_tender")
 
 
 @pytest.mark.direct

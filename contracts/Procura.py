@@ -1,4 +1,4 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
 """Procura: verifiable procurement from requirement to payment.
 
 The contract keeps deterministic procurement, permissions, deadlines, hashes,
@@ -11,7 +11,9 @@ import json
 import re
 from dataclasses import dataclass
 
+import genlayer as gl
 from genlayer import *
+from genlayer.storage import TreeMap
 
 
 SCHEMA_VERSION = "PROCUREMENT_V1"
@@ -70,7 +72,7 @@ def _emit_external_transfer(recipient: Address, amount: u256) -> None:
     Recipient(recipient).emit_transfer(value=amount)
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Tender:
     tender_id: str
@@ -83,7 +85,7 @@ class Tender:
     bid_deadline: str
     evaluation_deadline: str
     delivery_deadline: str
-    required_certifications: DynArray[str]
+    required_certifications: gl.storage.DynArray[str]
     equivalence_policy: str
     evaluation_policy: str
     payment_policy: str
@@ -95,7 +97,7 @@ class Tender:
     escrow_liability: u256
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Requirement:
     requirement_id: str
@@ -114,7 +116,7 @@ class Requirement:
     version: u32
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Bid:
     bid_id: str
@@ -129,7 +131,7 @@ class Bid:
     state: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Evidence:
     evidence_id: str
@@ -145,7 +147,7 @@ class Evidence:
     evidence_type: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Adjudication:
     adjudication_id: str
@@ -164,7 +166,7 @@ class Adjudication:
     timestamp: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Award:
     award_id: str
@@ -189,7 +191,7 @@ class Award:
     released_milestones: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Delivery:
     delivery_id: str
@@ -203,7 +205,7 @@ class Delivery:
     state: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class DeliveryAdjudication:
     adjudication_id: str
@@ -221,7 +223,7 @@ class DeliveryAdjudication:
     timestamp: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class AuditEvent:
     event_id: str
@@ -234,7 +236,7 @@ class AuditEvent:
 
 
 def _now() -> str:
-    return str(gl.message_raw["datetime"])
+    return str(gl.message.raw["datetime"])
 
 
 def _fail(message: str):
@@ -301,23 +303,23 @@ def _canonical_delivery_verdict(vector: dict) -> str:
     return DELIVERY_INCONCLUSIVE_VERDICT
 
 
-class Procura(gl.Contract):
+class Procura(gl.contract.Contract):
     tenders: TreeMap[str, Tender]
-    tender_ids: DynArray[str]
+    tender_ids: gl.storage.DynArray[str]
     requirements: TreeMap[str, Requirement]
-    requirement_ids_by_tender: TreeMap[str, DynArray[str]]
+    requirement_ids_by_tender: TreeMap[str, gl.storage.DynArray[str]]
     bids: TreeMap[str, Bid]
-    bid_ids_by_tender: TreeMap[str, DynArray[str]]
+    bid_ids_by_tender: TreeMap[str, gl.storage.DynArray[str]]
     evidence: TreeMap[str, Evidence]
-    evidence_ids_by_entity: TreeMap[str, DynArray[str]]
+    evidence_ids_by_entity: TreeMap[str, gl.storage.DynArray[str]]
     adjudications: TreeMap[str, Adjudication]
-    adjudication_ids_by_bid: TreeMap[str, DynArray[str]]
+    adjudication_ids_by_bid: TreeMap[str, gl.storage.DynArray[str]]
     awards: TreeMap[str, Award]
-    award_ids: DynArray[str]
+    award_ids: gl.storage.DynArray[str]
     deliveries: TreeMap[str, Delivery]
-    delivery_ids_by_award: TreeMap[str, DynArray[str]]
+    delivery_ids_by_award: TreeMap[str, gl.storage.DynArray[str]]
     delivery_adjudications: TreeMap[str, DeliveryAdjudication]
-    audit_events: DynArray[AuditEvent]
+    audit_events: gl.storage.DynArray[AuditEvent]
     total_funded: u256
     escrow_liability: u256
     total_supplier_payouts: u256
@@ -571,7 +573,7 @@ class Procura(gl.Contract):
         self.tenders[tender_id] = Tender(
             tender_id, buyer, title, description, category, currency_label,
             _u(budget_ceiling), bid_deadline, evaluation_deadline, delivery_deadline,
-            DynArray[str](), equivalence_policy, evaluation_policy, payment_policy,
+            gl.storage.DynArray[str](), equivalence_policy, evaluation_policy, payment_policy,
             supplier_bond_policy, TENDER_DRAFT, u32(0), tender_hash, u256(0), u256(0)
         )
         self.tender_ids.append(tender_id)
@@ -624,7 +626,7 @@ class Procura(gl.Contract):
     def freeze_tender(self, tender_id: str) -> None:
         tender = self._require_tender(tender_id)
         self._require_buyer(tender)
-        if tender.state != TENDER_DRAFT or len(self.requirement_ids_by_tender.get(tender_id, DynArray[str]())) == 0:
+        if tender.state != TENDER_DRAFT or len(self.requirement_ids_by_tender.get(tender_id, gl.storage.DynArray[str]())) == 0:
             _fail("tender cannot be frozen")
         tender.state = TENDER_FROZEN
         tender.version = u32(1)
@@ -714,7 +716,7 @@ class Procura(gl.Contract):
         if tender.state not in (TENDER_FROZEN, TENDER_FUNDED):
             _fail("tender cannot enter evaluation")
         tender.state = TENDER_EVALUATING
-        for bid_id in self.bid_ids_by_tender.get(tender_id, DynArray[str]()):
+        for bid_id in self.bid_ids_by_tender.get(tender_id, gl.storage.DynArray[str]()):
             self.bids[bid_id].state = BID_UNDER_EVALUATION
         self._audit("tender", tender_id, "BID_EVALUATION_STARTED", "frozen policy")
 
@@ -749,8 +751,8 @@ class Procura(gl.Contract):
         self._require_buyer(tender)
         if tender.state != TENDER_EVALUATING:
             _fail("evaluation is not active")
-        requirement_ids = self.requirement_ids_by_tender.get(tender_id, DynArray[str]())
-        for bid_id in self.bid_ids_by_tender.get(tender_id, DynArray[str]()):
+        requirement_ids = self.requirement_ids_by_tender.get(tender_id, gl.storage.DynArray[str]())
+        for bid_id in self.bid_ids_by_tender.get(tender_id, gl.storage.DynArray[str]()):
             bid = self.bids[bid_id]
             compliant = True
             for requirement_id in requirement_ids:
@@ -960,7 +962,7 @@ class Procura(gl.Contract):
         self._require_buyer(tender)
         if award.state != "ACCEPTED":
             _fail("award is not accepted")
-        delivery_ids = self.delivery_ids_by_award.get(award_id, DynArray[str]())
+        delivery_ids = self.delivery_ids_by_award.get(award_id, gl.storage.DynArray[str]())
         if len(delivery_ids) == 0 or self.deliveries[delivery_ids[0]].state != DELIVERY_ACCEPTED:
             _fail("milestone requires accepted delivery")
         parts = award.payment_milestones.split(",")
@@ -984,7 +986,7 @@ class Procura(gl.Contract):
         self._require_buyer(tender)
         if award.state != "ACCEPTED" or award.payout_exited or award.refund_exited:
             _fail("award cannot be settled")
-        delivery_ids = self.delivery_ids_by_award.get(award_id, DynArray[str]())
+        delivery_ids = self.delivery_ids_by_award.get(award_id, gl.storage.DynArray[str]())
         if len(delivery_ids) == 0 or self.deliveries[delivery_ids[0]].state != DELIVERY_ACCEPTED:
             _fail("settlement requires accepted delivery")
         self._emit_payout(award, award.escrow_remaining)
@@ -1000,7 +1002,7 @@ class Procura(gl.Contract):
         self._require_buyer(tender)
         if award.refund_exited or award.payout_exited or award.state not in ("ACCEPTED", "DISPUTED"):
             _fail("refund not permitted")
-        delivery_ids = self.delivery_ids_by_award.get(award_id, DynArray[str]())
+        delivery_ids = self.delivery_ids_by_award.get(award_id, gl.storage.DynArray[str]())
         if len(delivery_ids) > 0 and self.deliveries[delivery_ids[0]].state not in (DELIVERY_REJECTED, DELIVERY_DISPUTED):
             _fail("refund requires rejected or disputed delivery")
         amount = award.escrow_remaining
@@ -1044,15 +1046,15 @@ class Procura(gl.Contract):
 
     @gl.public.view
     def get_requirements(self, tender_id: str) -> list:
-        return [self.requirements[i] for i in self.requirement_ids_by_tender.get(tender_id, DynArray[str]())]
+        return [self.requirements[i] for i in self.requirement_ids_by_tender.get(tender_id, gl.storage.DynArray[str]())]
 
     @gl.public.view
     def get_bids(self, tender_id: str) -> list:
-        return [self.bids[i] for i in self.bid_ids_by_tender.get(tender_id, DynArray[str]())]
+        return [self.bids[i] for i in self.bid_ids_by_tender.get(tender_id, gl.storage.DynArray[str]())]
 
     @gl.public.view
     def get_evidence(self, entity_type: str, entity_id: str) -> list:
-        return [self.evidence[i] for i in self.evidence_ids_by_entity.get(self._entity_key(entity_type, entity_id), DynArray[str]())]
+        return [self.evidence[i] for i in self.evidence_ids_by_entity.get(self._entity_key(entity_type, entity_id), gl.storage.DynArray[str]())]
 
     @gl.public.view
     def get_adjudication(self, bid_id: str, requirement_id: str) -> dict:
