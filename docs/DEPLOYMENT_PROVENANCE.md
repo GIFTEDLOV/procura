@@ -43,17 +43,30 @@ Runtime status: `SUPERSEDED_RUNTIME_INCOMPATIBLE`; `create_tender` failed on
 - Execution: `FINISHED_WITH_RETURN` / result `1`
 - Schema: 39 methods; ABI parity PASS
 
-## Qualification boundary
+## Message-fee recovery
 
 The typed SDK recovery preserved hashes as Python strings. The corrected
 create/requirement/freeze/fund path finalized on deployment #4. Funding proved
-`1000000000000000` wei escrow and global liability. The single cancel/refund
-write finalized with `FINISHED_WITH_ERROR` because Studio-dev required a
-message allocation tree for the fee-bearing external transfer. No retry and no
-payout write were sent.
+`1000000000000000` wei escrow and global liability. The first cancel/refund
+write was finalized with `FINISHED_WITH_ERROR`:
+`Mode1MessageFeesRequireGenVMPerEmissionSupport`. Its receipt had no
+allocation tree and canonical readback proved no state mutation.
 
-The recovery pass added a type-safe `genlayer-py 0.19.0rc2` qualification
-helper and a regression test proving numeric-only 64-character hash strings
-remain strings through the SDK calldata encoder. The corrected raw
-`gen_call type=write` create preflight returned `00`; the later blocker is the
-separate message-allocation-tree requirement above.
+The exact required external allocation was derived with
+`genlayer-py 0.19.0rc2`: message type `External`, `onAcceptance=false`, buyer
+recipient, empty data, zero call key, gas limit `500000`, maximum gas price
+`250000000`, and budget `125000000000000` wei. The one authorized same-case
+retry was:
+
+`0x84b76e6176349cd45189a01f99f7edc0a9eb7d94145e0a53eb14ff0f43396b59`
+
+It finalized successfully and emitted exactly `1000000000000000` wei to the
+buyer. The parent receipt returned no separate triggered transaction id,
+consumed `125000000000000` wei of message budget, and settled primary protocol
+fees of `126308750000823` wei. Buyer net delta was
+`873691249999177` wei, exactly gross refund less settled protocol fees.
+Contract balance, escrow/liability, and refund accounting each reconciled to
+the gross `1000000000000000` wei.
+
+No duplicate refund write was sent. Payout qualification remains pending the
+supplier signer; the contract source and deployment remain frozen.

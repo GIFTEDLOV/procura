@@ -17,7 +17,7 @@
     "add_requirement": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "freeze_tender": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "fund_tender": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
-    "cancel_tender": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3"},
+    "cancel_tender": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3","externalMessage":{"gasLimit":"500000","maxGasPrice":"250000000","budget":"125000000000000","data":"0x","onAcceptance":false}},
     "submit_bid": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "add_bid_evidence": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "begin_bid_evaluation": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
@@ -30,7 +30,7 @@
     "begin_inspection": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "adjudicate_delivery": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
     "accept_delivery": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"0","appealRounds":0,"rotationsPerRound":"3"},
-    "refund_buyer": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3"},
-    "settle_award": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3"}
+    "refund_buyer": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3","externalMessage":{"gasLimit":"500000","maxGasPrice":"250000000","budget":"125000000000000","data":"0x","onAcceptance":false}},
+    "settle_award": {"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","executionBudgetPerRound":"25000000000000000","totalMessageFees":"125000000000000","appealRounds":0,"rotationsPerRound":"3","externalMessage":{"gasLimit":"500000","maxGasPrice":"250000000","budget":"125000000000000","data":"0x","onAcceptance":false}}
   }
 }

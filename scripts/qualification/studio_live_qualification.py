@@ -26,6 +26,12 @@ from genlayer_py.abi.transactions import serialize
 from genlayer_py.chains import studio_devnet
 from genlayer_py.contracts.utils import make_calldata_object
 from genlayer_py.transactions.actions import is_successful
+from genlayer_py.transactions import (
+    MESSAGE_ALLOCATION_ROOT_PARENT_INDEX,
+    MessageType,
+    derive_external_message_call_key,
+    encode_external_message_fee_params,
+)
 from web3 import Web3
 
 
@@ -50,6 +56,9 @@ class WriteSpec:
     function_name: str
     kwargs: dict[str, Any]
     value: int = 0
+    external_recipient: str | None = None
+    external_value: int | None = None
+    external_data: str = "0x"
 
 
 @dataclass(frozen=True)
@@ -244,6 +253,61 @@ class StudioLiveQualification:
             raise QualificationError(f"fee profile must not hardcode feeValue: {function_name}")
         return profile
 
+    @staticmethod
+    def _external_allocation(spec: WriteSpec, profile: dict[str, Any]) -> dict[str, Any] | None:
+        if spec.external_recipient is None:
+            return None
+        config = profile.get("externalMessage")
+        if not isinstance(config, dict):
+            raise QualificationError(f"missing externalMessage fee profile for {spec.function_name}")
+        gas_limit = int(config.get("gasLimit", 0))
+        max_gas_price = int(config.get("maxGasPrice", 0))
+        budget = int(config.get("budget", profile.get("totalMessageFees", 0)))
+        if gas_limit <= 0 or max_gas_price <= 0 or budget <= 0:
+            raise QualificationError(f"invalid external message fee profile for {spec.function_name}")
+        if budget != gas_limit * max_gas_price:
+            raise QualificationError(
+                f"external message budget mismatch for {spec.function_name}: "
+                f"budget={budget}, gasLimit*maxGasPrice={gas_limit * max_gas_price}"
+            )
+        declared_message_fees = int(profile.get("totalMessageFees", 0))
+        if declared_message_fees != budget:
+            raise QualificationError(
+                f"totalMessageFees does not equal pinned message budget for {spec.function_name}"
+            )
+        return {
+            "messageType": MessageType.External,
+            "onAcceptance": False,
+            "parentIndex": MESSAGE_ALLOCATION_ROOT_PARENT_INDEX,
+            "recipient": spec.external_recipient,
+            "callKey": derive_external_message_call_key(spec.external_data),
+            "budget": budget,
+            "feeParams": encode_external_message_fee_params(
+                {"gasLimit": gas_limit, "maxGasPrice": max_gas_price}
+            ),
+        }
+
+    def _fee_options(self, spec: WriteSpec, profile: dict[str, Any]) -> dict[str, Any]:
+        appeal_rounds = int(profile.get("appealRounds", 0))
+        rotations = profile.get("rotations")
+        if rotations is None:
+            rotations_per_round = int(profile.get("rotationsPerRound", 3))
+            rotations = [rotations_per_round] * (appeal_rounds + 1)
+        options: dict[str, Any] = {
+            "leaderTimeunitsAllocation": int(profile["leaderTimeunitsAllocation"]),
+            "validatorTimeunitsAllocation": int(profile["validatorTimeunitsAllocation"]),
+            "executionBudgetPerRound": int(profile["executionBudgetPerRound"]),
+            "totalMessageFees": int(profile.get("totalMessageFees", 0)),
+            "appealRounds": appeal_rounds,
+            "rotations": [int(value) for value in rotations],
+        }
+        allocation = self._external_allocation(spec, profile)
+        if allocation is not None:
+            options["messageAllocations"] = [allocation]
+        elif profile.get("messageAllocations") is not None:
+            options["messageAllocations"] = profile["messageAllocations"]
+        return options
+
     def encode_write(self, spec: WriteSpec) -> EncodedWrite:
         self.validate_write(spec)
         args = self._ordered_args(spec.function_name, spec.kwargs)
@@ -268,7 +332,7 @@ class StudioLiveQualification:
                 return int(result[key])
         return None
 
-    def gen_call_write(self, spec: WriteSpec) -> dict[str, Any]:
+    def gen_call_write(self, spec: WriteSpec, fee_quote: dict[str, Any] | None = None) -> dict[str, Any]:
         encoded = self.encode_write(spec)
         request = {
             "from": self.account.address,
@@ -278,6 +342,13 @@ class StudioLiveQualification:
             "value": hex(spec.value),
             "status": "finalized",
         }
+        if fee_quote is not None:
+            request["fees"] = {
+                "distribution": fee_quote["distribution"],
+                "feeValue": fee_quote["feeValue"],
+            }
+            if fee_quote.get("messageAllocations"):
+                request["fees"]["messageAllocations"] = fee_quote["messageAllocations"]
         response = requests.post(
             RPC,
             json={
@@ -351,8 +422,13 @@ class StudioLiveQualification:
             "decodedCalldata": encoded.decoded_calldata,
         }
 
-    def preflight(self, spec: WriteSpec) -> dict[str, Any]:
-        result = self.gen_call_write(spec)
+    def preflight(
+        self,
+        spec: WriteSpec,
+        *,
+        fee_quote: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        result = self.gen_call_write(spec, fee_quote=fee_quote)
         raw_result = result["result"]
         status = raw_result.get("status", {}) if isinstance(raw_result, dict) else {}
         if result["statusCode"] != 0:
@@ -368,22 +444,8 @@ class StudioLiveQualification:
             "argsTypes": [type(value).__name__ for value in self._ordered_args(spec.function_name, spec.kwargs)],
         }
 
-    def quote(self, profile: dict[str, Any]) -> dict[str, Any]:
-        appeal_rounds = int(profile.get("appealRounds", 0))
-        rotations = profile.get("rotations")
-        if rotations is None:
-            rotations_per_round = int(profile.get("rotationsPerRound", 3))
-            rotations = [rotations_per_round] * (appeal_rounds + 1)
-        options = {
-            "leaderTimeunitsAllocation": int(profile["leaderTimeunitsAllocation"]),
-            "validatorTimeunitsAllocation": int(profile["validatorTimeunitsAllocation"]),
-            "executionBudgetPerRound": int(profile["executionBudgetPerRound"]),
-            "totalMessageFees": int(profile.get("totalMessageFees", 0)),
-            "appealRounds": appeal_rounds,
-            "rotations": [int(value) for value in rotations],
-        }
-        if profile.get("messageAllocations") is not None:
-            options["messageAllocations"] = profile["messageAllocations"]
+    def quote(self, profile: dict[str, Any], spec: WriteSpec | None = None) -> dict[str, Any]:
+        options = self._fee_options(spec or WriteSpec("", {}), profile)
         estimate = self.client.estimate_transaction_fees(options=options)
         fee_value = int(estimate["feeValue"])
         distribution = estimate.get("distribution")
@@ -394,6 +456,7 @@ class StudioLiveQualification:
         return {
             "feeValue": fee_value,
             "distribution": distribution,
+            "messageAllocations": estimate.get("messageAllocations", options.get("messageAllocations", [])),
             "profile": profile,
             "estimateOptions": options,
         }
@@ -403,14 +466,20 @@ class StudioLiveQualification:
         spec: WriteSpec,
         *,
         profile: dict[str, Any] | None = None,
+        fee_quote: dict[str, Any] | None = None,
         preflight_result: dict[str, Any] | None = None,
         readback: Callable[[], Any] | None = None,
         label: str,
     ) -> dict[str, Any]:
-        preflight = preflight_result or self.preflight(spec)
         profile = profile or self.fee_profile(spec.function_name)
-        quote = self.quote(profile)
-        fees = {"distribution": quote["distribution"], "feeValue": quote["feeValue"]}
+        quote = fee_quote or self.quote(profile, spec)
+        preflight = preflight_result or self.preflight(spec, fee_quote=quote)
+        fees = {
+            "distribution": quote["distribution"],
+            "feeValue": quote["feeValue"],
+        }
+        if quote.get("messageAllocations"):
+            fees["messageAllocations"] = quote["messageAllocations"]
         args = self._ordered_args(spec.function_name, spec.kwargs)
         canonical = {
             "network": NETWORK,
@@ -429,7 +498,10 @@ class StudioLiveQualification:
             self.journal,
             {"event": "gen_call_preflight", "label": label, **preflight},
         )
-        _append_journal(self.journal, {"event": "fee_quote", "label": label, **canonical})
+        _append_journal(
+            self.journal,
+            {"event": "fee_quote", "label": label, "quote": quote, **canonical},
+        )
 
         tx_hash = self.client.write_contract(
             CONTRACT_ADDRESS,
@@ -513,11 +585,12 @@ def requirement_kwargs(case_id: str, *, semantic: bool = False) -> dict[str, Any
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("schema", "preflight-create", "refund", "payout"))
+    parser.add_argument("mode", choices=("schema", "preflight-create", "refund", "refund-retry", "payout"))
     parser.add_argument("--keystore", required=True, help="Encrypted keystore for the active signer")
     parser.add_argument("--supplier-keystore", help="Encrypted supplier keystore for payout mode")
     parser.add_argument("--case-id")
     parser.add_argument("--resume-create-tx", help="Resume after an already-finalized create_tender hash")
+    parser.add_argument("--failed-cancel-tx", help="Previously failed cancel_tender hash for refund-retry mode")
     parser.add_argument("--supplier-password-env", default=PASSWORD_ENV)
     parser.add_argument("--journal", type=Path)
     return parser
@@ -616,11 +689,20 @@ def run_refund(
         "liability": int(accounting_after_fund["escrow_liability"]),
         "totalRefunds": int(accounting_after_fund["total_buyer_refunds"]),
     }
-    cancel = WriteSpec("cancel_tender", {"tender_id": case_id})
-    cancel_preflight = helper.preflight(cancel)
+    cancel = WriteSpec(
+        "cancel_tender",
+        {"tender_id": case_id},
+        external_recipient=BUYER_ADDRESS,
+        external_value=LIVE_TEST_AMOUNT,
+    )
+    cancel_profile = helper.fee_profile(cancel.function_name)
+    cancel_quote = helper.quote(cancel_profile, cancel)
+    cancel_preflight = helper.preflight(cancel, fee_quote=cancel_quote)
     result["refundPreflight"] = cancel_preflight
     result["refund"] = helper.send_once(
         cancel,
+        profile=cancel_profile,
+        fee_quote=cancel_quote,
         preflight_result=cancel_preflight,
         readback=lambda: {
             "tender": helper.read("get_tender", {"tender_id": case_id}),
@@ -655,6 +737,151 @@ def run_refund(
         raise QualificationError(f"refund accounting/balance mismatch: {checks}")
     result["refundBalances"] = {"before": before_cancel, "after": after_cancel, "checks": checks}
     result["refundExitMethod"] = "cancel_tender (the deployed contract performs the buyer refund here; refund_buyer requires an award and is not legal for this shortest path)"
+    return result
+
+
+def _collect_external_messages(value: Any) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+    if isinstance(value, dict):
+        if "recipient" in value and "value" in value and (
+            "messageType" in value or "message_type" in value or "messageFeeMode" in value
+        ):
+            found.append(value)
+        for item in value.values():
+            found.extend(_collect_external_messages(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.extend(_collect_external_messages(item))
+    return found
+
+
+def _actual_protocol_fee_spent(receipt: dict[str, Any]) -> int:
+    # Studio-dev v0.6 places the authoritative settled fee accounting under
+    # receipt.data.fee_accounting.  Keep the older top-level shape as a
+    # compatibility fallback for receipts produced by earlier SDK versions.
+    data = receipt.get("data") or {}
+    fee_accounting = (
+        data.get("fee_accounting")
+        or receipt.get("fee_accounting")
+        or {}
+    )
+    primary_spent = fee_accounting.get("primary_fee_spent")
+    if primary_spent is not None:
+        return int(primary_spent)
+    paid = fee_accounting.get("paid_fee_value")
+    refunded = fee_accounting.get("total_refunded")
+    if paid is not None and refunded is not None:
+        return int(paid) - int(refunded)
+    fees = receipt.get("fees") or {}
+    consumed = fees.get("consumed") or {}
+    return int(consumed.get("executionConsumed", 0)) + int(consumed.get("messageFeesConsumed", 0))
+
+
+def run_refund_retry(
+    helper: StudioLiveQualification,
+    case_id: str,
+    failed_cancel_tx: str,
+) -> dict[str, Any]:
+    _assert_sender(helper, BUYER_ADDRESS)
+    tender = helper.read("get_tender", {"tender_id": case_id})
+    accounting = helper.read("get_accounting")
+    if tender.get("state") != "FUNDED":
+        raise QualificationError(f"refund retry requires FUNDED state, got {tender.get('state')}")
+    if int(tender.get("escrow_liability", 0)) != LIVE_TEST_AMOUNT:
+        raise QualificationError("refund retry escrow precondition failed")
+    if int(accounting.get("escrow_liability", 0)) != LIVE_TEST_AMOUNT:
+        raise QualificationError("refund retry global liability precondition failed")
+    if int(accounting.get("total_funded", 0)) != LIVE_TEST_AMOUNT:
+        raise QualificationError("refund retry total_funded precondition failed")
+    if int(accounting.get("total_buyer_refunds", 0)) != 0:
+        raise QualificationError("refund retry total_buyer_refunds precondition failed")
+    if int(accounting.get("total_supplier_payouts", 0)) != 0:
+        raise QualificationError("refund retry total_supplier_payouts precondition failed")
+
+    before = {
+        "buyer": helper.balance(BUYER_ADDRESS),
+        "contract": helper.balance(CONTRACT_ADDRESS),
+        "escrow": int(tender["escrow_liability"]),
+        "liability": int(accounting["escrow_liability"]),
+        "totalRefunds": int(accounting["total_buyer_refunds"]),
+    }
+    cancel = WriteSpec(
+        "cancel_tender",
+        {"tender_id": case_id},
+        external_recipient=BUYER_ADDRESS,
+        external_value=LIVE_TEST_AMOUNT,
+    )
+    profile = helper.fee_profile(cancel.function_name)
+    quote = helper.quote(profile, cancel)
+    preflight = helper.preflight(cancel, fee_quote=quote)
+    result = helper.send_once(
+        cancel,
+        profile=profile,
+        fee_quote=quote,
+        preflight_result=preflight,
+        readback=lambda: {
+            "tender": helper.read("get_tender", {"tender_id": case_id}),
+            "accounting": helper.read("get_accounting"),
+            "audit": helper.read("get_audit_events"),
+        },
+        label="refund.cancel_tender.retry",
+    )
+    receipt = result["receipt"]
+    fee_spent = _actual_protocol_fee_spent(receipt)
+    settled = helper.wait_for_balance_deltas(
+        {
+            BUYER_ADDRESS: (before["buyer"], LIVE_TEST_AMOUNT - fee_spent),
+            CONTRACT_ADDRESS: (before["contract"], -LIVE_TEST_AMOUNT),
+        },
+        label="refund-retry",
+    )
+    after_readback = result["readback"]
+    after = {
+        "buyer": settled[BUYER_ADDRESS],
+        "contract": settled[CONTRACT_ADDRESS],
+        "escrow": int(after_readback["tender"]["escrow_liability"]),
+        "liability": int(after_readback["accounting"]["escrow_liability"]),
+        "totalRefunds": int(after_readback["accounting"]["total_buyer_refunds"]),
+    }
+    messages = _collect_external_messages(receipt)
+    matching = [
+        message for message in messages
+        if str(message.get("recipient", "")).lower() == BUYER_ADDRESS.lower()
+        and int(message.get("value", 0)) == LIVE_TEST_AMOUNT
+    ]
+    checks = {
+        "externalMessageValue": LIVE_TEST_AMOUNT if matching else 0,
+        "contractDelta": before["contract"] - after["contract"],
+        "escrowDelta": before["escrow"] - after["escrow"],
+        "liabilityDelta": before["liability"] - after["liability"],
+        "refundAccountingDelta": after["totalRefunds"] - before["totalRefunds"],
+    }
+    if any(value != LIVE_TEST_AMOUNT for value in checks.values()):
+        raise QualificationError(f"refund retry proof mismatch: {checks}")
+    result["failedCancelTx"] = failed_cancel_tx
+    result["before"] = before
+    result["after"] = after
+    result["buyerNetBalanceDelta"] = after["buyer"] - before["buyer"]
+    result["protocolFeesSpentByBuyer"] = fee_spent
+    result["externalMessages"] = messages
+    result["triggeredTransactions"] = receipt.get("triggered_transactions", [])
+    fee_accounting = (
+        (receipt.get("data") or {}).get("fee_accounting")
+        or receipt.get("fee_accounting")
+        or {}
+    )
+    consumed = (receipt.get("fees") or {}).get("consumed") or {}
+    result["messageFeesBudget"] = (
+        fee_accounting.get("message_fee_budget")
+        or consumed.get("messageFeesBudgetTotal")
+    )
+    result["messageFeesConsumed"] = (
+        fee_accounting.get("message_fee_consumed")
+        or consumed.get("messageFeesConsumed")
+    )
+    result["primaryFeeSpent"] = fee_accounting.get("primary_fee_spent")
+    result["allocationMatched"] = bool(matching)
+    result["checks"] = checks
     return result
 
 
@@ -817,11 +1044,20 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
         "award": buyer.read("get_payments", {"award_id": award_id}),
         "accounting": buyer.read("get_accounting"),
     }
-    settle_spec = WriteSpec("settle_award", {"award_id": award_id})
-    settle_preflight = buyer.preflight(settle_spec)
+    settle_spec = WriteSpec(
+        "settle_award",
+        {"award_id": award_id},
+        external_recipient=SUPPLIER_ADDRESS,
+        external_value=LIVE_TEST_AMOUNT,
+    )
+    settle_profile = buyer.fee_profile(settle_spec.function_name)
+    settle_quote = buyer.quote(settle_profile, settle_spec)
+    settle_preflight = buyer.preflight(settle_spec, fee_quote=settle_quote)
     result["settlePreflight"] = settle_preflight
     result["settle"] = buyer.send_once(
         settle_spec,
+        profile=settle_profile,
+        fee_quote=settle_quote,
         preflight_result=settle_preflight,
         readback=lambda: {
             "award": buyer.read("get_payments", {"award_id": award_id}),
@@ -893,6 +1129,10 @@ def main() -> int:
         return 0 if preflight["statusCode"] == 0 else 1
     if args.mode == "refund":
         result = run_refund(helper, case_id, resume_create_tx=args.resume_create_tx)
+    elif args.mode == "refund-retry":
+        if not args.failed_cancel_tx:
+            raise QualificationError("--failed-cancel-tx is required for refund-retry mode")
+        result = run_refund_retry(helper, case_id, args.failed_cancel_tx)
     else:
         if not args.supplier_keystore:
             raise QualificationError("--supplier-keystore is required for payout mode")
