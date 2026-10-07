@@ -121,6 +121,34 @@ def _load_account(keystore_path: Path, password: str):
     return Account.from_key(private_key)
 
 
+def _load_unlocked_cli_account(account_name: str):
+    """Load an already-unlocked GenLayer CLI account from Windows keychain.
+
+    The CLI caches unlocked keys under the ``genlayer-cli`` generic
+    credential service.  The key is consumed only in process memory to create
+    the SDK account object; it is never printed, journaled, or written to a
+    file.  This keeps qualification aligned with ``genlayer account list``
+    without changing the active global account.
+    """
+    try:
+        import win32cred
+    except ImportError as exc:  # pragma: no cover - platform dependency
+        raise QualificationError("Windows credential manager support is unavailable") from exc
+    target = f"genlayer-cli/account:{account_name}"
+    try:
+        credential = win32cred.CredRead(target, win32cred.CRED_TYPE_GENERIC)
+    except Exception as exc:  # pragma: no cover - OS credential manager path
+        raise QualificationError(f"unlocked CLI account is unavailable: {account_name}") from exc
+    blob = credential.get("CredentialBlob")
+    if not blob:
+        raise QualificationError(f"unlocked CLI account has no cached credential: {account_name}")
+    private_key = blob.decode("utf-8") if isinstance(blob, bytes) else str(blob)
+    try:
+        return Account.from_key(private_key)
+    finally:
+        private_key = ""
+
+
 class StudioLiveQualification:
     def __init__(self, account: Any, journal: Path | None = None):
         self.account = account
@@ -586,7 +614,9 @@ def requirement_kwargs(case_id: str, *, semantic: bool = False) -> dict[str, Any
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("schema", "preflight-create", "refund", "refund-retry", "payout"))
-    parser.add_argument("--keystore", required=True, help="Encrypted keystore for the active signer")
+    parser.add_argument("--account", default="deployer", help="Explicit unlocked GenLayer CLI account name")
+    parser.add_argument("--keystore", help="Encrypted keystore fallback for the active signer")
+    parser.add_argument("--supplier-account", default="player2", help="Explicit unlocked supplier CLI account name")
     parser.add_argument("--supplier-keystore", help="Encrypted supplier keystore for payout mode")
     parser.add_argument("--case-id")
     parser.add_argument("--resume-create-tx", help="Resume after an already-finalized create_tender hash")
@@ -603,8 +633,19 @@ def _password(env_name: str) -> str:
     return value
 
 
-def _load_helper(keystore: str, password_env: str, journal: Path | None) -> StudioLiveQualification:
-    account = _load_account(Path(keystore), _password(password_env))
+def _load_helper(
+    keystore: str | None,
+    password_env: str,
+    journal: Path | None,
+    *,
+    account_name: str | None = None,
+) -> StudioLiveQualification:
+    if account_name:
+        account = _load_unlocked_cli_account(account_name)
+    elif keystore:
+        account = _load_account(Path(keystore), _password(password_env))
+    else:
+        raise QualificationError("an explicit account name or encrypted keystore is required")
     return StudioLiveQualification(account, journal)
 
 
@@ -1094,7 +1135,12 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
 
 def main() -> int:
     args = _parser().parse_args()
-    helper = _load_helper(args.keystore, args.supplier_password_env, args.journal)
+    helper = _load_helper(
+        args.keystore,
+        args.supplier_password_env,
+        args.journal,
+        account_name=args.account,
+    )
     if args.mode == "schema":
         print(json.dumps(_json_safe(helper.schema), sort_keys=True))
         return 0
@@ -1134,9 +1180,12 @@ def main() -> int:
             raise QualificationError("--failed-cancel-tx is required for refund-retry mode")
         result = run_refund_retry(helper, case_id, args.failed_cancel_tx)
     else:
-        if not args.supplier_keystore:
-            raise QualificationError("--supplier-keystore is required for payout mode")
-        supplier = _load_helper(args.supplier_keystore, args.supplier_password_env, args.journal)
+        supplier = _load_helper(
+            args.supplier_keystore,
+            args.supplier_password_env,
+            args.journal,
+            account_name=args.supplier_account,
+        )
         result = run_payout(helper, supplier, case_id)
     print(json.dumps(_json_safe(result), sort_keys=True))
     return 0
