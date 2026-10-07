@@ -68,5 +68,22 @@ fees of `126308750000823` wei. Buyer net delta was
 Contract balance, escrow/liability, and refund accounting each reconciled to
 the gross `1000000000000000` wei.
 
-No duplicate refund write was sent. Payout qualification remains pending the
-supplier signer; the contract source and deployment remain frozen.
+No duplicate refund write was sent. The supplier signer is the already-unlocked
+local `player2` account at `0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8`.
+
+## Payout qualification stop
+
+The controlled payout case `PROCURA-LIVE-PAYOUT-20261007T164514Z` finalized its
+setup, supplier bid/evidence, and buyer evaluation-start writes. The exact raw
+`gen_call type=write` preflight for `adjudicate_requirement` returned VM status
+code `2` before any transaction was submitted:
+
+`AttributeError: module 'genlayer.vm' has no attribute 'run_nondet_unsafe'`
+
+This is a defect in the frozen deployed runtime/API compatibility boundary,
+not a client serialization issue. The case is left canonically
+`EVALUATING` with `1000000000000000` wei escrow and liability. No unsafe retry,
+award, delivery, inspection, settlement, or payout transaction was sent. The
+same symbol is used by delivery adjudication, so no alternate payout path was
+attempted. The canonical contract remains frozen at the SHA above and no
+redeployment was performed.

@@ -12,17 +12,20 @@
 
 ## Release preflight
 
-- Direct contract tests: 143 PASS, 1 SKIPPED.
+- Direct contract tests: 144 PASS, 1 SKIPPED.
 - Skip reason: the installed Windows/Python 3.14 GenLayer direct runner raises
   `DecodingError` while injecting v0.6 message context; this is documented
   environment provenance and was not repaired.
 - Adversarial: 44 PASS minimum met.
 - Property: 12 PASS minimum met.
 - Mutation: 24/24 killed.
-- Frontend unit/integration: 46 PASS.
+- Frontend unit/integration: 54 PASS.
 - Playwright: 16 PASS; console errors 0; horizontal overflow 0.
-- Typecheck, build, interface parity, transaction recovery, GenVM lint, and
-  secret scan: PASS.
+- Typecheck, build, interface parity, transaction recovery, and secret scan:
+  PASS. The installed `genvm-linter 0.11.1rc2` still recognizes only the
+  legacy bare `@allow_storage` spelling and reports nine E014 false positives
+  against the target-proven `@gl.storage.allow` contract API; production source
+  was not regressed to satisfy that stale linter.
 - Focused fee-allocation regression: PASS.
 
 ## Runtime qualification
@@ -37,7 +40,21 @@
 - Same-case cancel retry: PASS with the required external allocation. Gross
   buyer refund and contract/accounting deltas are exact; buyer net delta is
   reconciled after protocol fees.
-- Payout: not attempted because supplier signer access is unavailable.
+- Payout setup: finalized with explicit `deployer` buyer and `player2` supplier
+  accounts. Adjudication preflight then stopped with the frozen deployed
+  runtime error `gl.vm.run_nondet_unsafe` missing; no payout settlement was
+  broadcast.
+
+## Frontend live-write boundary
+
+- `genlayer-js` 2.0.0-rc.1 is used by the adapter against Studio-dev 61997.
+- Focused live-adapter tests cover schema-ordered typed actions, numeric-only
+  hash strings, buyer/supplier role guards, wrong-network rejection, canonical
+  refund/supplier message allocations, non-message writes, one-shot broadcast,
+  and same-hash persistence.
+- Controlled-demo browser screens do not claim a wallet connection or live
+  state. Full browser broadcast qualification is intentionally not run after
+  the SDK payout stop.
 
 No contract source, ABI, state machine, accounting policy, or deployment was
 changed during fee-allocation recovery.

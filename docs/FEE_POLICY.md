@@ -30,3 +30,10 @@ The first cancel attempt demonstrated the failure mode:
 `Mode1MessageFeesRequireGenVMPerEmissionSupport`. The successful same-case
 retry used the allocation above, consumed the full message budget, and
 finalized the buyer's gross refund.
+
+The frontend adapter consumes the same resource profile through
+`frontend/src/lib/feeProfile.ts`. It derives the external allocation recipient
+from the frozen buyer or awarded supplier context, never from a caller-entered
+address, and obtains the current `feeValue` from the SDK at signing time. The
+supplier payout allocation was not consumed on-chain because the frozen
+contract stopped at semantic adjudication before settlement preflight.

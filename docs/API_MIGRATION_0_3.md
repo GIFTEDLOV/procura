@@ -54,3 +54,16 @@ finalized with `FINISHED_WITH_ERROR`:
 `Mode1MessageFeesRequireGenVMPerEmissionSupport: fee-bearing GenVM messages
 require a message allocation tree`. No refund effect was emitted and payout
 qualification was not started. No retry was sent.
+
+## Final qualification update
+
+The later fee-allocation recovery completed the refund case successfully with
+the SDK-derived external allocation documented in `docs/FEE_POLICY.md`. The
+supplier signer was then confirmed available as the unlocked local `player2`
+account, so a new controlled payout case was created and funded. Its supplier
+bid/evidence and buyer evaluation-start writes finalized, but the first real
+adjudication preflight returned VM status code `2` because the frozen deployed
+contract calls `gl.vm.run_nondet_unsafe`, which is absent from the Studio-dev
+runtime. No adjudication transaction, award, delivery, inspection, settlement,
+or payout was broadcast after that failure. This is a frozen deployment/runtime
+compatibility blocker, not a client serialization workaround opportunity.

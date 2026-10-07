@@ -95,10 +95,35 @@ matching allocation tree for message-emitting writes. It never hardcodes a
 live `feeValue`.
 
 The numeric-hash, storage-allocation, and fee-allocation regression tests pass.
-Payout qualification has not been attempted: the supplier-authorized signer
-for `0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8` is not available in the
-workspace. No supplier key was guessed or printed, and no payout case or
-payout transaction was created.
+The local GenLayer CLI account list and Windows credential manager both prove
+that account `player2` is already unlocked for supplier
+`0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8`; no password prompt or unlock
+operation was needed. The buyer path used account `deployer` explicitly.
 
-Release status: NOT READY FOR PUBLICATION until supplier payout and global
-accounting are proven.
+## Payout qualification attempt
+
+The controlled payout case was created as
+`PROCURA-LIVE-PAYOUT-20261007T164514Z`. These writes finalized successfully:
+
+- `create_tender`: `0x2cfef235cfee7649f5ad5d38f235a5303c6c4545f5485c984d4b2dd3e1c7717d`
+- `add_requirement`: `0xdbe44789e4a574d09d7e64fd16c76a37e5ac0a65a782339e8f0af2b608854b6f`
+- `freeze_tender`: `0xeba58231622a43405a3e653612acb7ed30aa0c5890ca8cebffbb45d2a0a6e7e7`
+- `fund_tender`: `0x69996f864e44f23912be2fa9f827d5b8c7f2c618e72317e823a5b46ade754556`
+- `submit_bid` from `player2`: `0xeff4b2928f4825967d4d641b3c4c6cab7eee104fde1c1f42d8836ef8f57cfbe8`
+- `add_bid_evidence` from `player2`: `0x0f1c8cec94e2444463654b5f5fa4f717d6e5f38fda135acabea1f6f877be1db2`
+- `begin_bid_evaluation` from `deployer`: `0x31e4766a2cdd1b0947480a1e29711ceff29eb9369388774e10e81475ac5ab11d`
+
+The first real adjudication preflight was intentionally stopped before
+broadcast. Studio-dev returned VM status code `2` with:
+
+`AttributeError: module 'genlayer.vm' has no attribute 'run_nondet_unsafe'. Did you mean: 'run_nondet_default'?`
+
+The error originates in the frozen deployed contract's semantic bid vector.
+The case remains `EVALUATING`, with `1000000000000000` wei escrow and global
+liability. No award, acceptance, delivery, inspection, settlement, or duplicate
+adjudication transaction was sent. The delivery adjudication path contains the
+same frozen runtime symbol and is therefore not a safe alternative.
+
+The frozen contract and deployment were not modified or redeployed. Payout
+qualification and final global accounting remain BLOCKED by this deployed
+runtime/API incompatibility. Release status: NOT READY FOR PUBLICATION.

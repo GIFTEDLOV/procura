@@ -32,5 +32,8 @@ successful parent receipt emitted exactly that amount to the frozen buyer.
 Contract balance, escrow liability, and the refund accounting total reconciled
 to the same gross amount. The buyer's net wallet increase was lower by the
 settled protocol fee of `126308750000823` wei because the buyer submitted the
-cancel transaction. Supplier payout remains unqualified pending supplier
-signer access.
+cancel transaction. The supplier signer was later confirmed available as the
+unlocked `player2` account, but the controlled payout case stopped at semantic
+adjudication because the frozen deployment calls missing
+`gl.vm.run_nondet_unsafe`. No payout value exit occurred, so no payout or final
+accounting closure is claimed.

@@ -28,12 +28,21 @@ used the exact SDK-derived buyer allocation and finalized successfully. Gross
 refund, escrow, liability, and accounting proofs passed; buyer net balance was
 reconciled after settled protocol fees.
 
-Payout qualification has not been attempted because the supplier signer for
-`0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8` is not available in the current
-workspace. No contract source or ABI change is involved, and no new refund case
-was created.
+The supplier signer is available as the already-unlocked local account
+`player2`, and was used for the controlled payout bid/evidence writes. The
+controlled payout case reached `EVALUATING`, but the first adjudication
+preflight failed with the frozen deployed contract error
+`gl.vm.run_nondet_unsafe` missing from `gl.vm`. No adjudication transaction was
+broadcast after that error, and no contract source or ABI change is involved.
 
-Release gate: NOT READY FOR PUBLICATION.
+The frontend now has a typed `genlayer-js` live-write boundary with explicit
+Studio-dev network/role checks, message allocations, one-shot broadcast, hash
+persistence/recovery, finality/execution checks, and canonical-readback hooks.
+The existing screens remain visibly CONTROLLED DEMO until a wallet is attached;
+they do not invent LIVE state.
+
+Release gate: NOT READY FOR PUBLICATION because supplier payout and final
+accounting closure are not proven under the frozen deployment.
 
 ## Provenance
 
