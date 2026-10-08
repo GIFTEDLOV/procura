@@ -3,7 +3,7 @@
   "schemaVersion": "PROCUREMENT_V1",
   "contract": "contracts/Procura.py",
   "contractSha256": "95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed",
-  "candidateContractSha256": "30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069",
+  "candidateContractSha256": "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde",
   "network": "studio-dev",
   "chainId": 61997,
   "canonicalContract": "0xE9f1319e98F25E301ee167aF41f82E25cC4f8770",
@@ -60,6 +60,8 @@
     "consensusResult": "MAJORITY_DISAGREE",
     "stateMutationOccurred": false,
     "legalRecoveryAvailable": false,
+    "deliveryLivenessDefect": false,
+    "deliveryReplayGuardAddedLocally": true,
     "localFixApplied": true,
     "redeploymentPerformed": false
   },

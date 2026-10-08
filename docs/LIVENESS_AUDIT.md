@@ -53,8 +53,12 @@ This gives the required behavior:
   transition was added;
 - the canonical deployment was not modified or redeployed.
 
+The same guard is applied to `adjudicate_delivery`. A failed delivery
+adjudication remains retryable while `UNDER_INSPECTION`, but a successful
+delivery result cannot be overwritten before acceptance or rejection.
+
 Candidate source SHA-256:
-`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`.
+`daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`.
 
 ## Regression matrix
 
@@ -64,6 +68,8 @@ Candidate source SHA-256:
 | Undetermined semantic call, then retry | Retry remains legal because no record was committed |
 | Failed transport/runtime call | No semantic verdict or adjudication record |
 | Changed requirement identity | Separate frozen requirement identity; no overwrite |
+| Failed delivery adjudication | Retry remains legal while inspection is active |
+| Successful delivery adjudication, then second call | Rejected by existing inspection adjudication identity |
 | Finalization before all records exist | Rejected |
 | Buyer cancellation from `EVALUATING` | Rejected; no discretionary refund path |
 | Payout/refund exclusivity | Unchanged |

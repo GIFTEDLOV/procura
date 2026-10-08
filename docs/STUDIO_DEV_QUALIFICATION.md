@@ -193,8 +193,7 @@ therefore a `CLASS_C_CONTRACT_LIVENESS_DEFECT`, not merely an evidence-quality
 liability, and publication is blocked.
 
 The canonical Deployment #5 remains unchanged. The local candidate adds only a
-pre-semantic-call guard on the existing requirement adjudication identity,
-leaving failed/undetermined attempts retryable while rejecting a second call
-after a committed successful record. Its source SHA-256 is
-`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`; it was
-not deployed.
+pre-semantic-call guards on the existing requirement and delivery adjudication
+identities, leaving failed/undetermined attempts retryable while rejecting a
+second call after a committed successful record. Its source SHA-256 is
+recorded in the provenance manifest; it was not deployed.

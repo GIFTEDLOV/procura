@@ -887,9 +887,11 @@ class Procura(gl.contract.Contract):
         if delivery.state != DELIVERY_UNDER_INSPECTION:
             _fail("inspection precondition failed")
         _hash(evidence_snapshot_root, "evidence_snapshot_root")
+        adjudication_id = delivery_id + ":inspection"
+        if adjudication_id in self.delivery_adjudications:
+            _fail("delivery already adjudicated")
         vector = self._semantic_delivery_vector(award, delivery, evidence_snapshot_root)
         verdict = _canonical_delivery_verdict(vector)
-        adjudication_id = delivery_id + ":inspection"
         self.delivery_adjudications[adjudication_id] = DeliveryAdjudication(
             adjudication_id, delivery_id, award.awarded_specification, delivery.delivered_items,
             evidence_snapshot_root, vector["awarded_specification_matched"], vector["authorized_substitution"],

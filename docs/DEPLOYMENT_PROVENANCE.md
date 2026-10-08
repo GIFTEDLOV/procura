@@ -187,8 +187,8 @@ not accept `EVALUATING`, and no expiry/recovery method exists. The case has no
 legal value exit. This is `CLASS_C_CONTRACT_LIVENESS_DEFECT`, so publication is
 blocked and the canonical contract remains untouched.
 
-The local, undeployed candidate adds a pre-semantic-call guard on the existing
-`bid_id:requirement_id` adjudication identity. Failed or undetermined semantic
-transactions commit no record and remain retryable; once a successful record
-exists, a second call is rejected. Candidate SHA-256:
-`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`.
+The local, undeployed candidate adds pre-semantic-call guards on the existing
+requirement and delivery adjudication identities. Failed or undetermined
+semantic transactions commit no record and remain retryable; once a successful
+record exists, a second call is rejected. Candidate SHA-256 is recorded in the
+provenance manifest.

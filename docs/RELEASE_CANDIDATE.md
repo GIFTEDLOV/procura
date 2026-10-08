@@ -15,8 +15,9 @@ Publication is therefore `NOT READY`. The canonical contract and its deployed
 source SHA remain untouched. A local candidate adds only the existing
 `(bid_id, requirement_id)` success-record guard before the semantic call, so a
 failed/undetermined call does not consume the identity while a successful
-record remains immutable. Candidate source SHA:
-`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`.
+record remains immutable. The same guard also closes delivery-result
+overwrites before acceptance/rejection. Candidate source SHA is recorded in
+the provenance manifest.
 No redeployment, GitHub push, Vercel deployment, or Portal submission was
 performed.
 
