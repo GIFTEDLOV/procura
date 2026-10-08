@@ -110,6 +110,10 @@ def _hash_fixture(label: str) -> str:
     return hashlib.sha256(label.encode("utf-8")).hexdigest()
 
 
+def _is_missing_adjudication_error(exc: Exception) -> bool:
+    return str(exc) == "gen_call failed (code=-32000): execution failed"
+
+
 def _utc_case_id(prefix: str) -> str:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return f"PROCURA-LIVE-{prefix}-{stamp}"
@@ -568,6 +572,50 @@ class StudioLiveQualification:
         )
         return result
 
+    def send_semantic_once_or_retry(
+        self,
+        spec: WriteSpec,
+        *,
+        record_readback: Callable[[], Any],
+        processing_state_readback: Callable[[], Any],
+        processing_states: set[str],
+        readback: Callable[[], Any] | None = None,
+        label: str,
+    ) -> dict[str, Any]:
+        """Send one semantic attempt only when canonical state permits it.
+
+        A finalized transaction is not treated as a business result. Retry
+        eligibility is determined solely from canonical adjudication state and
+        the still-processing state of the enclosing tender/delivery.
+        """
+        try:
+            record = record_readback()
+        except Exception as exc:
+            if not _is_missing_adjudication_error(exc):
+                raise QualificationError(
+                    f"{label} cannot determine canonical adjudication state: {exc}"
+                ) from exc
+            record = None
+        if record is not None:
+            raise QualificationError(f"{label} canonical result already exists; retry refused")
+
+        processing = processing_state_readback()
+        state = processing.get("state") if isinstance(processing, dict) else None
+        if state not in processing_states:
+            raise QualificationError(
+                f"{label} retry requires processing state {sorted(processing_states)}, got {state}"
+            )
+        _append_journal(
+            self.journal,
+            {
+                "event": "semantic_retry_eligibility",
+                "label": label,
+                "canonicalRecordExists": False,
+                "processingState": state,
+            },
+        )
+        return self.send_once(spec, readback=readback, label=label)
+
 
 def create_tender_kwargs(case_id: str, *, budget: int = LIVE_TEST_AMOUNT) -> dict[str, Any]:
     return {
@@ -994,12 +1042,18 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
         readback=lambda: buyer.read("get_tender", {"tender_id": case_id}),
         label="payout.begin_bid_evaluation",
     )
-    result["adjudication"] = buyer.send_once(
+    result["adjudication"] = buyer.send_semantic_once_or_retry(
         WriteSpec("adjudicate_requirement", {
             "bid_id": bid_id,
             "requirement_id": f"{case_id}:REQ-1",
             "evidence_snapshot_root": _hash_fixture(f"{case_id}:bid-snapshot"),
         }),
+        record_readback=lambda: buyer.read("get_adjudication", {
+            "bid_id": bid_id,
+            "requirement_id": f"{case_id}:REQ-1",
+        }),
+        processing_state_readback=lambda: buyer.read("get_tender", {"tender_id": case_id}),
+        processing_states={"EVALUATING"},
         readback=lambda: buyer.read("get_adjudication", {
             "bid_id": bid_id,
             "requirement_id": f"{case_id}:REQ-1",
@@ -1065,11 +1119,14 @@ def run_payout(buyer: StudioLiveQualification, supplier: StudioLiveQualification
         readback=lambda: buyer.read("get_delivery", {"delivery_id": delivery_id}),
         label="payout.begin_inspection",
     )
-    result["deliveryAdjudication"] = buyer.send_once(
+    result["deliveryAdjudication"] = buyer.send_semantic_once_or_retry(
         WriteSpec("adjudicate_delivery", {
             "delivery_id": delivery_id,
             "evidence_snapshot_root": _hash_fixture(f"{case_id}:delivery-snapshot"),
         }),
+        record_readback=lambda: buyer.read("get_delivery_adjudication", {"delivery_id": delivery_id}),
+        processing_state_readback=lambda: buyer.read("get_delivery", {"delivery_id": delivery_id}),
+        processing_states={"UNDER_INSPECTION"},
         readback=lambda: buyer.read("get_delivery_adjudication", {"delivery_id": delivery_id}),
         label="payout.adjudicate_delivery",
     )
