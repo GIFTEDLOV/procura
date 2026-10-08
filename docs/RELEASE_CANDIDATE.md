@@ -5,14 +5,16 @@ review.
 
 ## Publication blocker: semantic evaluation liveness
 
-The final liveness audit found a real contract defect in the canonical
-Deployment #5: a funded tender can enter `EVALUATING`, receive an undetermined
-semantic transaction with no committed adjudication, and have no legal retry,
-cancel, expiry, refund, or settlement path. Classification:
-`CLASS_C_CONTRACT_LIVENESS_DEFECT`.
+The final liveness audit reclassified the stranded tuple as
+`CLASS_B_QUALIFICATION_SCRIPT_BUG`: a funded tender can enter `EVALUATING`,
+receive an undetermined semantic transaction with no committed adjudication,
+and has no direct terminal value exit, but the canonical contract permits the
+same tuple to be retried because no adjudication record exists. The one-shot
+qualification flow incorrectly stopped instead of retrying.
 
-Publication is therefore `NOT READY`. The canonical contract and its deployed
-source SHA remain untouched. A local candidate adds only the existing
+Publication is therefore `NOT READY` because the canonical contract permits
+successful semantic records to be overwritten before finalization/acceptance.
+The canonical contract and its deployed source SHA remain untouched. A local candidate adds only the existing
 `(bid_id, requirement_id)` success-record guard before the semantic call, so a
 failed/undetermined call does not consume the identity while a successful
 record remains immutable. The same guard also closes delivery-result

@@ -32,8 +32,9 @@
 - JSON response regression: PASS; focused contract/adversarial semantic tests
   pass, including the two native JSON calls and two default nondet calls.
 - Liveness regression: PASS locally for the undeployed candidate. The
-  canonical Deployment #5 remains blocked because its `EVALUATING` case has no
-  legal recovery path.
+  canonical Deployment #5 case has a retry recovery path when no result is
+  committed, but remains blocked for publication until successful-result replay
+  protection is deployed and requalified.
 
 ## Runtime qualification
 

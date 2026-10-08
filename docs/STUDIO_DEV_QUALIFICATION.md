@@ -188,9 +188,11 @@ The final payout tuple was audited read-only after the above qualification.
 Although its `MAJORITY_DISAGREE` result is a legitimate failed semantic
 execution outcome, it did not commit an adjudication record. The tender is
 still `EVALUATING`, `finalize_bid_evaluation` cannot proceed, `cancel_tender`
-does not permit that state, and no expiry/recovery method exists. It is
-therefore a `CLASS_C_CONTRACT_LIVENESS_DEFECT`, not merely an evidence-quality
-liability, and publication is blocked.
+does not permit that state, and no expiry/recovery method exists. The direct
+value exit is unavailable, but the pre-fix contract permits retry because no
+adjudication identity was committed. The one-shot qualification flow blocked
+that retry, so the liveness classification is
+`CLASS_B_QUALIFICATION_SCRIPT_BUG`.
 
 The canonical Deployment #5 remains unchanged. The local candidate adds only a
 pre-semantic-call guards on the existing requirement and delivery adjudication

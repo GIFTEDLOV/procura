@@ -184,8 +184,11 @@ finished with lifecycle outcome `UNDETERMINED` and consensus result
 Source inspection proved that `begin_bid_evaluation` enters `EVALUATING`,
 `finalize_bid_evaluation` requires a stored adjudication, `cancel_tender` does
 not accept `EVALUATING`, and no expiry/recovery method exists. The case has no
-legal value exit. This is `CLASS_C_CONTRACT_LIVENESS_DEFECT`, so publication is
-blocked and the canonical contract remains untouched.
+direct terminal value exit, but the canonical pre-fix adjudication function
+writes no identity until semantic success, so the same tuple is retryable.
+The one-shot qualification flow blocked that retry. This is
+`CLASS_B_QUALIFICATION_SCRIPT_BUG` for liveness; publication remains blocked
+by the separate successful-result replay gap.
 
 The local, undeployed candidate adds pre-semantic-call guards on the existing
 requirement and delivery adjudication identities. Failed or undetermined

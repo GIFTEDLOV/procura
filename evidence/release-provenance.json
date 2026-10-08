@@ -37,7 +37,7 @@
       "caseId": "PROCURA-FINAL-PAYOUT-20261008T101500Z",
       "status": "EVALUATING",
       "amount": "1000000000000000",
-      "exit": "NO_CURRENT_TERMINAL_ACTION; NO_DUPLICATE_ADJUDICATION"
+      "exit": "RETRY_ADJUDICATION_ALLOWED; NO_DIRECT_TERMINAL_ACTION"
     }
   ],
   "historicalDeployment4": "0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA",
@@ -50,7 +50,7 @@
   "runtimeRpc": "https://studio-dev.genlayer.com/api",
   "runtimeStatus": "QUALIFIED_STUDIO_DEV",
   "livenessAudit": {
-    "classification": "CLASS_C_CONTRACT_LIVENESS_DEFECT",
+    "classification": "CLASS_B_QUALIFICATION_SCRIPT_BUG",
     "publicationReady": false,
     "canonicalContractChanged": false,
     "canonicalContractSha256": "95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed",
@@ -59,7 +59,9 @@
     "lifecycleOutcome": "UNDETERMINED",
     "consensusResult": "MAJORITY_DISAGREE",
     "stateMutationOccurred": false,
-    "legalRecoveryAvailable": false,
+    "legalRecoveryAvailable": true,
+    "canonicalRetryWithoutRecord": true,
+    "canonicalSuccessfulReplayProtection": false,
     "deliveryLivenessDefect": false,
     "deliveryReplayGuardAddedLocally": true,
     "localFixApplied": true,
@@ -71,6 +73,6 @@
   "studioDevDeploymentPerformed": true,
   "vercelPerformed": false,
   "liveWritesPerformed": true,
-  "publicationStatus": "BLOCKED_CONTRACT_LIVENESS_DEFECT",
+  "publicationStatus": "BLOCKED_SEMANTIC_REPLAY_PROTECTION",
   "portalSubmitted": false
 }
