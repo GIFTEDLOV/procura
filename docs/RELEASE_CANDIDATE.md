@@ -76,6 +76,12 @@ The JSON semantic probe, one-wei semantic smokes, final refund, and fresh
 awardable payout all passed their required runtime/value proofs. The failed
 diagnostic payout tuple remains accounted escrow and was not retried.
 
+The one-wei delivery smoke was subsequently closed through its already
+accepted delivery and settled once; its acceptance and settlement hashes are
+recorded in the provenance manifest. The only remaining contract liability is
+the explicitly attributed one-wei requirement smoke plus the failed payout
+tuple's funded escrow.
+
 Final local gates: Python contract/qualification suite `154 passed, 1
 skipped`, frontend unit `54 passed`, Playwright `16 passed`, typecheck PASS,
 build PASS, schema/interface parity PASS, transaction recovery PASS, and

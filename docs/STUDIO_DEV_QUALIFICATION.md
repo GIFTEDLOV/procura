@@ -172,8 +172,12 @@ the final liability. This is a business-consensus/evidence outcome, not a
 runtime compatibility failure and not a reason to redeploy.
 
 Final accounting is conserved:
-`3000000000000002 - 1000000000000000 - 1000000000000000 = 1000000000000002`,
+`3000000000000002 - 1000000000000001 - 1000000000000000 = 1000000000000001`,
 matching both on-chain escrow liability and contract native balance. Bond
-liability is zero. Double-refund, payout-after-refund, double-payout, and
-refund-after-payout guards all returned nonzero preflight failures without
-broadcasting.
+liability is zero. The one-wei delivery smoke was legally closed through
+acceptance `0x3aa118d35114f918a01a5b2b8c8de34c632c999fb44b485bb313d6809b057069`
+and settlement `0x2251b89c4eddbc13064fc445df7f80ea3a9b7bb8428bd13e417984eff5ad0944`.
+Double-refund, payout-after-refund, double-payout, and refund-after-payout
+guards all returned nonzero preflight failures without broadcasting. The
+remaining one-wei requirement smoke and one failed payout tuple are explicitly
+intentional outstanding qualification liabilities.

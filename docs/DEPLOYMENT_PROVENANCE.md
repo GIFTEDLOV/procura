@@ -128,7 +128,10 @@ Both reached finalized `MAJORITY_AGREE` with valid strict parsed payloads.
 - One-wei delivery smoke: `PROCURA-LIVE-DELIVERY-SMOKE-20261008T095540Z`,
   requirement adjudication `0x7154e4789d53fde09c3c2ebb8323da1ad320eeb9a6a1f3953be4bf046500b2c8`,
   delivery adjudication `0xc4d53ffa98e31af12088b106700a3f5590523ce0831cd5fa13a7859da387e9f7`,
-  `DELIVERY_ACCEPTED`, consensus PASS.
+  `DELIVERY_ACCEPTED`, consensus PASS. Its canonical delivery acceptance was
+  `0x3aa118d35114f918a01a5b2b8c8de34c632c999fb44b485bb313d6809b057069` and
+  its one-wei settlement was
+  `0x2251b89c4eddbc13064fc445df7f80ea3a9b7bb8428bd13e417984eff5ad0944`.
 - Final refund case: `PROCURA-FINAL-REFUND-20261008T100900Z`, refund
   transaction `0xc7f643ce085e0294e31664d91e9426b74a4b0f3672790b4f723408b8550d97f9`.
   Gross buyer exit, escrow, liability, and refund accounting each reconciled
@@ -151,12 +154,19 @@ Both reached finalized `MAJORITY_AGREE` with valid strict parsed payloads.
 Final Deployment #5 accounting readback:
 
 - `total_funded = 3000000000000002`
-- `total_supplier_payouts = 1000000000000000`
+- `total_supplier_payouts = 1000000000000001`
 - `total_buyer_refunds = 1000000000000000`
-- `escrow_liability = 1000000000000002`
+- `escrow_liability = 1000000000000001`
 - `bond_liability = 0`
-- contract native balance = `1000000000000002`
+- contract native balance = `1000000000000001`
 - unexplained native balance = `0`
+
+The remaining liability is exactly 1 wei in
+`PROCURA-LIVE-SEMANTIC-SMOKE-20261008T094107Z` plus
+`1000000000000000` wei in `PROCURA-FINAL-PAYOUT-20261008T101500Z`.
+Both are intentional outstanding qualification liabilities: each is currently
+`EVALUATING`, neither has a legal terminal action from its current state, and
+no duplicate semantic adjudication or synthetic recovery path was attempted.
 
 The historical #4 address `0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA` and
 locked case `PROCURA-LIVE-PAYOUT-20261007T164514Z` remain preserved and are
