@@ -87,3 +87,19 @@ award, delivery, inspection, settlement, or payout transaction was sent. The
 same symbol is used by delivery adjudication, so no alternate payout path was
 attempted. The canonical contract remains frozen at the SHA above and no
 redeployment was performed.
+
+## 5jyc JSON semantic compatibility probe
+
+The diagnostic probe confirmed the remaining failure was text transport, not
+storage, transaction construction, or missing nondeterminism support. The
+corrected probe used `run_nondet_default` and native JSON response mode on
+both bounded semantic paths.
+
+- Probe deployment: `0x631bc97d6e818d91c2485b109e17887a07a61c0454c52507cca1d19b72ffa631`
+- Probe address: `0xAD920928752539Cf7f1f877B39BFEF6e4feEB342`
+- Requirement probe: `0x1a20dce30e19f671a1d823927c303837f22fc7f76b6bbe43ec4889a58ba10a98`
+- Delivery probe: `0x9853da45c06cb492d8d14342bbc77e62b21f419e2b7b46bdf549aa9c7a25ea52`
+- Both: finalized, `MAJORITY_AGREE`, validator execution succeeded for the
+  agreeing quorum, and strict payload readback was valid.
+
+This probe did not alter the historical deployment or the locked payout case.

@@ -458,7 +458,7 @@ class Procura(gl.contract.Contract):
 
     def _parse_bid_vector(self, raw: str) -> dict:
         try:
-            value = json.loads(raw)
+            value = json.loads(raw) if isinstance(raw, str) else raw
         except Exception:
             _fail("malformed semantic output")
         fields = (
@@ -475,7 +475,7 @@ class Procura(gl.contract.Contract):
 
     def _parse_delivery_vector(self, raw: str) -> dict:
         try:
-            value = json.loads(raw)
+            value = json.loads(raw) if isinstance(raw, str) else raw
         except Exception:
             _fail("malformed delivery semantic output")
         fields = (
@@ -502,19 +502,21 @@ class Procura(gl.contract.Contract):
         )
 
         def leader_fn():
-            return gl.nondet.exec_prompt(prompt)
+            return gl.nondet.exec_prompt(prompt, response_format="json")
 
         def validator_fn(leader_result):
             if not isinstance(leader_result, gl.vm.Return):
                 return False
             try:
                 leader = self._parse_bid_vector(leader_result.calldata)
-                independent = self._parse_bid_vector(gl.nondet.exec_prompt(prompt))
+                independent = self._parse_bid_vector(
+                    gl.nondet.exec_prompt(prompt, response_format="json")
+                )
             except Exception:
                 return False
             return leader == independent
 
-        raw = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+        raw = gl.vm.run_nondet_default(leader_fn, validator_fn)
         return self._parse_bid_vector(raw)
 
     def _semantic_delivery_vector(self, award: Award, delivery: Delivery, evidence_snapshot_root: str) -> dict:
@@ -530,19 +532,21 @@ class Procura(gl.contract.Contract):
         )
 
         def leader_fn():
-            return gl.nondet.exec_prompt(prompt)
+            return gl.nondet.exec_prompt(prompt, response_format="json")
 
         def validator_fn(leader_result):
             if not isinstance(leader_result, gl.vm.Return):
                 return False
             try:
                 leader = self._parse_delivery_vector(leader_result.calldata)
-                independent = self._parse_delivery_vector(gl.nondet.exec_prompt(prompt))
+                independent = self._parse_delivery_vector(
+                    gl.nondet.exec_prompt(prompt, response_format="json")
+                )
             except Exception:
                 return False
             return leader == independent
 
-        raw = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+        raw = gl.vm.run_nondet_default(leader_fn, validator_fn)
         return self._parse_delivery_vector(raw)
 
     @gl.public.write

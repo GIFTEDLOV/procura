@@ -7,6 +7,7 @@
 | Property/invariant | liability conservation and canonical verdict enum generation |
 | Value transfers | payable decorator, `gl.message.value`, `self.balance`, EOA `emit_transfer` probe |
 | Fee allocation | exact buyer refund and supplier settlement external allocations; no allocation for ordinary writes |
+| JSON semantic transport | native JSON response mode on both production semantic paths; parsed dict acceptance; strict rejection of missing/extra fields, wrong boolean types, unknown enums, invalid context, and garbage |
 | Frontend | Vitest serialization, transaction recovery, render smoke |
 | Browser E2E | Playwright routes, flagship screen labels, explicit demo mode |
 
@@ -27,6 +28,8 @@
   against the target-proven `@gl.storage.allow` contract API; production source
   was not regressed to satisfy that stale linter.
 - Focused fee-allocation regression: PASS.
+- JSON response regression: PASS; focused contract/adversarial semantic tests
+  pass, including the two native JSON calls and two default nondet calls.
 
 ## Runtime qualification
 
@@ -44,6 +47,8 @@
   accounts. Adjudication preflight then stopped with the frozen deployed
   runtime error `gl.vm.run_nondet_unsafe` missing; no payout settlement was
   broadcast.
+- Corrected temporary JSON semantic probe: deployment, requirement, and
+  delivery transactions finalized with consensus and strict payload readback.
 
 ## Frontend live-write boundary
 

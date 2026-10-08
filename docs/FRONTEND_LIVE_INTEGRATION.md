@@ -32,3 +32,9 @@ readback mismatch remain explicit failure states.
 Current qualification status: adapter tests and frontend build pass. The live
 supplier payout remains blocked by the frozen deployed contract's missing
 `gl.vm.run_nondet_unsafe` runtime symbol during semantic adjudication.
+
+The contract-side compatibility fix is now isolated and verified by the
+corrected 5jyc JSON semantic probe. The frontend adapter remains unchanged
+until deployment #5 is finalized; then only its canonical address and source
+hash constants should be updated, followed by the existing browser and
+adapter regression suite.

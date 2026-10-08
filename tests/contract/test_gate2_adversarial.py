@@ -131,7 +131,8 @@ def test_unknown_semantic_enum_cannot_be_stored():
 @pytest.mark.adversarial
 def test_malformed_semantic_output_does_not_become_noncompliant():
     assert "malformed semantic output" in SOURCE
-    assert "run_nondet_unsafe" in SOURCE
+    assert "gl.vm.run_nondet_default" in SOURCE
+    assert "run_nondet_unsafe" not in SOURCE
 
 
 @pytest.mark.adversarial

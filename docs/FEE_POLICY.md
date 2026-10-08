@@ -37,3 +37,9 @@ from the frozen buyer or awarded supplier context, never from a caller-entered
 address, and obtains the current `feeValue` from the SDK at signing time. The
 supplier payout allocation was not consumed on-chain because the frozen
 contract stopped at semantic adjudication before settlement preflight.
+
+The corrected JSON semantic compatibility probe used no native value exit and
+therefore did not change the refund or settlement allocation profile. The
+future deployment #5 qualification must continue to obtain a fresh nonzero
+fee quote at signing time and reuse the already-proven external message
+allocation shape for refund and payout.

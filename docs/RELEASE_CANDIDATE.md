@@ -44,6 +44,12 @@ they do not invent LIVE state.
 Release gate: NOT READY FOR PUBLICATION because supplier payout and final
 accounting closure are not proven under the frozen deployment.
 
+The corrected local contract fix now requests native JSON responses for both
+bounded semantic calls and uses `gl.vm.run_nondet_default`. The one temporary
+5jyc probe reached finalized consensus on requirement and delivery semantic
+transactions with strict payload readback. Deployment #5 and fresh production
+refund/payout qualification remain separate final gates.
+
 ## Provenance
 
 The corrected contract hash, interface manifest, toolchain, deployment history,

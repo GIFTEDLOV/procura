@@ -127,3 +127,19 @@ same frozen runtime symbol and is therefore not a safe alternative.
 The frozen contract and deployment were not modified or redeployed. Payout
 qualification and final global accounting remain BLOCKED by this deployed
 runtime/API incompatibility. Release status: NOT READY FOR PUBLICATION.
+
+## Corrected 5jyc semantic probe
+
+The runner source and official JSON fixture at
+`acb37c7bf7b1e6d9fbfe004414a93fb6306135c0` verify that
+`response_format="json"` returns a parsed dictionary through
+`_decode_nondet_json`. Procura now uses that native mode in both semantic
+calls and uses `gl.vm.run_nondet_default`.
+
+One temporary probe deployment was used:
+`0xAD920928752539Cf7f1f877B39BFEF6e4feEB342`. Requirement transaction
+`0x1a20dce30e19f671a1d823927c303837f22fc7f76b6bbe43ec4889a58ba10a98` and
+delivery transaction
+`0x9853da45c06cb492d8d14342bbc77e62b21f419e2b7b46bdf549aa9c7a25ea52` both
+finalized with consensus and valid strict dictionary payloads. This proves
+runtime compatibility; semantic business outcomes remain evidence-dependent.
