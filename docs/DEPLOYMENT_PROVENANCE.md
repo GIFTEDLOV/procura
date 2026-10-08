@@ -171,3 +171,24 @@ no duplicate semantic adjudication or synthetic recovery path was attempted.
 The historical #4 address `0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA` and
 locked case `PROCURA-LIVE-PAYOUT-20261007T164514Z` remain preserved and are
 excluded from Deployment #5 accounting.
+
+## Final liveness audit blocker
+
+The final canonical contract was audited read-only after reconciliation. Case
+`PROCURA-FINAL-PAYOUT-20261008T101500Z` is funded with
+`1000000000000000` wei and remains `EVALUATING`. Its semantic transaction
+`0x0014ef10018a59d15be3a0764b203600b278d3d9cb8b3f8a66f20cb28da7632c`
+finished with lifecycle outcome `UNDETERMINED` and consensus result
+`MAJORITY_DISAGREE`; no adjudication record or state mutation was committed.
+
+Source inspection proved that `begin_bid_evaluation` enters `EVALUATING`,
+`finalize_bid_evaluation` requires a stored adjudication, `cancel_tender` does
+not accept `EVALUATING`, and no expiry/recovery method exists. The case has no
+legal value exit. This is `CLASS_C_CONTRACT_LIVENESS_DEFECT`, so publication is
+blocked and the canonical contract remains untouched.
+
+The local, undeployed candidate adds a pre-semantic-call guard on the existing
+`bid_id:requirement_id` adjudication identity. Failed or undetermined semantic
+transactions commit no record and remain retryable; once a successful record
+exists, a second call is rejected. Candidate SHA-256:
+`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`.

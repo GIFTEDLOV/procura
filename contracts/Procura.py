@@ -735,9 +735,11 @@ class Procura(gl.contract.Contract):
         if tender.state != TENDER_EVALUATING or requirement.tender_id != bid.tender_id:
             _fail("evaluation precondition failed")
         _hash(evidence_snapshot_root, "evidence_snapshot_root")
+        adjudication_id = bid_id + ":" + requirement_id
+        if adjudication_id in self.adjudications:
+            _fail("requirement already adjudicated")
         vector = self._semantic_bid_vector(bid, requirement, evidence_snapshot_root)
         verdict = _canonical_bid_verdict(vector)
-        adjudication_id = bid_id + ":" + requirement_id
         self.adjudications[adjudication_id] = Adjudication(
             adjudication_id, bid_id, requirement_id, requirement.version, evidence_snapshot_root,
             vector["requirement_satisfied"], vector["mandatory_requirement_breached"],

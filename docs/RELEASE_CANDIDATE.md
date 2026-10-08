@@ -3,6 +3,23 @@
 This local commit is the frozen storage-remediation candidate for operator
 review.
 
+## Publication blocker: semantic evaluation liveness
+
+The final liveness audit found a real contract defect in the canonical
+Deployment #5: a funded tender can enter `EVALUATING`, receive an undetermined
+semantic transaction with no committed adjudication, and have no legal retry,
+cancel, expiry, refund, or settlement path. Classification:
+`CLASS_C_CONTRACT_LIVENESS_DEFECT`.
+
+Publication is therefore `NOT READY`. The canonical contract and its deployed
+source SHA remain untouched. A local candidate adds only the existing
+`(bid_id, requirement_id)` success-record guard before the semantic call, so a
+failed/undetermined call does not consume the identity while a successful
+record remains immutable. Candidate source SHA:
+`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`.
+No redeployment, GitHub push, Vercel deployment, or Portal submission was
+performed.
+
 ## Included
 
 - hardened Procurement contract accounting and frozen bond/milestone policy;
@@ -90,5 +107,7 @@ secret scan PASS. The one direct-runner skip is the documented Windows/Python
 findings remain documented tooling false positives.
 
 Local qualification is complete. Public publication remains intentionally
-withheld: no GitHub push, Vercel deployment, or Portal submission was
+withheld. The liveness audit supersedes that qualification state for release
+purposes until the local retry-safe candidate is separately deployed and
+requalified. No GitHub push, Vercel deployment, or Portal submission was
 performed.

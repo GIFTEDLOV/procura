@@ -181,3 +181,20 @@ Double-refund, payout-after-refund, double-payout, and refund-after-payout
 guards all returned nonzero preflight failures without broadcasting. The
 remaining one-wei requirement smoke and one failed payout tuple are explicitly
 intentional outstanding qualification liabilities.
+
+## Post-qualification liveness audit
+
+The final payout tuple was audited read-only after the above qualification.
+Although its `MAJORITY_DISAGREE` result is a legitimate failed semantic
+execution outcome, it did not commit an adjudication record. The tender is
+still `EVALUATING`, `finalize_bid_evaluation` cannot proceed, `cancel_tender`
+does not permit that state, and no expiry/recovery method exists. It is
+therefore a `CLASS_C_CONTRACT_LIVENESS_DEFECT`, not merely an evidence-quality
+liability, and publication is blocked.
+
+The canonical Deployment #5 remains unchanged. The local candidate adds only a
+pre-semantic-call guard on the existing requirement adjudication identity,
+leaving failed/undetermined attempts retryable while rejecting a second call
+after a committed successful record. Its source SHA-256 is
+`30aa4e7b6cb8f3e7f1584d017f45398b13602acbb2623f3444d7eb9648888069`; it was
+not deployed.

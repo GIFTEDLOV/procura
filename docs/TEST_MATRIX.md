@@ -8,6 +8,7 @@
 | Value transfers | payable decorator, `gl.message.value`, `self.balance`, EOA `emit_transfer` probe |
 | Fee allocation | exact buyer refund and supplier settlement external allocations; no allocation for ordinary writes |
 | JSON semantic transport | native JSON response mode on both production semantic paths; parsed dict acceptance; strict rejection of missing/extra fields, wrong boolean types, unknown enums, invalid context, and garbage |
+| Semantic liveness | failed/undetermined adjudication remains retryable; successful adjudication identity is immutable; finalization still requires every record; no evaluation expiry/admin recovery was added |
 | Frontend | Vitest serialization, transaction recovery, render smoke |
 | Browser E2E | Playwright routes, flagship screen labels, explicit demo mode |
 
@@ -30,6 +31,9 @@
 - Focused fee-allocation regression: PASS.
 - JSON response regression: PASS; focused contract/adversarial semantic tests
   pass, including the two native JSON calls and two default nondet calls.
+- Liveness regression: PASS locally for the undeployed candidate. The
+  canonical Deployment #5 remains blocked because its `EVALUATING` case has no
+  legal recovery path.
 
 ## Runtime qualification
 
