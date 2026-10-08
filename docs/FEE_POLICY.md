@@ -40,6 +40,17 @@ contract stopped at semantic adjudication before settlement preflight.
 
 The corrected JSON semantic compatibility probe used no native value exit and
 therefore did not change the refund or settlement allocation profile. The
-future deployment #5 qualification must continue to obtain a fresh nonzero
-fee quote at signing time and reuse the already-proven external message
-allocation shape for refund and payout.
+completed Deployment #5 qualification used a fresh nonzero fee quote at
+signing time and reused the already-proven external message allocation shape
+for refund and payout.
+
+## Deployment #5 measured exits
+
+Deployment #5 used a fresh nonzero deployment fee quote of
+`100000000000010352` wei. The final refund and final supplier settlement both
+used the pinned external allocation shape above and exact recipient derivation.
+The refund receipt emitted one buyer message for the gross
+`1000000000000000` wei; the payout receipt emitted one supplier message for
+the same gross amount. Protocol fees are reconciled separately from gross
+contract accounting, so buyer wallet deltas are not treated as gross refund
+proofs.

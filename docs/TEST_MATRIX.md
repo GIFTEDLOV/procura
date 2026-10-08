@@ -63,3 +63,18 @@
 
 No contract source, ABI, state machine, accounting policy, or deployment was
 changed during fee-allocation recovery.
+
+## Final Deployment #5 gate result
+
+- Contract/qualification tests: 154 PASS, 1 documented direct-runner SKIP.
+- Adversarial, property, mutation, storage, nondet, JSON transport, semantic
+  validator, and fee-allocation regressions: PASS.
+- Deployment #5 schema: 39/39; `gen_call type=deploy`: PASS.
+- JSON probe requirement and delivery: finalized consensus PASS with strict
+  parsed dictionaries.
+- Live one-wei semantic requirement and delivery smokes: consensus PASS.
+- Final refund and awardable final payout: exact gross value exits PASS.
+- Exit guards: double refund, payout after refund, double payout, and refund
+  after payout all PASS via non-broadcasting failing preflights.
+- Frontend unit: 54 PASS; browser E2E: 16 PASS with no console errors;
+  typecheck and production build: PASS.

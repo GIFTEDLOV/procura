@@ -126,7 +126,8 @@ same frozen runtime symbol and is therefore not a safe alternative.
 
 The frozen contract and deployment were not modified or redeployed. Payout
 qualification and final global accounting remain BLOCKED by this deployed
-runtime/API incompatibility. Release status: NOT READY FOR PUBLICATION.
+runtime/API incompatibility. That #4 checkpoint was NOT READY FOR
+PUBLICATION; the corrected Deployment #5 qualification is recorded below.
 
 ## Corrected 5jyc semantic probe
 
@@ -143,3 +144,36 @@ delivery transaction
 `0x9853da45c06cb492d8d14342bbc77e62b21f419e2b7b46bdf549aa9c7a25ea52` both
 finalized with consensus and valid strict dictionary payloads. This proves
 runtime compatibility; semantic business outcomes remain evidence-dependent.
+
+## Final Deployment #5 qualification record
+
+Deployment #5 is the corrected source at
+`0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`, source SHA-256
+`95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`.
+The deployment transaction
+`0x8fa58c5e6e956831f56eb402d38d0fefdb6e16b625e875fcd85ce1086a289154`
+finalized successfully and its schema contains 39 methods.
+
+The JSON semantic probe passed requirement and delivery consensus with parsed
+dictionary payloads and strict validation. One-wei live requirement and
+delivery smoke cases also passed real consensus. The fresh awardable payout
+case was `PROCURA-FINAL-PAYOUT-20261008T103200Z`; its requirement adjudication
+`0x10e76d7559cb901bf45b0f09e3f580ad26c9dcb0935186ea0a99fe65ec0ce8f5`
+returned `EQUIVALENT_ACCEPTABLE` with `MAJORITY_AGREE`, and delivery
+adjudication `0x7c73f59c9de0f1a852c6cf950e8f71d3bcfe5a6a71c782ae3f2ef064296b557b`
+returned `DELIVERY_ACCEPTED` with `MAJORITY_AGREE`. Settlement
+`0x78e78e48787ae4e19f9c358d4af182e78e9880e81a94fa412079999b4d50c696`
+paid the exact gross `1000000000000000` wei to supplier
+`0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8`.
+
+The earlier fresh diagnostic payout tuple reached `MAJORITY_DISAGREE` at
+requirement adjudication. It was not retried; its escrow remains visible in
+the final liability. This is a business-consensus/evidence outcome, not a
+runtime compatibility failure and not a reason to redeploy.
+
+Final accounting is conserved:
+`3000000000000002 - 1000000000000000 - 1000000000000000 = 1000000000000002`,
+matching both on-chain escrow liability and contract native balance. Bond
+liability is zero. Double-refund, payout-after-refund, double-payout, and
+refund-after-payout guards all returned nonzero preflight failures without
+broadcasting.

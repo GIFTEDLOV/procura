@@ -29,12 +29,23 @@ requires a caller-supplied canonical readback before reporting success. Wrong
 chain, disconnected wallet, wrong role, failed execution, and canonical
 readback mismatch remain explicit failure states.
 
-Current qualification status: adapter tests and frontend build pass. The live
-supplier payout remains blocked by the frozen deployed contract's missing
+At the earlier #4 qualification checkpoint, the live supplier payout remained
+blocked by the frozen deployed contract's missing
 `gl.vm.run_nondet_unsafe` runtime symbol during semantic adjudication.
 
 The contract-side compatibility fix is now isolated and verified by the
-corrected 5jyc JSON semantic probe. The frontend adapter remains unchanged
-until deployment #5 is finalized; then only its canonical address and source
-hash constants should be updated, followed by the existing browser and
-adapter regression suite.
+corrected 5jyc JSON semantic probe. Deployment #5 now supplies the canonical
+address and source hash below, followed by the existing browser and adapter
+regression suite.
+
+## Deployment #5 canonical configuration
+
+The live adapter now points to Deployment #5:
+
+- Contract: `0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`
+- Source SHA-256: `95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`
+- Network: Studio-dev, chain 61997
+
+The adapter regression suite remains green: 54 Vitest tests, typecheck, build,
+and 16 Playwright browser tests. No Vercel deployment or public live-wallet
+session was performed.

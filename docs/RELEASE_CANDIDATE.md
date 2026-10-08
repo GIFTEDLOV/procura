@@ -41,8 +41,9 @@ persistence/recovery, finality/execution checks, and canonical-readback hooks.
 The existing screens remain visibly CONTROLLED DEMO until a wallet is attached;
 they do not invent LIVE state.
 
-Release gate: NOT READY FOR PUBLICATION because supplier payout and final
-accounting closure are not proven under the frozen deployment.
+At the earlier #4 checkpoint, release was NOT READY FOR PUBLICATION because
+supplier payout and final accounting closure were not proven under the frozen
+deployment.
 
 The corrected local contract fix now requests native JSON responses for both
 bounded semantic calls and uses `gl.vm.run_nondet_default`. The one temporary
@@ -56,3 +57,32 @@ The corrected contract hash, interface manifest, toolchain, deployment history,
 refund proof, fee policy, and blocker are recorded in
 `docs/DEPLOYMENT_PROVENANCE.md`, `docs/STUDIO_DEV_QUALIFICATION.md`, and
 `docs/FEE_POLICY.md`.
+
+## Corrected final local qualification
+
+The minimal contract fix is committed locally as
+`db4e4b3d6a4a07a9e7f118afc5efe02d030216a9`
+(`fix(contract): use 5jyc JSON semantic responses and default nondet API`).
+It changes only native JSON response mode at the two semantic paths and
+`run_nondet_default` at the two nondeterminism sites. Strict payload
+validation, prompts, business rules, payment policy, state machine, storage,
+and ABI are unchanged.
+
+Deployment #5 finalized at
+`0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`, with 39/39 schema parity and
+source SHA-256
+`95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`.
+The JSON semantic probe, one-wei semantic smokes, final refund, and fresh
+awardable payout all passed their required runtime/value proofs. The failed
+diagnostic payout tuple remains accounted escrow and was not retried.
+
+Final local gates: Python contract/qualification suite `154 passed, 1
+skipped`, frontend unit `54 passed`, Playwright `16 passed`, typecheck PASS,
+build PASS, schema/interface parity PASS, transaction recovery PASS, and
+secret scan PASS. The one direct-runner skip is the documented Windows/Python
+3.14 GenVM v0.6 message-context `DecodingError`; the stale E014 storage-linter
+findings remain documented tooling false positives.
+
+Local qualification is complete. Public publication remains intentionally
+withheld: no GitHub push, Vercel deployment, or Portal submission was
+performed.

@@ -103,3 +103,61 @@ both bounded semantic paths.
   agreeing quorum, and strict payload readback was valid.
 
 This probe did not alter the historical deployment or the locked payout case.
+
+## Deployment #5: corrected 5jyc candidate
+
+- Network: Studio-dev, chain 61997
+- Transaction: `0x8fa58c5e6e956831f56eb402d38d0fefdb6e16b625e875fcd85ce1086a289154`
+- Address: `0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`
+- Fee value: `100000000000010352` wei
+- Source SHA-256: `95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`
+- Finality: YES; execution: `FINISHED_WITH_RETURN` / `SUCCESS`
+- Schema: 39 methods; ABI parity PASS
+
+The temporary JSON probe requirement transaction was
+`0x1a20dce30e19f671a1d823927c303837f22fc7f76b6bbe43ec4889a58ba10a98` and
+the delivery transaction was
+`0x9853da45c06cb492d8d14342bbc77e62b21f419e2b7b46bdf549aa9c7a25ea52`.
+Both reached finalized `MAJORITY_AGREE` with valid strict parsed payloads.
+
+### Deployment #5 live qualification
+
+- One-wei requirement smoke: `PROCURA-LIVE-SEMANTIC-SMOKE-20261008T094107Z`,
+  adjudication `0xb72cbaa77b9426e52179f998291feb007b14b39ec84c588151e7f1d00c1b764d`,
+  `EQUIVALENT_ACCEPTABLE`, consensus PASS.
+- One-wei delivery smoke: `PROCURA-LIVE-DELIVERY-SMOKE-20261008T095540Z`,
+  requirement adjudication `0x7154e4789d53fde09c3c2ebb8323da1ad320eeb9a6a1f3953be4bf046500b2c8`,
+  delivery adjudication `0xc4d53ffa98e31af12088b106700a3f5590523ce0831cd5fa13a7859da387e9f7`,
+  `DELIVERY_ACCEPTED`, consensus PASS.
+- Final refund case: `PROCURA-FINAL-REFUND-20261008T100900Z`, refund
+  transaction `0xc7f643ce085e0294e31664d91e9426b74a4b0f3672790b4f723408b8550d97f9`.
+  Gross buyer exit, escrow, liability, and refund accounting each reconciled
+  to `1000000000000000` wei; the buyer's net wallet delta correctly excluded
+  settled protocol fees.
+- Diagnostic payout tuple `PROCURA-FINAL-PAYOUT-20261008T101500Z` reached
+  `MAJORITY_DISAGREE` on requirement adjudication
+  `0x0014ef10018a59d15be3a0764b203600b278d3d9cb8b3f8a66f20cb28da7632c`.
+  It was not retried and remains a funded escrow liability.
+- Final awardable payout case:
+  `PROCURA-FINAL-PAYOUT-20261008T103200Z`.
+  Fund transaction: `0x35779dd2a195154182646398cfa16d5c7f9b02d7cdeec2dbf7b7234054c368b5`.
+  Requirement adjudication: `0x10e76d7559cb901bf45b0f09e3f580ad26c9dcb0935186ea0a99fe65ec0ce8f5`,
+  `EQUIVALENT_ACCEPTABLE`, `MAJORITY_AGREE`. Delivery adjudication:
+  `0x7c73f59c9de0f1a852c6cf950e8f71d3bcfe5a6a71c782ae3f2ef064296b557b`,
+  `DELIVERY_ACCEPTED`, `MAJORITY_AGREE`. Settlement transaction:
+  `0x78e78e48787ae4e19f9c358d4af182e78e9880e81a94fa412079999b4d50c696`.
+  Gross supplier exit was exactly `1000000000000000` wei.
+
+Final Deployment #5 accounting readback:
+
+- `total_funded = 3000000000000002`
+- `total_supplier_payouts = 1000000000000000`
+- `total_buyer_refunds = 1000000000000000`
+- `escrow_liability = 1000000000000002`
+- `bond_liability = 0`
+- contract native balance = `1000000000000002`
+- unexplained native balance = `0`
+
+The historical #4 address `0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA` and
+locked case `PROCURA-LIVE-PAYOUT-20261007T164514Z` remain preserved and are
+excluded from Deployment #5 accounting.
