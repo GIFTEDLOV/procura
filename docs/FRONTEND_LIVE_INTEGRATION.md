@@ -1,63 +1,48 @@
-# Procura frontend live integration
+# Frontend live integration
 
-The production transaction boundary is implemented in:
+The released frontend exposes three explicit data modes:
 
-- `frontend/src/lib/liveConfig.ts` — Studio-dev 61997, canonical contract, and
-  explicit LIVE / CONTROLLED DEMO / HISTORICAL modes;
-- `frontend/src/lib/liveAdapter.ts` — schema-ordered typed actions, role and
-  network guards, SDK preflight, current fee estimation, one-shot broadcast,
-  persisted-hash recovery, finality/execution checks, and canonical readback;
-- `frontend/src/lib/feeProfile.ts` — resource requirements and external-message
-  allocations derived from `evidence/studio-dev-fee-profile.json`.
+- **LIVE** reads the canonical Procura deployment on Studio-dev / 61997 and never falls back to fixtures when reads fail or return no records.
+- **CONTROLLED DEMO** uses the Northstar Energy Procurement fixture for guided product review. It is visibly labelled and does not masquerade as canonical state.
+- **HISTORICAL PROOF** renders frozen deployment/provenance records read-only and is visibly separated from current contract state.
 
-React components do not construct calldata or call low-level write RPCs. The
-Bid Builder now prepares a typed contract action at the adapter boundary; in
-CONTROLLED DEMO mode it does not broadcast. A future LIVE wallet session must
-provide an EIP-1193 provider and use the same `executeLiveWrite` engine.
-
-Role enforcement is frozen to contract semantics: buyer-only methods require
-the canonical buyer, supplier-only methods require the canonical awarded
-supplier, and party methods require one of those two canonical parties.
-`cancel_tender`/`refund_buyer` allocations derive the frozen buyer recipient;
-`settle_award` derives the awarded supplier recipient. Both use the SDK's
-empty-calldata external call-key derivation and require a positive message
-budget. Ordinary writes receive no external allocation.
-
-The adapter persists the returned transaction hash immediately, never
-rebroadcasts after a hash exists, waits for finalized execution success, and
-requires a caller-supplied canonical readback before reporting success. Wrong
-chain, disconnected wallet, wrong role, failed execution, and canonical
-readback mismatch remain explicit failure states.
-
-At the earlier #4 qualification checkpoint, the live supplier payout remained
-blocked by the frozen deployed contract's missing
-`gl.vm.run_nondet_unsafe` runtime symbol during semantic adjudication.
-
-The contract-side compatibility fix is now isolated and verified by the
-corrected 5jyc JSON semantic probe. Deployment #5 now supplies the canonical
-address and source hash below, followed by the existing browser and adapter
-regression suite.
-
-## Deployment #5 historical configuration
-
-The live adapter now points to Deployment #5:
-
-- Contract: `0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`
-- Source SHA-256: `95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`
-- Network: Studio-dev, chain 61997
-
-The adapter regression suite remains green: 54 Vitest tests, typecheck, build,
-and 16 Playwright browser tests. No Vercel deployment or public live-wallet
-session was performed.
-
-## Deployment #6 canonical configuration
-
-After final #6 qualification, the live adapter points to:
+## Canonical configuration
 
 - Contract: `0x88634c7868B0659b46C5bd93E4038222697a0170`
 - Source SHA-256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
-- Network: Studio-dev, chain 61997
+- Network: `studio-dev`
+- Chain: `61997`
 
-The ABI is unchanged at 39 methods. Frontend unit tests remain 54/54 and
-Playwright remains 16/16 with zero console errors and zero horizontal
-overflow. No Vercel deployment or public publication action was performed.
+## Public LIVE reads
+
+`frontend/src/lib/liveData.ts` reads protocol info, tender IDs, tender state, requirements, bids, accounting, and audit events through `genlayer-js`. TanStack Query uses finite freshness and refetch-on-focus. Loading, empty, partial, and RPC error states are distinct; missing state is not replaced by demo values.
+
+## Wallet and role resolution
+
+Public browsing does not require a wallet. The header exposes an EIP-1193 connection action and reports address, chain, and role. The application recognizes the frozen buyer, frozen supplier, and observer roles. Wrong chain and disconnected states are explicit, and a connected observer is not presented as a buyer or supplier.
+
+## LIVE writes
+
+Write surfaces use `buildTypedAction`, `assertStudioDevWallet`, `assertRole`, and `executeLiveWrite` from the existing adapter boundary. Components do not construct calldata. The engine performs:
+
+1. canonical precondition read;
+2. wallet confirmation and role/network checks;
+3. SDK simulation and fee estimation;
+4. exactly one broadcast;
+5. immediate hash persistence;
+6. finality and execution-result verification;
+7. canonical readback.
+
+The Bid Builder and Tender Builder expose the real typed-action path in LIVE mode. Controlled-demo actions remain local and clearly state that no broadcast occurred. Value exits keep gross value separate from protocol fees and use the established external-message allocation profile.
+
+## Same-hash recovery
+
+Persisted hashes are surfaced in the transaction activity center. Refreshing or reopening the application recovers finality from the same hash; it never rebroadcasts automatically. Finalized execution errors and canonical readback failures remain failure states.
+
+## Evidence and semantic state
+
+Evidence cards identify the authenticated source/hash boundary. The UI displays canonical semantic results and replay-guard state; it does not reinterpret prose, extract arbitrary JSON, or permit a finalized result to be adjudicated again. Failed or undetermined semantic attempts remain retryable only while no canonical adjudication record exists.
+
+## Historical separation
+
+Deployment #4 and #5 records remain in `docs/history/` and evidence history. Deployment #6 is the only current canonical deployment. Historical values are never used to populate LIVE mode or current accounting.

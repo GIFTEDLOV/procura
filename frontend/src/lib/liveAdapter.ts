@@ -187,6 +187,12 @@ function persistPending(storage: StorageLike, action: TypedAction, account: Addr
   storage.setItem(recordKey(action.requestId), JSON.stringify(record, (_, value) => typeof value === "bigint" ? value.toString() : value));
 }
 
+function updatePending(storage: StorageLike, requestId: string, patch: Partial<StoredLiveTransaction>): void {
+  const current = loadPendingTransaction(requestId, storage);
+  if (!current) return;
+  storage.setItem(recordKey(requestId), JSON.stringify({ ...current, ...patch }, (_, value) => typeof value === "bigint" ? value.toString() : value));
+}
+
 export function loadPendingTransaction(requestId: string, storage?: StorageLike): StoredLiveTransaction | null {
   const raw = storageOrFallback(storage).getItem(recordKey(requestId));
   return raw ? JSON.parse(raw) as StoredLiveTransaction : null;
@@ -224,9 +230,12 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
   persistPending(storageOrFallback(params.storage), action, account, hash);
   const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
   if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+    updatePending(storageOrFallback(params.storage), action.requestId, { phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "ERROR" });
     throw new Error(`${action.method} execution failed: ${String(receipt.txExecutionResultName)}`);
   }
+  updatePending(storageOrFallback(params.storage), action.requestId, { phase: "FINALITY", finality: "FINALIZED", execution: "SUCCESS" });
   const readback = await canonicalReadback();
+  updatePending(storageOrFallback(params.storage), action.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
   return { action, hash, receipt, readback, fees };
 }
 

@@ -1,4 +1,8 @@
-# Gate 1 preflight evidence
+# Historical Gate 1 preflight evidence
+
+This file records the initial repository/toolchain checkpoint only. It is not
+the current release gate. Current release truth is in `docs/TESTING.md` and the
+exact-head CI run.
 
 - Workspace: local Procura checkout
 - Starting repository: empty directory, no Git repository, no starting commit

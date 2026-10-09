@@ -31,7 +31,7 @@ RUNNER = "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng"
 HISTORICAL_ADDRESS = "0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA"
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 SOURCE_PATH = Path(__file__).with_name("_procura_json_semantic_probe_contract.py")
-JOURNAL = Path(__file__).with_name("_procura_json_semantic_probe.jsonl")
+JOURNAL = Path(__file__).parents[2] / "evidence" / "runtime-probes" / "_procura_json_semantic_probe.jsonl"
 EXISTING_DEPLOY_TX = "0x631bc97d6e818d91c2485b109e17887a07a61c0454c52507cca1d19b72ffa631"
 EXISTING_PROBE_ADDRESS = "0xAD920928752539Cf7f1f877B39BFEF6e4feEB342"
 

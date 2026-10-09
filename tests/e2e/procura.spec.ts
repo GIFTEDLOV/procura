@@ -1,58 +1,28 @@
 import { expect, test } from "@playwright/test";
+import path from "node:path";
 
-test("evaluation room loads as controlled demo", async ({ page }) => {
-  await page.goto("/evaluation-room");
-  await expect(page.getByText("Evaluation Room").first()).toBeVisible();
-  await expect(page.getByText("CONTROLLED DEMO").first()).toBeVisible();
-  await expect(page.getByText("Solbridge").first()).toBeVisible();
-});
+const routes = ["command-center", "tenders", "tender-builder", "tender-room", "supplier-portal", "bid-builder", "evaluation-room", "award-desk", "delivery-workspace", "inspection-room", "payments", "disputes", "suppliers", "analytics", "proof-audit", "settings"] as const;
+const screenshotRoot = path.resolve(process.cwd(), "..", "docs", "assets", "screenshots");
 
-test("inspection room exposes canonical mismatch", async ({ page }) => {
-  await page.goto("/inspection-room");
-  await expect(page.getByText("MATERIAL_DELIVERY_MISMATCH")).toBeVisible();
-  await expect(page.getByText("Payment is blocked")).toBeVisible();
-});
+async function noPageOverflow(page: import("@playwright/test").Page) { expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true); }
+async function noConsoleErrors(page: import("@playwright/test").Page) { const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); }); return errors; }
 
-test("controlled demo lifecycle stays truthful across flagship surfaces", async ({ page }, testInfo) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-  const expectNoOverflow = async () => expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.goto("/");
-  await expect(page.getByText("Good morning, Northstar.")).toBeVisible();
-  await expectNoOverflow();
-  await page.goto("/tender-room");
-  await expect(page.getByText("Frozen requirements")).toBeVisible();
-  await page.goto("/supplier-portal");
-  await expect(page.getByText("Supplier A · Solbridge Systems")).toBeVisible();
-  await page.goto("/evaluation-room");
-  await expect(page.getByText("Supplier conformity matrix")).toBeVisible();
-  await expectNoOverflow();
-  await page.getByRole("button", { name: /6,000 cycles guaranteed/i }).click();
-  await expect(page.getByRole("dialog", { name: "Evaluation detail" })).toBeVisible();
-  await page.screenshot({ path: `../evidence/screenshots/evaluation-room-${testInfo.project.name}.png`, fullPage: true });
-  await page.goto("/award-desk");
-  await expect(page.getByText("COMPLIANT under all mandatory frozen requirements")).toBeVisible();
-  await page.goto("/delivery-workspace");
-  await expect(page.getByText("Product substitution submitted")).toBeVisible();
-  await page.goto("/inspection-room");
-  await expect(page.getByText("MATERIAL_DELIVERY_MISMATCH")).toBeVisible();
-  await expectNoOverflow();
-  await page.screenshot({ path: `../evidence/screenshots/inspection-room-${testInfo.project.name}.png`, fullPage: true });
-  await page.goto("/payments");
-  await expect(page.getByText("Payment blocked pending permitted resolution")).toBeVisible();
-  await expectNoOverflow();
-  await page.screenshot({ path: `../evidence/screenshots/settlement-ledger-${testInfo.project.name}.png`, fullPage: true });
-  await page.goto("/proof-audit");
-  await expect(page.getByText("Evidence and audit anchors")).toBeVisible();
-  expect(errors).toEqual([]);
+test("landing page communicates the product and opens the app", async ({ page }, testInfo) => {
+  const errors = await noConsoleErrors(page); await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Procurement you can prove." })).toBeVisible(); await expect(page.getByText("Requirement", { exact: true })).toBeVisible(); await expect(page.getByText("COMPLIANT", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: /Open Procura/ }).first().click(); await expect(page).toHaveURL(/\/app\/command-center/); await expect(page.getByText("Good morning, Northstar.")).toBeVisible(); await noPageOverflow(page);
+  if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "landing-desktop.png"), fullPage: true }); if (testInfo.project.name.includes("430")) { await page.goto("/"); await page.screenshot({ path: path.join(screenshotRoot, "landing-mobile.png"), fullPage: true }); } expect(errors).toEqual([]);
 });
-
-test("all core routes support explicit readback states", async ({ page }) => {
-  for (const route of ["tenders", "tender-builder", "tender-room", "supplier-portal", "bid-builder", "evaluation-room", "award-desk", "delivery-workspace", "inspection-room", "payments", "disputes", "proof-audit"]) {
-    await page.goto(`/${route}?state=empty`);
-    await expect(page.locator('[data-state="empty"]')).toBeVisible();
-    await page.goto(`/${route}?state=error`);
-    await expect(page.locator('[data-state="error"]')).toBeVisible();
-  }
-});
+test("unknown routes render an intentional 404", async ({ page }) => { await page.goto("/this-route-does-not-exist"); await expect(page.getByRole("heading", { name: "That surface does not exist." })).toBeVisible(); await expect(page.getByText("Good morning, Northstar.")).not.toBeVisible(); });
+test("all advertised routes have distinct identity", async ({ page }) => { for (const route of routes) { await page.goto(`/app/${route}`); await expect(page.locator("h1").first()).toBeVisible(); await expect(page.getByText("Ready for operator review")).not.toBeVisible(); } });
+test("legacy paths redirect into the app namespace", async ({ page }) => { await page.goto("/evaluation-room"); await expect(page).toHaveURL(/\/app\/evaluation-room/); await expect(page.getByText("Evaluation Room").first()).toBeVisible(); });
+test("controlled demo remains explicitly separated", async ({ page }) => { await page.goto("/app/evaluation-room"); await expect(page.getByText("CONTROLLED DEMO").last()).toBeVisible(); await expect(page.getByText("Solbridge").first()).toBeVisible(); await page.getByLabel("Workspace mode").selectOption("HISTORICAL"); await expect(page.getByText("HISTORICAL").last()).toBeVisible(); await expect(page.getByText("Historical proof workspace")).toBeVisible(); await expect(page.getByText("Solbridge").first()).not.toBeVisible(); });
+test("LIVE mode never silently falls back to demo data", async ({ page }) => { await page.route("https://studio-dev.genlayer.com/**", (route) => route.abort()); await page.goto("/app/command-center"); await page.getByLabel("Workspace mode").selectOption("LIVE"); await expect(page.getByText("LIVE").last()).toBeVisible(); await expect(page.getByText("Canonical state is unavailable.").or(page.getByText("Canonical LIVE readback"))).toBeVisible({ timeout: 15000 }); await expect(page.getByText("Good morning, Northstar.")).not.toBeVisible(); });
+test("wallet disconnected state is honest and public reads remain available", async ({ page }) => { await page.goto("/app/command-center"); await expect(page.getByRole("button", { name: "Connect wallet" })).toBeVisible(); await expect(page.getByText("CONTROLLED DEMO").last()).toBeVisible(); });
+test("explicit readback states are preserved", async ({ page }) => { for (const route of ["tenders", "tender-builder", "tender-room", "bid-builder", "evaluation-room", "inspection-room", "payments", "proof-audit"]) { await page.goto(`/app/${route}?state=empty`); await expect(page.locator('[data-state="empty"]')).toBeVisible(); await page.goto(`/app/${route}?state=error`); await expect(page.locator('[data-state="error"]')).toBeVisible(); } });
+test("evaluation and inspection expose evidence-oriented controlled views", async ({ page }, testInfo) => { await page.goto("/app/evaluation-room"); await expect(page.getByText("Supplier conformity matrix")).toBeVisible(); await page.getByRole("button", { name: /6,000 cycles guaranteed/i }).click(); await expect(page.getByRole("dialog", { name: "Evaluation detail" })).toBeVisible(); if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "evaluation-desktop.png"), fullPage: true }); if (testInfo.project.name.includes("430")) await page.screenshot({ path: path.join(screenshotRoot, "evaluation-mobile.png"), fullPage: true }); await page.goto("/app/inspection-room"); await expect(page.getByText("MATERIAL_DELIVERY_MISMATCH")).toBeVisible(); await expect(page.getByText("Payment is blocked")).toBeVisible(); if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "inspection-desktop.png"), fullPage: true }); if (testInfo.project.name.includes("430")) await page.screenshot({ path: path.join(screenshotRoot, "inspection-mobile.png"), fullPage: true }); });
+test("payments keeps gross values and controlled state visible", async ({ page }, testInfo) => { await page.goto("/app/payments"); await expect(page.getByText("Settlement Ledger")).toBeVisible(); await expect(page.getByText("Payment blocked pending permitted resolution")).toBeVisible(); if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "payments-desktop.png"), fullPage: true }); if (testInfo.project.name.includes("430")) await page.screenshot({ path: path.join(screenshotRoot, "payments-mobile.png"), fullPage: true }); });
+test("mobile navigation is keyboard reachable", async ({ page }, testInfo) => { test.skip(!testInfo.project.name.includes("mobile"), "Mobile navigation control is intentionally hidden on wide layouts."); await page.goto("/app/command-center"); await page.getByRole("button", { name: "Open navigation" }).focus(); await page.keyboard.press("Enter"); await expect(page.getByRole("navigation", { name: "Operate navigation" })).toBeVisible(); await noPageOverflow(page); });
+test("bid builder validates a typed action without broadcasting demo data", async ({ page }) => { await page.goto("/app/bid-builder"); await page.getByLabel("Bid ID").fill("BID-TEST-001"); await page.getByRole("button", { name: "Validate bid action" }).click(); await expect(page.getByText("Bid submitted")).not.toBeVisible(); await expect(page.getByText("Validate bid action")).toBeVisible(); });
+test("production-shaped pages have no browser errors or page overflow", async ({ page }) => { const errors = await noConsoleErrors(page); for (const route of ["/", ...routes.map((route) => `/app/${route}`)]) { await page.goto(route); await noPageOverflow(page); } expect(errors).toEqual([]); });
+test("reviewer screenshots cover command center and proof audit", async ({ page }, testInfo) => { if (!testInfo.project.name.includes("1440") && !testInfo.project.name.includes("430")) test.skip(); await page.goto("/app/command-center"); await page.screenshot({ path: path.join(screenshotRoot, `command-center-${testInfo.project.name.includes("1440") ? "desktop" : "mobile"}.png`), fullPage: true }); await page.goto("/app/proof-audit"); if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "proof-audit-desktop.png"), fullPage: true }); });

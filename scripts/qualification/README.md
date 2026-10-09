@@ -3,9 +3,9 @@
 `studio_live_qualification.py` is the current typed qualification helper and
 targets the frozen Deployment #6 canonical contract.
 
-Files beginning with `_` in this directory are archived qualification
-artifacts, diagnostic probes, or deployment journals. The files containing
-Deployment #4/#5 addresses or cases are historical/superseded evidence only;
-they are not operational defaults and must not be used for new live writes.
-The current Deployment #6 journals are `_deployment6.jsonl` and
-`_deployment6_qualification.jsonl`.
+Raw journals are kept outside this executable script directory. Current
+Deployment #6 journals are in `evidence/qualification/current/`; Deployment
+#4/#5 and earlier qualification journals are in
+`evidence/qualification/historical/`; runtime compatibility probes are in
+`evidence/runtime-probes/`. None are operational defaults or authorization
+for new live writes.

@@ -1,8 +1,8 @@
 # Procura product scope
 
-Procura is a procurement application positioned as **verifiable procurement from requirement to payment**. It serves buyers, suppliers, inspectors, and reviewers across the complete procurement lifecycle: frozen requirements, bids, bounded semantic conformity adjudication, awards, escrow, deliveries, inspection, payments, refunds, disputes, proof, and transaction recovery.
+Procura is a released procurement application positioned as **verifiable procurement from requirement to payment**. It serves buyers, suppliers, inspectors, and reviewers across the complete procurement lifecycle: frozen requirements, bids, bounded semantic conformity adjudication, awards, escrow, deliveries, inspection, payments, refunds, disputes, proof, and transaction recovery.
 
-Gate 1 is a foundation release. It provides the frozen `PROCUREMENT_V1` schema, a GenLayer contract surface, controlled demo data, value-transfer probe, explicit LIVE / CONTROLLED DEMO / HISTORICAL modes, frontend application shell, three flagship screens, and a transaction engine. Deployment and live writes are intentionally out of scope for this gate.
+The current product release includes the frozen `PROCUREMENT_V1` contract, controlled demo data, canonical Studio-dev LIVE reads, explicit LIVE / CONTROLLED DEMO / HISTORICAL PROOF modes, wallet and role UX, typed write entry points, transaction recovery visibility, complete application surfaces, and a product landing page. The contract and deployment are frozen; v1.0.1 changes only the application, documentation, repository presentation, and production frontend.
 
 ## Controlled demo
 
