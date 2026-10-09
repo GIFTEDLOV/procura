@@ -12,64 +12,26 @@
 | Frontend | Vitest serialization, transaction recovery, render smoke |
 | Browser E2E | Playwright routes, flagship screen labels, explicit demo mode |
 
-## Release preflight
+## Current release gates
 
-- Direct contract tests: 144 PASS, 1 SKIPPED.
-- Skip reason: the installed Windows/Python 3.14 GenLayer direct runner raises
-  `DecodingError` while injecting v0.6 message context; this is documented
-  environment provenance and was not repaired.
-- Adversarial: 44 PASS minimum met.
-- Property: 12 PASS minimum met.
-- Mutation: 24/24 killed.
-- Frontend unit/integration: 54 PASS.
-- Playwright: 16 PASS; console errors 0; horizontal overflow 0.
+The current v1.0.1 product release keeps the frozen deployment #6 contract
+unchanged. The exact-head local and CI gates are the authoritative counts below.
+
+- Python contract/qualification suite: `167 passed, 1 documented skip`.
+- Adversarial: `44 passed`.
+- Property/invariant: included in the full Python suite.
+- Mutation: `24/24 killed`.
+- Frontend unit/integration: `54/54 passed`.
+- Browser E2E: `52 total across four projects; 48 passed, 4 intentional skips`.
 - Typecheck, build, interface parity, transaction recovery, and secret scan:
-  PASS. The installed `genvm-linter 0.11.1rc2` still recognizes only the
-  legacy bare `@allow_storage` spelling and reports nine E014 false positives
-  against the target-proven `@gl.storage.allow` contract API; production source
-  was not regressed to satisfy that stale linter.
-- Focused fee-allocation regression: PASS.
-- JSON response regression: PASS; focused contract/adversarial semantic tests
-  pass, including the two native JSON calls and two default nondet calls.
-- Liveness regression: PASS locally for the undeployed candidate. The
-  canonical Deployment #5 case has a retry recovery path when no result is
-  committed, but remains blocked for publication until successful-result replay
-  protection is deployed and requalified.
+  PASS.
+- Nine E014 `gl.storage.allow` diagnostics remain documented tooling false
+  positives against the proven target runtime.
 
-## Runtime qualification
+Historical probe and qualification details remain in `docs/history/` and the
+`evidence/` hierarchy; they are not current release gates.
 
-- Deployment #4 schema and deploy simulation: PASS; 39 methods.
-- Storage allocation probes and Procura-shaped allocation harness: PASS.
-- Corrected raw `gen_call type=write` create preflight: PASS (`00`).
-- Live funding: PASS; exact `1000000000000000` wei reflected in escrow and
-  global liability.
-- First cancel/refund: finalized with
-  `Mode1MessageFeesRequireGenVMPerEmissionSupport`; no state mutation.
-- Same-case cancel retry: PASS with the required external allocation. Gross
-  buyer refund and contract/accounting deltas are exact; buyer net delta is
-  reconciled after protocol fees.
-- Payout setup: finalized with explicit `deployer` buyer and `player2` supplier
-  accounts. Adjudication preflight then stopped with the frozen deployed
-  runtime error `gl.vm.run_nondet_unsafe` missing; no payout settlement was
-  broadcast.
-- Corrected temporary JSON semantic probe: deployment, requirement, and
-  delivery transactions finalized with consensus and strict payload readback.
-
-## Frontend live-write boundary
-
-- `genlayer-js` 2.0.0-rc.1 is used by the adapter against Studio-dev 61997.
-- Focused live-adapter tests cover schema-ordered typed actions, numeric-only
-  hash strings, buyer/supplier role guards, wrong-network rejection, canonical
-  refund/supplier message allocations, non-message writes, one-shot broadcast,
-  and same-hash persistence.
-- Controlled-demo browser screens do not claim a wallet connection or live
-  state. Full browser broadcast qualification is intentionally not run after
-  the SDK payout stop.
-
-No contract source, ABI, state machine, accounting policy, or deployment was
-changed during fee-allocation recovery.
-
-## Final Deployment #5 gate result
+## Historical Deployment #5 gate result
 
 - Contract/qualification tests: 154 PASS, 1 documented direct-runner SKIP.
 - Adversarial, property, mutation, storage, nondet, JSON transport, semantic
@@ -83,7 +45,7 @@ changed during fee-allocation recovery.
 - Exit guards: double refund, payout after refund, double payout, and refund
   after payout all PASS via non-broadcasting failing preflights.
 - Frontend unit: 54 PASS; browser E2E: 16 PASS with no console errors;
-  typecheck and production build: PASS.
+  typecheck and production build: PASS. This is historical evidence only.
 
 ## Final Deployment #6 gate result
 
