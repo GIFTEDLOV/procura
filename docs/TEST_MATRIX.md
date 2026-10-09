@@ -22,7 +22,7 @@ unchanged. The exact-head local and CI gates are the authoritative counts below.
 - Property/invariant: included in the full Python suite.
 - Mutation: `24/24 killed`.
 - Frontend unit/integration: `54/54 passed`.
-- Browser E2E: `52 total across four projects; 50 passed, 2 intentional skips`.
+- Browser E2E: `52 total across four projects; 48 passed, 4 intentional skips`.
 - Typecheck, build, interface parity, transaction recovery, and secret scan:
   PASS.
 - Nine E014 `gl.storage.allow` diagnostics remain documented tooling false
