@@ -31,7 +31,7 @@
 Runtime status: `SUPERSEDED_RUNTIME_INCOMPATIBLE`; `create_tender` failed on
 `gl.storage.DynArray[str]()`.
 
-## Deployment #4 (canonical)
+## Deployment #4 (historical canonical at that stage; superseded)
 
 - Network: Studio-dev, chain 61997
 - RPC: `https://studio-dev.genlayer.com/api`
@@ -187,7 +187,7 @@ not accept `EVALUATING`, and no expiry/recovery method exists. The case has no
 direct terminal value exit, but the canonical pre-fix adjudication function
 writes no identity until semantic success, so the same tuple is retryable.
 The one-shot qualification flow blocked that retry. This is
-`CLASS_B_QUALIFICATION_SCRIPT_BUG` for liveness; publication remains blocked
+`CLASS_B_QUALIFICATION_SCRIPT_BUG` for liveness; publication remained blocked
 by the separate successful-result replay gap.
 
 The local, undeployed candidate adds pre-semantic-call guards on the existing

@@ -98,7 +98,7 @@ refund/payout qualification remain separate final gates.
 
 The corrected contract hash, interface manifest, toolchain, deployment history,
 refund proof, fee policy, and blocker are recorded in
-`docs/DEPLOYMENT_PROVENANCE.md`, `docs/STUDIO_DEV_QUALIFICATION.md`, and
+`docs/DEPLOYMENT_PROVENANCE.md`, `docs/history/STUDIO_DEV_QUALIFICATION.md`, and
 `docs/FEE_POLICY.md`.
 
 ## Corrected final local qualification
