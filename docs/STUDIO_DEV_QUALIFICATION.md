@@ -194,8 +194,56 @@ adjudication identity was committed. The one-shot qualification flow blocked
 that retry, so the liveness classification is
 `CLASS_B_QUALIFICATION_SCRIPT_BUG`.
 
-The canonical Deployment #5 remains unchanged. The local candidate adds only a
-pre-semantic-call guards on the existing requirement and delivery adjudication
+At the time of this audit, Deployment #5 remained unchanged. The local
+candidate added only pre-semantic-call guards on the existing requirement and delivery adjudication
 identities, leaving failed/undetermined attempts retryable while rejecting a
 second call after a committed successful record. Its source SHA-256 is
-recorded in the provenance manifest; it was not deployed.
+recorded in the provenance manifest. Deployment #6 qualification below
+supersedes that audit checkpoint.
+
+## Final Deployment #6 qualification
+
+Deployment #6 is the final replay-protected candidate:
+
+- Transaction: `0x5ceef949b50a184d9f5675a174ee6b329acdf61bbb05b853392b5e55b29ba34d`
+- Contract: `0x88634c7868B0659b46C5bd93E4038222697a0170`
+- Source SHA-256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
+- Finality/execution: `FINALIZED`, `FINISHED_WITH_RETURN / SUCCESS`
+- Schema: 39 methods; ABI parity PASS
+
+The fresh refund case
+`PROCURA-FINAL6-REFUND-20261008T235219Z` funded with
+`1000000000000000` wei and finalized one legitimate `cancel_tender` refund at
+`0x2b71e96260acc5b07f82ee4eabdfccf85e079575a24795339d6baf62cb46a536`.
+Canonical state is `CANCELLED`, and the gross value exit, escrow, liability,
+and refund accounting are exact. A duplicate cancellation preflight rejected
+without broadcast.
+
+The fresh payout case
+`PROCURA-FINAL6-PAYOUT-20261009T000016Z` funded at
+`0x8408780b4f89acfa212a8c8f9737db11776ee192d5411d99d83cb1a74f7c4cb6`.
+Requirement adjudication
+`0xc1dfbb2ab71c6f5760834bf6607aaea81e7088daab95546b289592c0c990cbb6`
+returned `COMPLIANT`. Delivery adjudication
+`0x13d0dcc025a08e51d2d0103d42b72eced5d387466efe83ef6183143b72a55935`
+returned `DELIVERY_ACCEPTED`. Read-only duplicate preflights for the exact
+bid and delivery identities rejected with `requirement already adjudicated`
+and `delivery already adjudicated`, respectively, before semantic execution.
+Settlement
+`0x46c000b3ac9d5034d74b54a20a96f1a8b1299ca8c15929d5e168aac4b7b4ff18`
+paid the exact gross `1000000000000000` wei to supplier
+`0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8`.
+
+Deployment #6 final accounting is:
+
+- `total_funded = 2000000000000000`
+- `total_supplier_payouts = 1000000000000000`
+- `total_buyer_refunds = 1000000000000000`
+- `escrow_liability = 0`
+- `bond_liability = 0`
+- contract native balance = `0`
+- unexplained native balance = `0`
+
+The historical Deployment #5 failed diagnostic tuple was not retried; it is
+preserved as superseded history and was not included in Deployment #6
+accounting. No Deployment #7 is authorized.

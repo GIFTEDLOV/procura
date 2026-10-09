@@ -1,18 +1,17 @@
 # Procura semantic evaluation liveness audit
 
-## Result
+## Historical audit result (resolved in Deployment #6)
 
-Publication is blocked. The canonical Deployment #5 contract at
+At audit time, publication was blocked. The then-canonical Deployment #5 contract at
 `0xE9f1319e98F25E301ee167aF41f82E25cC4f8770` remains unchanged at source SHA
 `95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed`.
 
-The audit classifies the stranded-case report as
+The audit classified the stranded-case report as
 `CLASS_B_QUALIFICATION_SCRIPT_BUG`. The canonical contract has a retry path
 when no adjudication record exists, but the qualification flow used a
 one-shot semantic write and incorrectly treated the failed tuple as
-non-retryable. Publication remains blocked because the canonical contract also
-allows successful adjudication records to be overwritten; the local candidate
-closes that replay gap.
+non-retryable. The separate successful-result replay gap was closed by the
+local candidate and proven live in Deployment #6 below.
 
 The reconstructed case was
 `PROCURA-FINAL-PAYOUT-20261008T101500Z`. It is funded with
@@ -88,3 +87,19 @@ Candidate source SHA-256:
 
 The local fix is not a publication approval. A fresh deployment and complete
 qualification are required before publication can be reconsidered.
+
+## Resolution in Deployment #6
+
+The local replay-protection fix was deployed once as Deployment #6 at
+`0x88634c7868B0659b46C5bd93E4038222697a0170`, transaction
+`0x5ceef949b50a184d9f5675a174ee6b329acdf61bbb05b853392b5e55b29ba34d`,
+source SHA-256
+`daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`.
+The bid and delivery identity guards were proven live: successful results
+were stored, and exact duplicate adjudication preflights were rejected before
+nondeterministic execution. The historical failed Deployment #5 tuple was not
+retried and remains preserved as superseded history.
+
+The liveness fix did not add public methods, storage fields, ABI surface,
+payment-policy changes, or result-shopping paths. Final #6 refund and payout
+qualification closed all #6 escrow, leaving zero unexplained native balance.

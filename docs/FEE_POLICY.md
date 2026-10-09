@@ -54,3 +54,15 @@ The refund receipt emitted one buyer message for the gross
 the same gross amount. Protocol fees are reconciled separately from gross
 contract accounting, so buyer wallet deltas are not treated as gross refund
 proofs.
+
+## Deployment #6 measured exits
+
+Deployment #6 used a fresh nonzero deployment fee quote of
+`100000000000010352` wei. The final refund transaction
+`0x2b71e96260acc5b07f82ee4eabdfccf85e079575a24795339d6baf62cb46a536` and
+the final settlement transaction
+`0x46c000b3ac9d5034d74b54a20a96f1a8b1299ca8c15929d5e168aac4b7b4ff18`
+used the same SDK-derived external allocation profile with recipients derived
+from canonical state. Both gross exits were exactly
+`1000000000000000` wei. The buyer's wallet delta is net of protocol fees;
+contract balance, escrow, liability, and accounting proofs use gross values.

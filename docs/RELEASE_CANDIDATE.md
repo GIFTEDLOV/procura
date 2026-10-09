@@ -3,7 +3,7 @@
 This local commit is the frozen storage-remediation candidate for operator
 review.
 
-## Publication blocker: semantic evaluation liveness
+## Historical publication blocker: semantic evaluation liveness
 
 The final liveness audit reclassified the stranded tuple as
 `CLASS_B_QUALIFICATION_SCRIPT_BUG`: a funded tender can enter `EVALUATING`,
@@ -12,16 +12,39 @@ and has no direct terminal value exit, but the canonical contract permits the
 same tuple to be retried because no adjudication record exists. The one-shot
 qualification flow incorrectly stopped instead of retrying.
 
-Publication is therefore `NOT READY` because the canonical contract permits
-successful semantic records to be overwritten before finalization/acceptance.
-The canonical contract and its deployed source SHA remain untouched. A local candidate adds only the existing
+At that audit point publication was `NOT READY` because the then-canonical
+contract permitted successful semantic records to be overwritten before
+finalization/acceptance. A local candidate added only the existing
 `(bid_id, requirement_id)` success-record guard before the semantic call, so a
 failed/undetermined call does not consume the identity while a successful
 record remains immutable. The same guard also closes delivery-result
 overwrites before acceptance/rejection. Candidate source SHA is recorded in
 the provenance manifest.
-No redeployment, GitHub push, Vercel deployment, or Portal submission was
-performed.
+No redeployment, GitHub push, Vercel deployment, or Portal submission had yet
+been performed at that audit point.
+
+## Final replay-protected deployment #6
+
+The replay-protection candidate was deployed once, after the complete
+predeployment gate passed. Deployment #6 is the current canonical candidate:
+
+- Contract: `0x88634c7868B0659b46C5bd93E4038222697a0170`
+- Deployment transaction: `0x5ceef949b50a184d9f5675a174ee6b329acdf61bbb05b853392b5e55b29ba34d`
+- Source SHA-256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
+- Network: Studio-dev, chain 61997
+- Schema: 39/39; ABI parity PASS
+
+The two successful semantic-result replay guards were proven by read-only
+preflight. The final bid returned `COMPLIANT` and the final delivery returned
+`DELIVERY_ACCEPTED`; a second preflight for each exact adjudication identity
+was rejected before nondeterministic execution. A fresh refund and payout
+then closed with exact gross value exits. Deployment #6 accounting is
+conserved with zero escrow liability, zero bond liability, zero contract
+balance, and zero unexplained balance.
+
+The local release is ready for publication review. GitHub push, Vercel
+deployment, release creation, and Portal submission remain intentionally
+withheld by the operator gate.
 
 ## Included
 

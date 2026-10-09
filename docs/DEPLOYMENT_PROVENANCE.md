@@ -195,3 +195,61 @@ requirement and delivery adjudication identities. Failed or undetermined
 semantic transactions commit no record and remain retryable; once a successful
 record exists, a second call is rejected. Candidate SHA-256 is recorded in the
 provenance manifest.
+
+## Deployment #6: final replay-protected candidate
+
+Deployment #5 was superseded after the pre-publication audit found that a
+successful bid or delivery adjudication could be overwritten before workflow
+finalization. Deployment #6 contains only the local replay-protection fix:
+the existing bid and delivery adjudication identities are checked before
+semantic execution, and are written only after successful semantic
+finalization. Failed, undetermined, rejected, or reverted semantic attempts
+consume no identity and remain retryable for the same frozen tuple.
+
+- Network: Studio-dev, chain 61997
+- Runner: `py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng`
+- Transaction: `0x5ceef949b50a184d9f5675a174ee6b329acdf61bbb05b853392b5e55b29ba34d`
+- Address: `0x88634c7868B0659b46C5bd93E4038222697a0170`
+- Fee value: `100000000000010352` wei
+- Source SHA-256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
+- Finality: YES; execution: `FINISHED_WITH_RETURN` / `SUCCESS`
+- Schema: 39 methods; ABI parity PASS
+
+The final refund case was
+`PROCURA-FINAL6-REFUND-20261008T235219Z`. Its fund transaction was
+`0x00b16f349ebe146a67cb3188a9de42cbeeedf6df7eb7d1fc51fce85b8e89d2ea` and
+its single refund transaction was
+`0x2b71e96260acc5b07f82ee4eabdfccf85e079575a24795339d6baf62cb46a536`.
+Canonical state is `CANCELLED`; gross refund, escrow, liability, and refund
+accounting each reconciled to `1000000000000000` wei. A duplicate cancellation
+preflight rejected without broadcast.
+
+The final payout case was
+`PROCURA-FINAL6-PAYOUT-20261009T000016Z`. Its fund transaction was
+`0x8408780b4f89acfa212a8c8f9737db11776ee192d5411d99d83cb1a74f7c4cb6`.
+Requirement adjudication
+`0xc1dfbb2ab71c6f5760834bf6607aaea81e7088daab95546b289592c0c990cbb6`
+returned `COMPLIANT`; delivery adjudication
+`0x13d0dcc025a08e51d2d0103d42b72eced5d387466efe83ef6183143b72a55935`
+returned `DELIVERY_ACCEPTED`. A same-identity bid preflight rejected with
+`requirement already adjudicated`, and a same-identity delivery preflight
+rejected with `delivery already adjudicated`, both before nondeterministic
+execution. Settlement
+`0x46c000b3ac9d5034d74b54a20a96f1a8b1299ca8c15929d5e168aac4b7b4ff18`
+paid exactly `1000000000000000` wei to supplier
+`0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8`.
+
+Deployment #6 accounting is closed independently of superseded deployments:
+
+- `total_funded = 2000000000000000`
+- `total_supplier_payouts = 1000000000000000`
+- `total_buyer_refunds = 1000000000000000`
+- `escrow_liability = 0`
+- `bond_liability = 0`
+- contract native balance = `0`
+- unexplained native balance = `0`
+
+The failed Deployment #5 diagnostic tuple and its historical one-wei smoke
+remain preserved as superseded historical cases. The failed semantic attempt
+was not retried because cleanup was optional and not required to qualify #6.
+No synthetic recovery or result-shopping attempt was made.

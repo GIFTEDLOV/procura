@@ -4,8 +4,8 @@ export type { Address } from "viem";
 export const LIVE_NETWORK = "studio-dev" as const;
 export const LIVE_CHAIN_ID = 61997 as const;
 export const LIVE_RPC = "https://studio-dev.genlayer.com/api" as const;
-export const LIVE_CONTRACT = "0xE9f1319e98F25E301ee167aF41f82E25cC4f8770" as Address;
-export const LIVE_CONTRACT_SHA256 = "95f7cc706decbb3e38eb0a1f6f0014ffc2279ac6c3d07d883199b44cacc36fed" as const;
+export const LIVE_CONTRACT = "0x88634c7868B0659b46C5bd93E4038222697a0170" as Address;
+export const LIVE_CONTRACT_SHA256 = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde" as const;
 
 export const BUYER_ROLE_ADDRESS = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266" as Address;
 export const SUPPLIER_ROLE_ADDRESS = "0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8" as Address;

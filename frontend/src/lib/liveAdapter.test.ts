@@ -81,5 +81,5 @@ describe("Procura live adapter", () => {
     expect(loadPendingTransaction("once-1", { getItem: (key) => storage.get(key) ?? null, setItem: () => undefined, removeItem: () => undefined })?.txHash).toBe("0xabc");
   });
 
-  it("uses the Deployment #5 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0xE9f1319e98F25E301ee167aF41f82E25cC4f8770"));
+  it("uses the Deployment #6 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0x88634c7868B0659b46C5bd93E4038222697a0170"));
 });

@@ -84,3 +84,21 @@ changed during fee-allocation recovery.
   after payout all PASS via non-broadcasting failing preflights.
 - Frontend unit: 54 PASS; browser E2E: 16 PASS with no console errors;
   typecheck and production build: PASS.
+
+## Final Deployment #6 gate result
+
+- Python contract/qualification suite: `167 passed, 1 documented skip`.
+- Replay/liveness qualification coverage: canonical-state retry eligibility,
+  immutable successful bid result, immutable successful delivery result, and
+  fail-closed canonical-state reads all PASS.
+- Deployment #6: finalized successfully; 39/39 schema parity; source SHA
+  exact match; no public method or storage-layout change.
+- Fresh refund and payout: exact gross value exits PASS; contract balance and
+  escrow liability are both zero afterward.
+- Live duplicate adjudication preflights: bid and delivery rejected before
+  nondeterministic execution; no duplicate write was broadcast.
+- Frontend unit: 54 PASS; Playwright: 16 PASS; console errors 0; horizontal
+  overflow 0; typecheck, build, interface parity, transaction recovery, and
+  secret scan PASS.
+- Known nine E014 `gl.storage.allow` findings remain tooling false positives
+  against the proven target runtime and are not release-blocking.

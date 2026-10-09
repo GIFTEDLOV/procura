@@ -38,7 +38,7 @@ corrected 5jyc JSON semantic probe. Deployment #5 now supplies the canonical
 address and source hash below, followed by the existing browser and adapter
 regression suite.
 
-## Deployment #5 canonical configuration
+## Deployment #5 historical configuration
 
 The live adapter now points to Deployment #5:
 
@@ -49,3 +49,15 @@ The live adapter now points to Deployment #5:
 The adapter regression suite remains green: 54 Vitest tests, typecheck, build,
 and 16 Playwright browser tests. No Vercel deployment or public live-wallet
 session was performed.
+
+## Deployment #6 canonical configuration
+
+After final #6 qualification, the live adapter points to:
+
+- Contract: `0x88634c7868B0659b46C5bd93E4038222697a0170`
+- Source SHA-256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
+- Network: Studio-dev, chain 61997
+
+The ABI is unchanged at 39 methods. Frontend unit tests remain 54/54 and
+Playwright remains 16/16 with zero console errors and zero horizontal
+overflow. No Vercel deployment or public publication action was performed.
