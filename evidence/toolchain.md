@@ -1,6 +1,6 @@
 # Gate 1 preflight evidence
 
-- Workspace: `C:\Users\DELL\Procura`
+- Workspace: local Procura checkout
 - Starting repository: empty directory, no Git repository, no starting commit
 - Node: `v24.14.0`
 - pnpm: `11.0.9`
