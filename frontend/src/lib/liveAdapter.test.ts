@@ -128,6 +128,24 @@ describe("Procura live adapter", () => {
     expect(waitForFinalization).toHaveBeenCalledTimes(2);
   });
 
+  it("does not reconcile payable actions with a different transferred value", async () => {
+    const first = buildTypedAction("fund_tender", { tender_id: "T-VALUE" }, { requestId: "fund-value-1", value: 10n });
+    const second = buildTypedAction("fund_tender", { tender_id: "T-VALUE" }, { requestId: "fund-value-2", value: 11n });
+    const storage = new Map<string, string>();
+    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
+    const writes: Array<{ value: bigint }> = [];
+    const writeContract = vi.fn(async (request: { value: bigint }) => { writes.push(request); return `0x${String(writes.length).padStart(3, "0")}`; });
+    const client = {
+      chain: { id: LIVE_CHAIN_ID }, simulateWriteContract: vi.fn(async () => ({})),
+      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
+      writeContract, waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
+    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
+    await executeLiveWrite({ client, action: first, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
+    await executeLiveWrite({ client, action: second, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
+    expect(writeContract).toHaveBeenCalledTimes(2);
+    expect(writes.map(({ value }) => value)).toEqual([10n, 11n]);
+  });
+
   it("does not rebroadcast a persisted hash after a finalized execution error", async () => {
     const action = buildTypedAction("freeze_tender", { tender_id: "T-ERROR" }, { requestId: "no-rebroadcast-error" });
     const storage = new Map<string, string>();

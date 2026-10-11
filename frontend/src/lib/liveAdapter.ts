@@ -195,7 +195,9 @@ function persistedTransactions(storage: StorageLike): StoredLiveTransaction[] {
 function sameAction(record: StoredLiveTransaction, action: TypedAction, account: Address): boolean {
   const recordArgs = record.args.map((value) => String(value));
   const actionArgs = action.args.map((value) => String(value));
-  return typeof record.account === "string" && record.account.toLowerCase() === account.toLowerCase() && record.method === action.method && recordArgs.length === actionArgs.length && recordArgs.every((value, index) => value === actionArgs[index]);
+  const recordValue = record.value ?? "0";
+  const actionValue = action.value?.toString() ?? "0";
+  return typeof record.account === "string" && record.account.toLowerCase() === account.toLowerCase() && record.method === action.method && recordValue === actionValue && recordArgs.length === actionArgs.length && recordArgs.every((value, index) => value === actionArgs[index]);
 }
 
 function persistPending(storage: StorageLike, action: TypedAction, account: Address, hash: `0x${string}`): void {

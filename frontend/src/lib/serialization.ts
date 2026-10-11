@@ -134,6 +134,16 @@ export async function sha256File(file: Blob): Promise<{ contentSha256: string; c
   return { contentSha256: await sha256HexBytes(bytes), contentByteLength: BigInt(bytes.byteLength) };
 }
 
+/**
+ * Hash only the currently selected evidence file. A later selection invalidates
+ * the token, so a slower read of an older file cannot overwrite the latest
+ * file's digest or byte length in the LIVE form.
+ */
+export async function sha256FileForSelection(file: Blob, selectionToken: number, currentSelection: () => number): Promise<{ contentSha256: string; contentByteLength: bigint } | null> {
+  const result = await sha256File(file);
+  return currentSelection() === selectionToken ? result : null;
+}
+
 export async function commitmentHash(method: string, kwargs: Record<string, unknown>, excludedField: string): Promise<string> {
   return sha256Hex(canonicalArgumentSerialization(method, kwargs, [excludedField]));
 }

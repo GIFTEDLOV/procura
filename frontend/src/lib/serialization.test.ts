@@ -13,6 +13,7 @@ import {
   normalizeContractTimestamp,
   serializeBid,
   sha256File,
+  sha256FileForSelection,
   sha256Hex,
 } from "./serialization";
 
@@ -95,5 +96,13 @@ describe("contract serialization", () => {
     const result = await sha256File({ arrayBuffer: async () => new Uint8Array([0, 1, 2, 255]).buffer } as unknown as Blob);
     expect(result.contentByteLength).toBe(4n);
     expect(result.contentSha256).toBe("3d1f57c984978ef98a18378c8166c1cb8ede02c03eeb6aee7e2f121dfeee3e56");
+  });
+
+  it("ignores a slower hash from a stale evidence-file selection", async () => {
+    let currentSelection = 2;
+    const result = await sha256FileForSelection({ arrayBuffer: async () => new Uint8Array([9]).buffer } as unknown as Blob, 1, () => currentSelection);
+    expect(result).toBeNull();
+    currentSelection = 1;
+    await expect(sha256FileForSelection({ arrayBuffer: async () => new Uint8Array([9]).buffer } as unknown as Blob, 1, () => currentSelection)).resolves.toMatchObject({ contentByteLength: 1n });
   });
 });
