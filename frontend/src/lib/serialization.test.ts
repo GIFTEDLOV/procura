@@ -63,7 +63,7 @@ describe("contract serialization", () => {
   });
 
   it("builds a real 14-argument tender commitment from form values", async () => {
-    const args = await buildCreateTenderArgs({ tenderId: "T-1", title: "Solar storage", description: "100 units", category: "ENERGY", currencyLabel: "GEN", budgetCeiling: "1000000000000000", bidDeadline: "2026-10-05T09:00", evaluationDeadline: "2026-10-06T09:00", deliveryDeadline: "2026-10-20T09:00", equivalencePolicy: "STRICT", evaluationPolicy: "OBJECTIVE", paymentPolicy: "FULL", supplierBondPolicy: "NONE" });
+    const args = await buildCreateTenderArgs({ tenderId: "T-1", title: "Solar storage", description: "100 units", category: "ENERGY", currencyLabel: "GEN", budgetCeiling: "1000000000000000", bidDeadline: "2026-10-05T09:00:00+01:00", evaluationDeadline: "2026-10-06T09:00:00+01:00", deliveryDeadline: "2026-10-20T09:00:00+01:00", equivalencePolicy: "STRICT", evaluationPolicy: "OBJECTIVE", paymentPolicy: "FULL", supplierBondPolicy: "NONE" });
     expect(Object.keys(args)).toHaveLength(14);
     expect(args.bid_deadline).toBe("2026-10-05T08:00:00.000Z");
     expect(args.budget_ceiling).toBe(1000000000000000n);
@@ -72,11 +72,11 @@ describe("contract serialization", () => {
   });
 
   it("builds a budget/currency/deadline-guarded bid with a real commitment", async () => {
-    const args = await buildSubmitBidArgs({ bidId: "B-1", tenderId: "T-1", price: "42", currency: "GEN", deliveryCommitment: "30 days", requirementResponses: "{}", submittedAt: "2026-10-05T09:00", tenderCurrency: "GEN", tenderBudgetCeiling: "100", tenderBidDeadline: "2026-10-06T09:00" });
+    const args = await buildSubmitBidArgs({ bidId: "B-1", tenderId: "T-1", price: "42", currency: "GEN", deliveryCommitment: "30 days", requirementResponses: "{}", submittedAt: "2026-10-05T09:00:00+01:00", tenderCurrency: "GEN", tenderBudgetCeiling: "100", tenderBidDeadline: "2026-10-06T09:00:00+01:00" });
     expect(args.submitted_at).toBe("2026-10-05T08:00:00.000Z");
     expect(args.price).toBe(42n);
     expect(args.bid_hash).toMatch(/^[0-9a-f]{64}$/);
-    await expect(buildSubmitBidArgs({ bidId: "B-1", tenderId: "T-1", price: "101", currency: "GEN", deliveryCommitment: "30 days", requirementResponses: "{}", submittedAt: "2026-10-05T09:00", tenderCurrency: "GEN", tenderBudgetCeiling: "100", tenderBidDeadline: "2026-10-06T09:00" })).rejects.toThrow(/budget/);
+    await expect(buildSubmitBidArgs({ bidId: "B-1", tenderId: "T-1", price: "101", currency: "GEN", deliveryCommitment: "30 days", requirementResponses: "{}", submittedAt: "2026-10-05T09:00:00+01:00", tenderCurrency: "GEN", tenderBudgetCeiling: "100", tenderBidDeadline: "2026-10-06T09:00:00+01:00" })).rejects.toThrow(/budget/);
   });
 
   it("builds delivery and evidence arguments with exact u256 values", async () => {
