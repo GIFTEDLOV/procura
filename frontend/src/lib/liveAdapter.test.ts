@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { MessageType } from "genlayer-js";
 import { deriveExternalMessageCallKey } from "genlayer-js";
-import { buildTypedAction, externalAllocation, assertRole, assertStudioDevWallet, executeLiveWrite, loadPendingTransaction, recoverLiveTransaction, requiredRole } from "./liveAdapter";
-import { BUYER_ROLE_ADDRESS, LIVE_CHAIN_ID, LIVE_CONTRACT, SUPPLIER_ROLE_ADDRESS } from "./liveConfig";
+import { buildTypedAction, externalAllocation, assertRole, assertStudioDevWallet, executeLiveWrite, executePreparedLiveWrite, loadPendingTransaction, recoverLiveTransaction, requiredRole } from "./liveAdapter";
+import { BUYER_ROLE_ADDRESS, LIVE_CHAIN_ID, LIVE_CONTRACT, LIVE_V1_WRITE_METHODS, SUPPLIER_ROLE_ADDRESS, V1_LIVE_READ_ONLY_MESSAGE } from "./liveConfig";
 
 const numericHash = "1234567890123456789012345678901234567890123456789012345678901234";
 
@@ -13,6 +13,16 @@ function createTenderKwargs(tenderHash = numericHash) {
     evaluation_deadline: "2027-01-01T00:00:00.000Z", delivery_deadline: "2027-01-02T00:00:00.000Z",
     equivalence_policy: "strict", evaluation_policy: "objective", payment_policy: "full", supplier_bond_policy: "NONE", tender_hash: tenderHash,
   };
+}
+
+function readOnlyClient() {
+  return {
+    chain: { id: LIVE_CHAIN_ID },
+    simulateWriteContract: vi.fn(),
+    estimateTransactionFees: vi.fn(),
+    writeContract: vi.fn(),
+    waitForFinalization: vi.fn(),
+  } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
 }
 
 describe("Procura live adapter", () => {
@@ -71,7 +81,7 @@ describe("Procura live adapter", () => {
       writeContract,
       waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    const result = await executeLiveWrite({
+    const result = await executePreparedLiveWrite({
       client: mockClient,
       action,
       account: BUYER_ROLE_ADDRESS,
@@ -92,7 +102,7 @@ describe("Procura live adapter", () => {
       estimateTransactionFees: vi.fn(), writeContract,
       waitForFinalization: vi.fn(),
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, canonicalReadback: async () => ({}) })).rejects.toThrow(/simulation rejected/);
+    await expect(executePreparedLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, canonicalReadback: async () => ({}) })).rejects.toThrow(/simulation rejected/);
     expect(writeContract).not.toHaveBeenCalled();
   });
 
@@ -106,7 +116,7 @@ describe("Procura live adapter", () => {
       writeContract: vi.fn(async () => "0xfail"),
       waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_ERROR" })),
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
+    await expect(executePreparedLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
     expect(loadPendingTransaction("execution-fails", { getItem: (key) => storage.get(key) ?? null, setItem: () => undefined, removeItem: () => undefined })).toMatchObject({ finality: "FINALIZED", execution: "ERROR" });
   });
 
@@ -121,9 +131,9 @@ describe("Procura live adapter", () => {
       writeContract, waitForFinalization,
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
     const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
-    await executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
+    await executePreparedLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
     const refreshedAction = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "recover-after-refresh" });
-    await executeLiveWrite({ client, action: refreshedAction, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
+    await executePreparedLiveWrite({ client, action: refreshedAction, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
     expect(writeContract).toHaveBeenCalledTimes(1);
     expect(waitForFinalization).toHaveBeenCalledTimes(2);
   });
@@ -140,8 +150,8 @@ describe("Procura live adapter", () => {
       estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
       writeContract, waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await executeLiveWrite({ client, action: first, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
-    await executeLiveWrite({ client, action: second, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
+    await executePreparedLiveWrite({ client, action: first, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
+    await executePreparedLiveWrite({ client, action: second, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
     expect(writeContract).toHaveBeenCalledTimes(2);
     expect(writes.map(({ value }) => value)).toEqual([10n, 11n]);
   });
@@ -157,9 +167,9 @@ describe("Procura live adapter", () => {
       writeContract, waitForFinalization,
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
     const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
+    await expect(executePreparedLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
     const refreshed = buildTypedAction("freeze_tender", { tender_id: "T-ERROR" }, { requestId: "no-rebroadcast-error-refresh" });
-    await expect(executeLiveWrite({ client, action: refreshed, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/recovered transaction failed/);
+    await expect(executePreparedLiveWrite({ client, action: refreshed, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/recovered transaction failed/);
     expect(writeContract).toHaveBeenCalledTimes(1);
     expect(waitForFinalization).toHaveBeenCalledTimes(2);
   });
@@ -171,6 +181,21 @@ describe("Procura live adapter", () => {
       waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_ERROR" })),
     } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
     await expect(recoverLiveTransaction({ client, record: { requestId: action.requestId, method: action.method, args: [...action.args], txHash: "0xrecover-error", phase: "PERSIST_HASH", address: LIVE_CONTRACT, account: BUYER_ROLE_ADDRESS }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
+  });
+
+  it("fails closed for every V1 write before simulation, fee estimation, or broadcast", async () => {
+    expect(LIVE_V1_WRITE_METHODS).toHaveLength(25);
+    const client = readOnlyClient();
+    const storage = { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() };
+    for (const method of LIVE_V1_WRITE_METHODS) {
+      const action = { method, args: [], kwargs: {}, requestId: `blocked-${method}`, value: 0n } as unknown as Parameters<typeof executeLiveWrite>[0]["action"];
+      await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage, canonicalReadback: async () => ({}) })).rejects.toThrow(V1_LIVE_READ_ONLY_MESSAGE);
+    }
+    expect(client.simulateWriteContract).not.toHaveBeenCalled();
+    expect(client.estimateTransactionFees).not.toHaveBeenCalled();
+    expect(client.writeContract).not.toHaveBeenCalled();
+    expect(client.waitForFinalization).not.toHaveBeenCalled();
+    expect(storage.setItem).not.toHaveBeenCalled();
   });
 
   it("uses the Deployment #6 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0x88634c7868B0659b46C5bd93E4038222697a0170"));

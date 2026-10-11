@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tan
 import { Shell, legacyRoute, routeFromPath, type RouteKey } from "./components/Shell";
 import { demoData } from "./lib/demoData";
 import { createLiveWalletClient, executeLiveWrite, buildTypedAction, assertStudioDevWallet, loadPendingTransaction, recoverLiveTransaction, type StoredLiveTransaction } from "./lib/liveAdapter";
-import { LIVE_CONTRACT, sameAddress, type FrontendMode } from "./lib/liveConfig";
+import { LIVE_CONTRACT, liveV1WriteBlockReason, sameAddress, type FrontendMode } from "./lib/liveConfig";
 import { readActionPrecondition, readActionReadback, readLiveSnapshot, type LiveSnapshot } from "./lib/liveData";
 import { manifestMethod } from "./lib/interfaceManifest";
 import { browserProvider, connectWallet, readWallet, type WalletState } from "./lib/wallet";
@@ -49,6 +49,8 @@ function Application() {
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ["procura", "live", LIVE_CONTRACT] });
   const onConnect = async () => { setWallet(await connectWallet()); };
   const runAction = async (method: string, kwargs: Record<string, unknown>, value?: bigint | number | string) => {
+    const blockedReason = liveV1WriteBlockReason(method);
+    if (blockedReason) throw new Error(blockedReason);
     const provider = wallet.provider ?? browserProvider();
     if (!provider) throw new Error("Connect a browser wallet before submitting a LIVE write.");
     const account = await assertStudioDevWallet(provider);
