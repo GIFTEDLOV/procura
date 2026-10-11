@@ -1,6 +1,7 @@
 import {
   createClient,
   deriveExternalMessageCallKey,
+  isSuccessful,
   MessageType,
 } from "genlayer-js";
 import { studioDevnet } from "genlayer-js/chains";
@@ -10,6 +11,7 @@ import type { Hex } from "viem";
 import { manifestMethod } from "./interfaceManifest";
 import { buildAction, type WriteAction } from "./domain";
 import { feeEstimateOptions, messageAllocationFor } from "./feeProfile";
+import { validateSharedWorkflowArgs } from "./serialization";
 import {
   BUYER_ROLE_ADDRESS,
   LIVE_CHAIN_ID,
@@ -23,6 +25,7 @@ import {
 import type { TransactionRecord } from "./transactions";
 
 export type LiveRole = "buyer" | "supplier" | "party" | "permissionless";
+export type RoleContext = { buyer?: Address; supplier?: Address };
 export type BrowserProvider = {
   request(args: { method: string; params?: readonly unknown[] }): Promise<unknown>;
 };
@@ -92,7 +95,7 @@ export function createLiveWalletClient(address: Address, provider: BrowserProvid
 
 export async function assertStudioDevWallet(provider: BrowserProvider, expectedAddress?: Address): Promise<Address> {
   const chainId = await provider.request({ method: "eth_chainId" });
-  const numericChainId = typeof chainId === "string" ? Number.parseInt(chainId, 16) : Number(chainId);
+  const numericChainId = typeof chainId === "string" ? (chainId.startsWith("0x") ? Number.parseInt(chainId, 16) : Number(chainId)) : Number(chainId);
   if (numericChainId !== LIVE_CHAIN_ID) throw new Error(`Wrong network: expected ${LIVE_NETWORK} (${LIVE_CHAIN_ID}), received ${numericChainId}`);
   const accounts = await provider.request({ method: "eth_accounts" });
   const address = Array.isArray(accounts) ? accounts[0] : undefined;
@@ -118,7 +121,7 @@ export function assertRole(method: string, account: Address, context: { buyer?: 
 
 function normalizeActionValue(value: unknown): unknown {
   if (typeof value === "number") {
-    if (!Number.isInteger(value) || value < 0) throw new Error("numeric contract values must be non-negative integers");
+    if (!Number.isSafeInteger(value) || value < 0) throw new Error("numeric contract values must be non-negative safe integers; use bigint for large values");
     return BigInt(value);
   }
   if (Array.isArray(value)) return value.map(normalizeActionValue);
@@ -138,6 +141,7 @@ export function buildTypedAction(
   const extra = received.filter((key) => !expected.includes(key));
   if (missing.length || extra.length) throw new Error(`${method} kwargs mismatch; missing=${missing.join(",")} extra=${extra.join(",")}`);
   const normalized = Object.fromEntries(expected.map((key) => [key, normalizeActionValue(kwargs[key])]));
+  validateSharedWorkflowArgs(method, normalized);
   const action = buildAction(method, expected.map((key) => normalized[key]), options);
   return { ...action, kwargs: normalized };
 }
@@ -158,8 +162,9 @@ export interface LiveWriteParams {
   action: TypedAction;
   account: Address;
   canonicalRecipient?: Address;
+  roleContext?: RoleContext;
   storage?: StorageLike;
-  readPrecondition?: () => Promise<void>;
+  readPrecondition?: () => Promise<RoleContext | void>;
   canonicalReadback: () => Promise<unknown>;
 }
 
@@ -168,10 +173,32 @@ export interface LiveWriteResult {
   hash: `0x${string}`;
   receipt: unknown;
   readback: unknown;
-  fees: Awaited<ReturnType<LiveClient["estimateTransactionFees"]>>;
+  fees?: Awaited<ReturnType<LiveClient["estimateTransactionFees"]>>;
 }
 
 function recordKey(requestId: string): string { return `procura:live-tx:${requestId}`; }
+const transactionIndexKey = "procura:live-tx-index";
+
+function persistedTransactionIds(storage: StorageLike): string[] {
+  const raw = storage.getItem(transactionIndexKey);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
+  } catch { return []; }
+}
+
+function persistedTransactions(storage: StorageLike): StoredLiveTransaction[] {
+  return persistedTransactionIds(storage).map((requestId) => loadPendingTransaction(requestId, storage)).filter((record): record is StoredLiveTransaction => Boolean(record));
+}
+
+function sameAction(record: StoredLiveTransaction, action: TypedAction, account: Address): boolean {
+  const recordArgs = record.args.map((value) => String(value));
+  const actionArgs = action.args.map((value) => String(value));
+  const recordValue = record.value ?? "0";
+  const actionValue = action.value?.toString() ?? "0";
+  return typeof record.account === "string" && record.account.toLowerCase() === account.toLowerCase() && record.method === action.method && recordValue === actionValue && recordArgs.length === actionArgs.length && recordArgs.every((value, index) => value === actionArgs[index]);
+}
 
 function persistPending(storage: StorageLike, action: TypedAction, account: Address, hash: `0x${string}`): void {
   const record: StoredLiveTransaction = {
@@ -185,6 +212,8 @@ function persistPending(storage: StorageLike, action: TypedAction, account: Addr
     value: action.value?.toString(),
   };
   storage.setItem(recordKey(action.requestId), JSON.stringify(record, (_, value) => typeof value === "bigint" ? value.toString() : value));
+  const ids = persistedTransactionIds(storage);
+  if (!ids.includes(action.requestId)) storage.setItem(transactionIndexKey, JSON.stringify([...ids, action.requestId]));
 }
 
 function updatePending(storage: StorageLike, requestId: string, patch: Partial<StoredLiveTransaction>): void {
@@ -200,9 +229,25 @@ export function loadPendingTransaction(requestId: string, storage?: StorageLike)
 
 export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
   const { client, action, account, canonicalRecipient, canonicalReadback } = params;
-  assertRole(action.method, account, {});
+  const storage = storageOrFallback(params.storage);
   if (client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
-  if (params.readPrecondition) await params.readPrecondition();
+  const existing = loadPendingTransaction(action.requestId, storage);
+  if (existing && !sameAction(existing, action, account)) {
+    throw new Error(`request ${action.requestId} already has a different persisted transaction; refusing a duplicate broadcast`);
+  }
+  const prior = existing ?? persistedTransactions(storage).find((record) => sameAction(record, action, account));
+  if (prior?.txHash) {
+    const receipt = await client.waitForFinalization({ hash: prior.txHash as Hash, fullTransaction: true });
+    if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+      updatePending(storage, prior.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
+      throw new Error(`${action.method} recovered transaction failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
+    }
+    const readback = await canonicalReadback();
+    updatePending(storage, prior.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+    return { action, hash: prior.txHash as `0x${string}`, receipt, readback };
+  }
+  const preconditionContext = params.readPrecondition ? await params.readPrecondition() : undefined;
+  assertRole(action.method, account, { ...(params.roleContext ?? {}), ...(preconditionContext ?? {}) });
 
   const allocation = ["cancel_tender", "settle_award", "refund_buyer"].includes(action.method)
     ? externalAllocation(action.method, canonicalRecipient ?? (() => { throw new Error(`${action.method} requires canonical recipient`); })())
@@ -227,15 +272,18 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
     value: action.value ?? 0n,
     fees: { distribution: fees.distribution, feeValue: fees.feeValue, messageAllocations: fees.messageAllocations },
   }) as Hash;
-  persistPending(storageOrFallback(params.storage), action, account, hash);
+  persistPending(storage, action, account, hash);
+  updatePending(storage, action.requestId, { phase: "RECONCILE_SAME_HASH" });
   const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
-  if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-    updatePending(storageOrFallback(params.storage), action.requestId, { phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "ERROR" });
-    throw new Error(`${action.method} execution failed: ${String(receipt.txExecutionResultName)}`);
+  if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+    updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
+    throw new Error(`${action.method} execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
   }
-  updatePending(storageOrFallback(params.storage), action.requestId, { phase: "FINALITY", finality: "FINALIZED", execution: "SUCCESS" });
+  updatePending(storage, action.requestId, { phase: "FINALITY", finality: "FINALIZED" });
+  updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "SUCCESS" });
+  updatePending(storage, action.requestId, { phase: "CANONICAL_READBACK" });
   const readback = await canonicalReadback();
-  updatePending(storageOrFallback(params.storage), action.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+  updatePending(storage, action.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
   return { action, hash, receipt, readback, fees };
 }
 
@@ -243,11 +291,16 @@ export async function recoverLiveTransaction(params: {
   client: LiveClient;
   record: StoredLiveTransaction;
   canonicalReadback: () => Promise<unknown>;
+  storage?: StorageLike;
 }): Promise<{ hash: `0x${string}`; receipt: unknown; readback: unknown }> {
+  if (params.client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
+  if (params.record.address !== LIVE_CONTRACT) throw new Error(`Persisted transaction targets an unexpected contract: ${params.record.address}`);
   if (!params.record.txHash) throw new Error("No persisted transaction hash to recover");
   const receipt = await params.client.waitForFinalization({ hash: params.record.txHash as Hash, fullTransaction: true });
-  if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-    throw new Error(`Recovered transaction execution failed: ${String(receipt.txExecutionResultName)}`);
+  if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+    throw new Error(`Recovered transaction execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
   }
-  return { hash: params.record.txHash as Hash, receipt, readback: await params.canonicalReadback() };
+  const readback = await params.canonicalReadback();
+  if (params.storage) updatePending(params.storage, params.record.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+  return { hash: params.record.txHash as Hash, receipt, readback };
 }

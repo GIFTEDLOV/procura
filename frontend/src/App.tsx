@@ -3,8 +3,9 @@ import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tan
 import { Shell, legacyRoute, routeFromPath, type RouteKey } from "./components/Shell";
 import { demoData } from "./lib/demoData";
 import { createLiveWalletClient, executeLiveWrite, buildTypedAction, assertStudioDevWallet, loadPendingTransaction, recoverLiveTransaction, type StoredLiveTransaction } from "./lib/liveAdapter";
-import { LIVE_CONTRACT, type FrontendMode } from "./lib/liveConfig";
-import { readLiveSnapshot, type LiveSnapshot } from "./lib/liveData";
+import { LIVE_CONTRACT, sameAddress, type FrontendMode } from "./lib/liveConfig";
+import { readActionPrecondition, readActionReadback, readLiveSnapshot, type LiveSnapshot } from "./lib/liveData";
+import { manifestMethod } from "./lib/interfaceManifest";
 import { browserProvider, connectWallet, readWallet, type WalletState } from "./lib/wallet";
 import { ProductScreens, LandingPage, NotFound } from "./screens/ProductScreens";
 
@@ -53,7 +54,20 @@ function Application() {
     const account = await assertStudioDevWallet(provider);
     const action = buildTypedAction(method, kwargs, { requestId: crypto.randomUUID(), value });
     const client = createLiveWalletClient(account, provider);
-    await executeLiveWrite({ client, action, account, storage: window.localStorage, canonicalReadback: async () => { const snapshot = await readLiveSnapshot(); queryClient.setQueryData(["procura", "live", LIVE_CONTRACT], snapshot); return snapshot; } });
+    await executeLiveWrite({
+      client,
+      action,
+      account,
+      roleContext: method === "create_tender" ? { buyer: account } : undefined,
+      storage: window.localStorage,
+      readPrecondition: () => readActionPrecondition(client, action),
+      canonicalReadback: async () => {
+        const entity = await readActionReadback(client, action);
+        const snapshot = await readLiveSnapshot();
+        queryClient.setQueryData(["procura", "live", LIVE_CONTRACT], snapshot);
+        return { entity, snapshot };
+      },
+    });
     setTransactions(storedTransactions());
   };
   const recoverTransaction = async (requestId: string) => {
@@ -62,7 +76,23 @@ function Application() {
     const account = await assertStudioDevWallet(provider);
     const record = loadPendingTransaction(requestId, window.localStorage);
     if (!record) throw new Error("No persisted transaction record was found.");
-    const result = await recoverLiveTransaction({ client: createLiveWalletClient(account, provider), record, canonicalReadback: async () => { const snapshot = await readLiveSnapshot(); queryClient.setQueryData(["procura", "live", LIVE_CONTRACT], snapshot); return snapshot; } });
+    if (!sameAddress(record.account, account)) throw new Error(`Wrong wallet: recovery belongs to ${record.account}`);
+    const client = createLiveWalletClient(account, provider);
+    const method = record.method;
+    const manifest = manifestMethod(method);
+    const action = {
+      method,
+      args: record.args,
+      kwargs: Object.fromEntries(manifest.arguments.map((name, index) => [name, record.args[index]])),
+      requestId: record.requestId,
+      value: record.value === undefined ? undefined : BigInt(record.value),
+    } as Parameters<typeof readActionReadback>[1];
+    const result = await recoverLiveTransaction({ client, record, storage: window.localStorage, canonicalReadback: async () => {
+      const entity = await readActionReadback(client, action);
+      const snapshot = await readLiveSnapshot();
+      queryClient.setQueryData(["procura", "live", LIVE_CONTRACT], snapshot);
+      return { entity, snapshot };
+    } });
     void result;
     setTransactions(storedTransactions());
   };

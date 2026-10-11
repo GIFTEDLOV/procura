@@ -1,5 +1,7 @@
 import { createLiveReadClient } from "./liveAdapter";
-import { LIVE_CONTRACT, LIVE_CONTRACT_SHA256, LIVE_CHAIN_ID, LIVE_NETWORK } from "./liveConfig";
+import type { RoleContext, TypedAction } from "./liveAdapter";
+import { LIVE_CONTRACT, LIVE_CONTRACT_SHA256, LIVE_CHAIN_ID, LIVE_NETWORK, type Address } from "./liveConfig";
+import { parseU256 } from "./serialization";
 
 export type LiveReadStatus = "ready" | "empty" | "partial";
 
@@ -18,6 +20,132 @@ export type LiveSnapshot = {
   contract: typeof LIVE_CONTRACT;
   sourceSha: typeof LIVE_CONTRACT_SHA256;
 };
+
+export type CanonicalTenderTerms = { currencyLabel: string; budgetCeiling: string | bigint | number; bidDeadline: string };
+
+type ReadClient = { readContract: (args: { address: typeof LIVE_CONTRACT; functionName: string; args?: never[] }) => Promise<unknown> };
+
+function field(record: unknown, name: string): unknown {
+  if (!record || typeof record !== "object") return undefined;
+  return (record as Record<string, unknown>)[name];
+}
+
+function recordId(record: unknown, name: string): string | null {
+  const value = field(record, name);
+  return typeof value === "string" ? value : null;
+}
+
+function addressText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && typeof (value as { as_hex?: unknown }).as_hex === "string") return (value as { as_hex: string }).as_hex;
+  throw new Error("canonical record did not contain an address");
+}
+
+function stateText(record: unknown): string {
+  const value = field(record, "state");
+  return typeof value === "string" ? value : "";
+}
+
+export function canonicalTenderTerms(tender: LiveSnapshot["tenders"][number] | undefined): CanonicalTenderTerms | null {
+  const canonical = tender?.state;
+  const currencyLabel = field(canonical, "currency_label");
+  const budgetCeiling = field(canonical, "budget_ceiling");
+  const bidDeadline = field(canonical, "bid_deadline");
+  if (typeof currencyLabel !== "string" || (typeof budgetCeiling !== "string" && typeof budgetCeiling !== "bigint" && typeof budgetCeiling !== "number") || typeof bidDeadline !== "string") return null;
+  return { currencyLabel, budgetCeiling, bidDeadline };
+}
+
+async function read(client: ReadClient, functionName: string, args: unknown[] = []): Promise<unknown> {
+  return client.readContract({ address: LIVE_CONTRACT, functionName, args: args as never[] });
+}
+
+async function canonicalBid(client: ReadClient, bidId: string): Promise<unknown> {
+  const tenderIds = ids(await read(client, "get_tender_ids"));
+  for (const tenderId of tenderIds) {
+    const bids = await read(client, "get_bids", [tenderId]);
+    if (Array.isArray(bids)) {
+      const found = bids.find((candidate) => recordId(candidate, "bid_id") === bidId);
+      if (found) return found;
+    }
+  }
+  throw new Error(`canonical bid ${bidId} was not found`);
+}
+
+export async function readActionPrecondition(client: ReadClient, action: TypedAction): Promise<RoleContext> {
+  const { method, kwargs } = action;
+  if (method === "create_tender") return {};
+  if (method === "submit_bid") {
+    const tender = await read(client, "get_tender", [kwargs.tender_id]);
+    if (recordId(tender, "tender_id") !== kwargs.tender_id) throw new Error("canonical readback returned the wrong tender for bid submission");
+    if (!["FROZEN", "FUNDED"].includes(stateText(tender))) throw new Error("canonical tender is not accepting bids");
+    if (field(tender, "currency_label") !== kwargs.currency) throw new Error("bid currency does not match the canonical tender");
+    if (parseU256(kwargs.price as bigint, "price") > parseU256(field(tender, "budget_ceiling") as string | bigint | number, "canonical budget_ceiling")) throw new Error("bid price exceeds the canonical tender budget ceiling");
+    if (typeof field(tender, "bid_deadline") !== "string" || String(kwargs.submitted_at) > String(field(tender, "bid_deadline"))) throw new Error("bid timestamp is after the canonical tender deadline");
+    const bids = await read(client, "get_bids", [kwargs.tender_id]);
+    if (Array.isArray(bids) && bids.some((candidate) => recordId(candidate, "bid_id") === kwargs.bid_id)) throw new Error("bid id already exists in canonical state");
+    return {};
+  }
+  if (method === "create_delivery") {
+    const award = await read(client, "get_award", [kwargs.award_id]);
+    if (recordId(award, "award_id") !== kwargs.award_id) throw new Error("canonical readback returned the wrong award for delivery submission");
+    if (stateText(award) !== "ACCEPTED") throw new Error("delivery requires a canonical accepted award");
+    const deliveryDeadline = field(award, "delivery_deadline");
+    if (typeof deliveryDeadline !== "string") throw new Error("canonical award has no valid delivery deadline");
+    if (String(kwargs.submitted_at) > deliveryDeadline) throw new Error("delivery timestamp is after the canonical award deadline");
+    // The deployed view exposes no delivery-id index and reports both a
+    // missing key and some runtime failures as the same RPC execution error.
+    // Do not guess that an unavailable read means the ID is free: the shared
+    // simulation below is the authoritative duplicate guard before broadcast.
+    return { supplier: addressText(field(award, "supplier")) as Address };
+  }
+  if (method === "add_bid_evidence") {
+    const bid = await canonicalBid(client, String(kwargs.bid_id));
+    const bidSubmittedAt = field(bid, "submitted_at");
+    if (typeof bidSubmittedAt !== "string") throw new Error("canonical bid has no valid submitted_at timestamp");
+    if (String(kwargs.observed_at) > bidSubmittedAt) throw new Error("bid evidence timestamp is after the canonical bid timestamp");
+    const evidence = await read(client, "get_evidence", ["BID", kwargs.bid_id]);
+    if (Array.isArray(evidence) && evidence.some((candidate) => recordId(candidate, "evidence_id") === kwargs.evidence_id)) throw new Error("evidence id already exists in canonical state");
+    return { supplier: addressText(field(bid, "supplier")) as Address };
+  }
+  if (method === "add_delivery_evidence") {
+    const delivery = await read(client, "get_delivery", [kwargs.delivery_id]);
+    if (recordId(delivery, "delivery_id") !== kwargs.delivery_id) throw new Error("canonical readback returned the wrong delivery for evidence");
+    const deliverySubmittedAt = field(delivery, "submitted_at");
+    if (typeof deliverySubmittedAt !== "string") throw new Error("canonical delivery has no valid submitted_at timestamp");
+    if (String(kwargs.observed_at) > deliverySubmittedAt) throw new Error("delivery evidence timestamp is after the canonical delivery timestamp");
+    const evidence = await read(client, "get_evidence", ["DELIVERY", kwargs.delivery_id]);
+    if (Array.isArray(evidence) && evidence.some((candidate) => recordId(candidate, "evidence_id") === kwargs.evidence_id)) throw new Error("evidence id already exists in canonical state");
+    return { supplier: addressText(field(delivery, "supplier")) as Address };
+  }
+  return {};
+}
+
+export async function readActionReadback(client: ReadClient, action: TypedAction): Promise<unknown> {
+  if (action.method === "create_tender") {
+    const tender = await read(client, "get_tender", [action.kwargs.tender_id]);
+    if (recordId(tender, "tender_id") !== action.kwargs.tender_id) throw new Error("canonical readback returned the wrong tender");
+    return tender;
+  }
+  if (action.method === "submit_bid") {
+    const bids = await read(client, "get_bids", [action.kwargs.tender_id]);
+    const bid = Array.isArray(bids) ? bids.find((candidate) => recordId(candidate, "bid_id") === action.kwargs.bid_id) : undefined;
+    if (!bid) throw new Error("canonical readback did not contain the submitted bid");
+    return bid;
+  }
+  if (action.method === "create_delivery") {
+    const delivery = await read(client, "get_delivery", [action.kwargs.delivery_id]);
+    if (recordId(delivery, "delivery_id") !== action.kwargs.delivery_id) throw new Error("canonical readback returned the wrong delivery");
+    return delivery;
+  }
+  if (action.method === "add_bid_evidence" || action.method === "add_delivery_evidence") {
+    const entityType = action.method === "add_bid_evidence" ? "BID" : "DELIVERY";
+    const evidence = await read(client, "get_evidence", [entityType, action.kwargs[entityType === "BID" ? "bid_id" : "delivery_id"]]);
+    const item = Array.isArray(evidence) ? evidence.find((candidate) => recordId(candidate, "evidence_id") === action.kwargs.evidence_id) : undefined;
+    if (!item) throw new Error(`canonical readback did not contain evidence ${action.kwargs.evidence_id}`);
+    return item;
+  }
+  throw new Error(`no canonical readback verifier exists for ${action.method}`);
+}
 
 function text(value: unknown): string {
   if (typeof value === "string") return value;
