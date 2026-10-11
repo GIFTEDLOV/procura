@@ -1,47 +1,14 @@
-import { hashSchema } from "./serialization";
-import { manifestMethod } from "./interfaceManifest";
+import { hashSchema, parseU256 } from "./serialization";
+import { frontendInterfaceManifest, manifestMethod } from "./interfaceManifest";
 
-export const methodSpecs = {
-  create_tender: { args: 14, payable: false },
-  add_requirement: { args: 13, payable: false },
-  add_certification_requirement: { args: 5, payable: false },
-  freeze_tender: { args: 1, payable: false },
-  fund_tender: { args: 1, payable: true },
-  cancel_tender: { args: 1, payable: false },
-  submit_bid: { args: 8, payable: false },
-  add_bid_evidence: { args: 9, payable: false },
-  begin_bid_evaluation: { args: 1, payable: false },
-  adjudicate_requirement: { args: 3, payable: false },
-  finalize_bid_evaluation: { args: 1, payable: false },
-  award_bid: { args: 7, payable: false },
-  accept_award: { args: 1, payable: false },
-  post_supplier_bond: { args: 2, payable: true },
-  create_delivery: { args: 7, payable: false },
-  add_delivery_evidence: { args: 9, payable: false },
-  begin_inspection: { args: 1, payable: false },
-  adjudicate_delivery: { args: 2, payable: false },
-  accept_delivery: { args: 1, payable: false },
-  reject_delivery: { args: 1, payable: false },
-  release_milestone: { args: 2, payable: false },
-  settle_award: { args: 1, payable: false },
-  refund_buyer: { args: 1, payable: false },
-  open_dispute: { args: 2, payable: false },
-  resolve_dispute: { args: 2, payable: false },
-  get_tender: { args: 1, payable: false },
-  get_requirements: { args: 1, payable: false },
-  get_bids: { args: 1, payable: false },
-  get_evidence: { args: 2, payable: false },
-  get_adjudication: { args: 2, payable: false },
-  get_award: { args: 1, payable: false },
-  get_delivery: { args: 1, payable: false },
-  get_delivery_adjudication: { args: 1, payable: false },
-  get_payments: { args: 1, payable: false },
-  get_refunds: { args: 1, payable: false },
-  get_audit_events: { args: 0, payable: false },
-  get_accounting: { args: 0, payable: false },
-  get_protocol_info: { args: 0, payable: false },
-  get_tender_ids: { args: 0, payable: false },
-} as const;
+/**
+ * Compatibility view for existing callers. The checked-in Procurement_V1
+ * schema is the only source of method names, argument counts, and payable
+ * flags; this is deliberately derived instead of maintained as a second ABI.
+ */
+export const methodSpecs = Object.fromEntries(
+  frontendInterfaceManifest.methods.map((method) => [method.name, { args: method.arguments.length, payable: method.payable }]),
+) as Record<string, { args: number; payable: boolean }>;
 
 export type ContractMethod = string;
 export type WriteAction = { method: ContractMethod; args: readonly unknown[]; value?: bigint; requestId: string };
@@ -51,9 +18,7 @@ export function normalizeHash(value: string): string {
 }
 
 export function normalizeU256(value: number | string | bigint): bigint {
-  const normalized = typeof value === "bigint" ? value : BigInt(value);
-  if (normalized < 0n) throw new Error("u256 cannot be negative");
-  return normalized;
+  return parseU256(value, "u256");
 }
 
 export function buildAction<M extends ContractMethod>(

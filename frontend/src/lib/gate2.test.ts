@@ -3,7 +3,7 @@ import { buildAction, normalizeHash, normalizeU256, semanticCellTone, settlement
 import { bidArgsSchema, serializeBid } from "./serialization";
 import { isSuccessfulSettlement, markExecution, persistHash, recoverAfterRefresh, reconcileHash } from "./transactions";
 
-const bid = { bidId: "BID-1", tenderId: "TND-1", price: 100, currency: "USDC", deliveryCommitment: "30 days", requirementResponses: "frozen", submittedAt: "2026-10-05T09:00:00+01:00", bidHash: "a".repeat(64) };
+const bid = { bidId: "BID-1", tenderId: "TND-1", price: 100, currency: "USDC", deliveryCommitment: "30 days", requirementResponses: "frozen", submittedAt: "2026-10-05T08:00:00.000Z", bidHash: "a".repeat(64) };
 
 describe("Procura domain boundary", () => {
   it("normalizes lowercase contract hashes", () => expect(normalizeHash("a".repeat(64))).toBe("a".repeat(64)));
@@ -18,7 +18,7 @@ describe("Procura domain boundary", () => {
   it("checks canonical argument count", () => expect(() => buildAction("freeze_tender", [], { requestId: "r1" })).toThrow());
   it("rejects unknown contract methods", () => expect(() => buildAction("not_a_method", [], { requestId: "r1" })).toThrow());
   it("preserves action argument order", () => expect(buildAction("submit_bid", ["B", "T", 10, "USDC", "30d", "response", "time", "a".repeat(64)], { requestId: "r1" }).args[0]).toBe("B"));
-  it("serializes bid arguments in contract order", () => expect(serializeBid(bid)).toEqual(["BID-1", "TND-1", 100, "USDC", "30 days", "frozen", "2026-10-05T09:00:00+01:00", "a".repeat(64)]));
+  it("serializes bid arguments in contract order with exact u256 values", () => expect(serializeBid(bid)).toEqual(["BID-1", "TND-1", 100n, "USDC", "30 days", "frozen", "2026-10-05T08:00:00.000Z", "a".repeat(64)]));
   it("rejects negative bid prices", () => expect(() => bidArgsSchema.parse({ ...bid, price: -1 })).toThrow());
   it("rejects non-integer bid prices", () => expect(() => bidArgsSchema.parse({ ...bid, price: 1.5 })).toThrow());
   it("rejects missing bid evidence response", () => expect(() => bidArgsSchema.parse({ ...bid, requirementResponses: "" })).toThrow());
