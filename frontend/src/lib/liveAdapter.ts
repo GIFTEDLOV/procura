@@ -19,6 +19,7 @@ import {
   LIVE_NETWORK,
   LIVE_RPC,
   SUPPLIER_ROLE_ADDRESS,
+  liveV1WriteBlockReason,
   sameAddress,
   type Address,
 } from "./liveConfig";
@@ -228,6 +229,8 @@ export function loadPendingTransaction(requestId: string, storage?: StorageLike)
 }
 
 export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
+  const blockedReason = liveV1WriteBlockReason(params.action.method);
+  if (blockedReason) throw new Error(blockedReason);
   const { client, action, account, canonicalRecipient, canonicalReadback } = params;
   const storage = storageOrFallback(params.storage);
   if (client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);

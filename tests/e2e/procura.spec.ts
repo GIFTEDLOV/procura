@@ -48,5 +48,20 @@ test("LIVE workflow forms are functional while controlled demo stays isolated", 
   await expect(page.getByText("Controlled demo evidence validated")).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "Controlled demo evidence" })).toContainText("No LIVE transaction was prepared or broadcast.");
 });
+test("LIVE V1 safety mode disables every interactive write control", async ({ page }) => {
+  const notice = "Procura V1 is operating in read-only safety mode. Transaction functionality will resume after V2 qualification.";
+  await page.goto("/app/tender-builder");
+  await page.getByLabel("Workspace mode").selectOption("LIVE");
+  await expect(page.getByText(notice, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Read-only safety mode" })).toBeDisabled();
+  await page.goto("/app/bid-builder");
+  await expect(page.getByText(notice, { exact: true })).toBeVisible();
+  const bidControls = page.getByRole("button", { name: "Read-only safety mode" });
+  await expect(bidControls).toHaveCount(2);
+  for (const control of await bidControls.all()) await expect(control).toBeDisabled();
+  await page.goto("/app/delivery-workspace");
+  await expect(page.getByText(notice, { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Read-only safety mode" }).first()).toBeDisabled();
+});
 test("production-shaped pages have no browser errors or page overflow", async ({ page }) => { const errors = await noConsoleErrors(page); for (const route of ["/", ...routes.map((route) => `/app/${route}`)]) { await page.goto(route); await noPageOverflow(page); } expect(errors).toEqual([]); });
 test("reviewer screenshots cover command center and proof audit", async ({ page }, testInfo) => { if (!testInfo.project.name.includes("1440") && !testInfo.project.name.includes("430")) test.skip(); await page.goto("/app/command-center"); await page.screenshot({ path: path.join(screenshotRoot, `command-center-${testInfo.project.name.includes("1440") ? "desktop" : "mobile"}.png`), fullPage: true }); await page.goto("/app/proof-audit"); if (testInfo.project.name.includes("1440")) await page.screenshot({ path: path.join(screenshotRoot, "proof-audit-desktop.png"), fullPage: true }); });

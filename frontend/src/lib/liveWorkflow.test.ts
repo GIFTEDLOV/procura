@@ -5,6 +5,11 @@ import { readActionPrecondition, readActionReadback } from "./liveData";
 import { manifestMethod } from "./interfaceManifest";
 import { buildAddBidEvidenceArgs, buildAddDeliveryEvidenceArgs, buildCreateDeliveryArgs, buildCreateTenderArgs, buildSubmitBidArgs, sha256File, type EvidenceForm } from "./serialization";
 
+vi.mock("./liveConfig", async () => ({
+  ...(await vi.importActual<typeof import("./liveConfig")>("./liveConfig")),
+  liveV1WriteBlockReason: () => null,
+}));
+
 const timestamp = "2026-10-05T08:00:00.000Z";
 function readClientFor(values: Record<string, unknown>) {
   return { readContract: vi.fn(async ({ functionName, args }: { functionName: string; args?: unknown[] }) => {
@@ -82,4 +87,5 @@ describe("LIVE workflow action runner", () => {
     const deliveryRead = { delivery_id: "D-LIVE", supplier: SUPPLIER_ROLE_ADDRESS, submitted_at: timestamp };
     await runAction("add_delivery_evidence", deliveryEvidence, SUPPLIER_ROLE_ADDRESS, queuedReadClientFor({ "get_delivery:[\"D-LIVE\"]": [deliveryRead], "get_evidence:[\"DELIVERY\",\"D-LIVE\"]": [[], [{ evidence_id: "E-DELIVERY" }]] }), { supplier: SUPPLIER_ROLE_ADDRESS });
   });
+
 });

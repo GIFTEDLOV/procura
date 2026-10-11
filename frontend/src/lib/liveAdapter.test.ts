@@ -4,6 +4,11 @@ import { deriveExternalMessageCallKey } from "genlayer-js";
 import { buildTypedAction, externalAllocation, assertRole, assertStudioDevWallet, executeLiveWrite, loadPendingTransaction, recoverLiveTransaction, requiredRole } from "./liveAdapter";
 import { BUYER_ROLE_ADDRESS, LIVE_CHAIN_ID, LIVE_CONTRACT, SUPPLIER_ROLE_ADDRESS } from "./liveConfig";
 
+vi.mock("./liveConfig", async () => ({
+  ...(await vi.importActual<typeof import("./liveConfig")>("./liveConfig")),
+  liveV1WriteBlockReason: () => null,
+}));
+
 const numericHash = "1234567890123456789012345678901234567890123456789012345678901234";
 
 function createTenderKwargs(tenderHash = numericHash) {
