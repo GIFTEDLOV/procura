@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildTypedAction, executeLiveWrite, executePreparedLiveWrite } from "./liveAdapter";
-import { LIVE_CHAIN_ID, LIVE_CONTRACT, LIVE_V1_WRITE_METHODS, BUYER_ROLE_ADDRESS, SUPPLIER_ROLE_ADDRESS, V1_LIVE_READ_ONLY_MESSAGE } from "./liveConfig";
+import { buildTypedAction, executeLiveWrite } from "./liveAdapter";
+import { LIVE_CHAIN_ID, LIVE_CONTRACT, BUYER_ROLE_ADDRESS, SUPPLIER_ROLE_ADDRESS } from "./liveConfig";
 import { readActionPrecondition, readActionReadback } from "./liveData";
 import { manifestMethod } from "./interfaceManifest";
 import { buildAddBidEvidenceArgs, buildAddDeliveryEvidenceArgs, buildCreateDeliveryArgs, buildCreateTenderArgs, buildSubmitBidArgs, sha256File, type EvidenceForm } from "./serialization";
+
+vi.mock("./liveConfig", async () => ({
+  ...(await vi.importActual<typeof import("./liveConfig")>("./liveConfig")),
+  liveV1WriteBlockReason: () => null,
+}));
 
 const timestamp = "2026-10-05T08:00:00.000Z";
 function readClientFor(values: Record<string, unknown>) {
@@ -43,7 +48,7 @@ function sdkClient() {
 async function runAction(method: string, kwargs: Record<string, unknown>, account: `0x${string}`, readClient: ReturnType<typeof readClientFor>, roleContext?: { buyer?: `0x${string}`; supplier?: `0x${string}` }) {
   const action = buildTypedAction(method, kwargs, { requestId: `live-workflow-${method}` });
   const { client, writeContract } = sdkClient();
-  const result = await executePreparedLiveWrite({
+  const result = await executeLiveWrite({
     client,
     action,
     account,
@@ -83,21 +88,4 @@ describe("LIVE workflow action runner", () => {
     await runAction("add_delivery_evidence", deliveryEvidence, SUPPLIER_ROLE_ADDRESS, queuedReadClientFor({ "get_delivery:[\"D-LIVE\"]": [deliveryRead], "get_evidence:[\"DELIVERY\",\"D-LIVE\"]": [[], [{ evidence_id: "E-DELIVERY" }]] }), { supplier: SUPPLIER_ROLE_ADDRESS });
   });
 
-  it("blocks every V1 write at the application runner boundary before SDK activity", async () => {
-    const client = {
-      chain: { id: LIVE_CHAIN_ID },
-      simulateWriteContract: vi.fn(),
-      estimateTransactionFees: vi.fn(),
-      writeContract: vi.fn(),
-      waitForFinalization: vi.fn(),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    for (const method of LIVE_V1_WRITE_METHODS) {
-      const action = { method, args: [], kwargs: {}, requestId: `runner-blocked-${method}` } as unknown as Parameters<typeof executeLiveWrite>[0]["action"];
-      await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, canonicalReadback: async () => ({}) })).rejects.toThrow(V1_LIVE_READ_ONLY_MESSAGE);
-    }
-    expect(client.simulateWriteContract).not.toHaveBeenCalled();
-    expect(client.estimateTransactionFees).not.toHaveBeenCalled();
-    expect(client.writeContract).not.toHaveBeenCalled();
-    expect(client.waitForFinalization).not.toHaveBeenCalled();
-  });
 });

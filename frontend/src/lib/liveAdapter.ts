@@ -231,11 +231,6 @@ export function loadPendingTransaction(requestId: string, storage?: StorageLike)
 export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
   const blockedReason = liveV1WriteBlockReason(params.action.method);
   if (blockedReason) throw new Error(blockedReason);
-  return executePreparedLiveWrite(params);
-}
-
-/** Internal sequencing primitive retained for no-broadcast adapter tests; all application LIVE calls use executeLiveWrite. */
-export async function executePreparedLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
   const { client, action, account, canonicalRecipient, canonicalReadback } = params;
   const storage = storageOrFallback(params.storage);
   if (client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
