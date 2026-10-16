@@ -1,0 +1,734 @@
+{
+  "ctor": {
+    "params": [],
+    "kwparams": {}
+  },
+  "methods": {
+    "accept_award": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "accept_delivery": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "add_bid_evidence": {
+      "params": [
+        [
+          "bid_id",
+          "string"
+        ],
+        [
+          "evidence_id",
+          "string"
+        ],
+        [
+          "authority",
+          "string"
+        ],
+        [
+          "source_url",
+          "string"
+        ],
+        [
+          "content_sha256",
+          "string"
+        ],
+        [
+          "content_byte_length",
+          "int"
+        ],
+        [
+          "observed_at",
+          "string"
+        ],
+        [
+          "published_at",
+          "string"
+        ],
+        [
+          "evidence_type",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "add_certification_requirement": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ],
+        [
+          "requirement_id",
+          "string"
+        ],
+        [
+          "title",
+          "string"
+        ],
+        [
+          "description",
+          "string"
+        ],
+        [
+          "certification_name",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "add_delivery_evidence": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ],
+        [
+          "evidence_id",
+          "string"
+        ],
+        [
+          "authority",
+          "string"
+        ],
+        [
+          "source_url",
+          "string"
+        ],
+        [
+          "content_sha256",
+          "string"
+        ],
+        [
+          "content_byte_length",
+          "int"
+        ],
+        [
+          "observed_at",
+          "string"
+        ],
+        [
+          "published_at",
+          "string"
+        ],
+        [
+          "evidence_type",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "add_requirement": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ],
+        [
+          "requirement_id",
+          "string"
+        ],
+        [
+          "title",
+          "string"
+        ],
+        [
+          "description",
+          "string"
+        ],
+        [
+          "requirement_type",
+          "string"
+        ],
+        [
+          "mandatory",
+          "bool"
+        ],
+        [
+          "operator",
+          "string"
+        ],
+        [
+          "expected_value",
+          "string"
+        ],
+        [
+          "unit",
+          "string"
+        ],
+        [
+          "equivalence_allowed",
+          "bool"
+        ],
+        [
+          "evidence_required",
+          "bool"
+        ],
+        [
+          "semantic_question",
+          "string"
+        ],
+        [
+          "materiality",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "adjudicate_delivery": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ],
+        [
+          "evidence_snapshot_root",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "adjudicate_requirement": {
+      "params": [
+        [
+          "bid_id",
+          "string"
+        ],
+        [
+          "requirement_id",
+          "string"
+        ],
+        [
+          "evidence_snapshot_root",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "award_bid": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ],
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "winning_bid_id",
+          "string"
+        ],
+        [
+          "awarded_specification",
+          "string"
+        ],
+        [
+          "payment_milestones",
+          "string"
+        ],
+        [
+          "delivery_deadline",
+          "string"
+        ],
+        [
+          "award_hash",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "begin_bid_evaluation": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "begin_inspection": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "cancel_tender": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "create_delivery": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ],
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "delivery_reference",
+          "string"
+        ],
+        [
+          "delivered_items",
+          "string"
+        ],
+        [
+          "quantity",
+          "int"
+        ],
+        [
+          "serial_identifiers",
+          "string"
+        ],
+        [
+          "submitted_at",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "create_tender": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ],
+        [
+          "title",
+          "string"
+        ],
+        [
+          "description",
+          "string"
+        ],
+        [
+          "category",
+          "string"
+        ],
+        [
+          "currency_label",
+          "string"
+        ],
+        [
+          "budget_ceiling",
+          "int"
+        ],
+        [
+          "bid_deadline",
+          "string"
+        ],
+        [
+          "evaluation_deadline",
+          "string"
+        ],
+        [
+          "delivery_deadline",
+          "string"
+        ],
+        [
+          "equivalence_policy",
+          "string"
+        ],
+        [
+          "evaluation_policy",
+          "string"
+        ],
+        [
+          "payment_policy",
+          "string"
+        ],
+        [
+          "supplier_bond_policy",
+          "string"
+        ],
+        [
+          "tender_hash",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "finalize_bid_evaluation": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "freeze_tender": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "fund_tender": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": true
+    },
+    "get_accounting": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_adjudication": {
+      "params": [
+        [
+          "bid_id",
+          "string"
+        ],
+        [
+          "requirement_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_audit_events": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "get_award": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_bids": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "get_delivery": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_delivery_adjudication": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_evidence": {
+      "params": [
+        [
+          "entity_type",
+          "string"
+        ],
+        [
+          "entity_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "get_payments": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_protocol_info": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_refunds": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_requirements": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "get_tender": {
+      "params": [
+        [
+          "tender_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_tender_ids": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "open_dispute": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "reason",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "post_supplier_bond": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "expected_bond_amount",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": true
+    },
+    "refund_buyer": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "reject_delivery": {
+      "params": [
+        [
+          "delivery_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "release_milestone": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "milestone_index",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "resolve_dispute": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ],
+        [
+          "decision",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "settle_award": {
+      "params": [
+        [
+          "award_id",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    },
+    "submit_bid": {
+      "params": [
+        [
+          "bid_id",
+          "string"
+        ],
+        [
+          "tender_id",
+          "string"
+        ],
+        [
+          "price",
+          "int"
+        ],
+        [
+          "currency",
+          "string"
+        ],
+        [
+          "delivery_commitment",
+          "string"
+        ],
+        [
+          "requirement_responses",
+          "string"
+        ],
+        [
+          "submitted_at",
+          "string"
+        ],
+        [
+          "bid_hash",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "null",
+      "payable": false
+    }
+  }
+}

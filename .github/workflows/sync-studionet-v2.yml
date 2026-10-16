@@ -1,0 +1,38 @@
+name: Verify and sync deployed Studionet V2 source
+on:
+  push:
+    branches:
+      - 'steward/studionet-v2-qualification'
+    paths:
+      - '.github/workflows/sync-studionet-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync-deployed-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install stable GenLayer SDK
+        run: npm install --prefix /tmp/genlayer-sdk --no-audit --no-fund genlayer-js@1.1.8
+      - name: Verify on-chain source SHA and copy exact code/schema
+        env:
+          VERIFIED_GENLAYER_ADDRESS: '0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929'
+          VERIFIED_SOURCE_SHA256: 'a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac'
+          VERIFIED_SOURCE_FILE: 'contracts/Procura_studionet_v2_1_2.py'
+          VERIFIED_SCHEMA_FILE: 'contracts/studionet_v2_1_2.schema.json'
+        run: node scripts/sync_studionet_source.mjs
+      - name: Commit verified source to steward branch only
+        env:
+          TARGET_BRANCH: '${{ github.ref_name }}'
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "No changes"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "contracts/Procura_studionet_v2_1_2.py" "contracts/studionet_v2_1_2.schema.json"
+          git commit -m "fix(steward): preserve exact verified LIVE Studionet V2 source and ABI"
+          git push origin "HEAD:$TARGET_BRANCH"
