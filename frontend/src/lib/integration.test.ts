@@ -3,7 +3,7 @@ import { contractInterface } from "./contractInterface";
 import { buildAction, methodSpecs, semanticCellTone, settlementState } from "./domain";
 
 describe("production action boundaries", () => {
-  it("exposes the frozen Procurement schema", () => expect(contractInterface.schemaVersion).toBe("PROCUREMENT_V1"));
+  it("exposes the frozen Procurement schema", () => expect(contractInterface.schemaVersion).toBe("PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET"));
   it("keeps all 39 contract methods in the interface", () => expect(contractInterface.methods).toHaveLength(39));
   it("has a typed spec for every interface method", () => expect(contractInterface.methods.every((method) => method in methodSpecs)).toBe(true));
   it("builds tender create through the adapter boundary", () => expect(buildAction("create_tender", Array(14).fill("value"), { requestId: "create-1" }).method).toBe("create_tender"));
