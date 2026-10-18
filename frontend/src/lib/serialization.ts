@@ -181,13 +181,18 @@ export async function buildCreateTenderArgs(input: CreateTenderForm): Promise<Re
     ["equivalence_policy", input.equivalencePolicy], ["evaluation_policy", input.evaluationPolicy], ["payment_policy", input.paymentPolicy], ["supplier_bond_policy", input.supplierBondPolicy],
   ];
   for (const [field, value] of requiredText) if (!value.trim()) fail(field, "is required");
+  const paymentPolicy = input.paymentPolicy.trim();
+  const gracePeriod = /^NON_DELIVERY_REFUND_AFTER_DEADLINE:(\d+)$/.exec(paymentPolicy)?.[1];
+  if (paymentPolicy !== "FULL" && (!gracePeriod || Number(gracePeriod) > 31_536_000)) {
+    fail("payment_policy", "is outside the V2 policy grammar");
+  }
   const bidDeadline = normalizeContractTimestamp(input.bidDeadline, "bid_deadline");
   const evaluationDeadline = normalizeContractTimestamp(input.evaluationDeadline, "evaluation_deadline");
   const deliveryDeadline = normalizeContractTimestamp(input.deliveryDeadline, "delivery_deadline");
   assertDeadlineOrder(bidDeadline, evaluationDeadline, deliveryDeadline);
   const kwargs: Record<string, unknown> = {
     tender_id: input.tenderId.trim(), title: input.title.trim(), description: input.description.trim(), category: input.category.trim(), currency_label: input.currencyLabel.trim(), budget_ceiling: parseU256(input.budgetCeiling, "budget_ceiling"),
-    bid_deadline: bidDeadline, evaluation_deadline: evaluationDeadline, delivery_deadline: deliveryDeadline, equivalence_policy: input.equivalencePolicy.trim(), evaluation_policy: input.evaluationPolicy.trim(), payment_policy: input.paymentPolicy.trim(), supplier_bond_policy: input.supplierBondPolicy.trim(),
+    bid_deadline: bidDeadline, evaluation_deadline: evaluationDeadline, delivery_deadline: deliveryDeadline, equivalence_policy: input.equivalencePolicy.trim(), evaluation_policy: input.evaluationPolicy.trim(), payment_policy: paymentPolicy, supplier_bond_policy: input.supplierBondPolicy.trim(),
   };
   kwargs.tender_hash = await commitmentHash("create_tender", kwargs, "tender_hash");
   return kwargs;

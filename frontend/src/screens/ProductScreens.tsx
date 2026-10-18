@@ -49,7 +49,7 @@ function statusMessage(message: string, ok: boolean) { return message ? <div rol
 
 function Builder({ props }: { props: Props }) {
   const [form, setForm] = useState<CreateTenderForm>(() => ({
-    tenderId: `TND-${Date.now()}`, title: "", description: "", category: "", currencyLabel: "GEN", budgetCeiling: "", bidDeadline: toDateTimeLocalValue(new Date(Date.now() + 2 * 86400000).toISOString()), evaluationDeadline: toDateTimeLocalValue(new Date(Date.now() + 3 * 86400000).toISOString()), deliveryDeadline: toDateTimeLocalValue(new Date(Date.now() + 30 * 86400000).toISOString()), equivalencePolicy: "STRICT", evaluationPolicy: "BOUNDED_SEMANTIC", paymentPolicy: "MILESTONE", supplierBondPolicy: "NONE",
+    tenderId: `TND-${Date.now()}`, title: "", description: "", category: "", currencyLabel: "GEN", budgetCeiling: "", bidDeadline: toDateTimeLocalValue(new Date(Date.now() + 2 * 86400000).toISOString()), evaluationDeadline: toDateTimeLocalValue(new Date(Date.now() + 3 * 86400000).toISOString()), deliveryDeadline: toDateTimeLocalValue(new Date(Date.now() + 30 * 86400000).toISOString()), equivalencePolicy: "STRICT", evaluationPolicy: "BOUNDED_SEMANTIC", paymentPolicy: "FULL", supplierBondPolicy: "NONE",
   }));
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);

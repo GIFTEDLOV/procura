@@ -42,6 +42,7 @@ describe("qualified Studionet V2 live action controls", () => {
     const button = [...host.querySelectorAll("button")].find((item) => item.textContent?.includes("Create LIVE tender"));
     expect(button).toBeTruthy();
     expect(button?.disabled).toBe(false);
+    expect((host.querySelector('input[value="FULL"]') as HTMLInputElement | null)?.value).toBe("FULL");
     expect(host.textContent).not.toContain("V1 is operating in read-only safety mode");
   });
 
