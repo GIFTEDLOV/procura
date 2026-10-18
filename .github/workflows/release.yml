@@ -133,7 +133,6 @@ jobs:
           test "$(sha256sum contracts/Procura_v1_frozen.py | cut -d' ' -f1)" = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde"
           test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac"
           python scripts/check_steward_v212_schema.py
-          test "$(rg -c '^    def ' contracts/Procura.py | awk -F: '{s+=$2} END {print s+0}')" -ge 0
           python - <<'PY'
           import json
           from pathlib import Path
@@ -146,7 +145,15 @@ jobs:
           assert current['chainId'] == 61999
           assert current['rpc'] == 'https://studio.genlayer.com/api'
           assert current['canonicalContract'] == '0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929'
-          assert current['deploymentTx'] == '0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33'
+          deployment = current['deployment']
+          assert deployment['reusedExisting'] is True
+          assert deployment['countThisQualification'] == 0
+          assert deployment['canonicalContract'] == current['canonicalContract']
+          assert deployment['deploymentTx'] == '0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33'
+          assert deployment['consensusStatus'] == 'FINALIZED'
+          assert deployment['consensusResult'] == 'MAJORITY_AGREE'
+          assert deployment['evmReceiptStatus'] == '0x1'
+          assert deployment['sourceParity'] is True
           assert current['contractSha256'] == 'a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac'
           assert current['schemaSha256'] == '21a63012d333ccb2e29c4cd799034c42b2183f7831f64e61157e75d85bbd1127'
           assert current['abiSha256'] == '97015697a9252c5c2b86f4e72d76a926775eca14ec7add6c743ece0609edd800'
