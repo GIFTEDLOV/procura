@@ -162,6 +162,7 @@ export interface LiveWriteParams {
   client: LiveClient;
   action: TypedAction;
   account: Address;
+  signingProvider?: BrowserProvider;
   canonicalRecipient?: Address;
   roleContext?: RoleContext;
   storage?: StorageLike;
@@ -251,6 +252,35 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
   }
   const preconditionContext = params.readPrecondition ? await params.readPrecondition() : undefined;
   assertRole(action.method, account, { ...(params.roleContext ?? {}), ...(preconditionContext ?? {}) });
+
+  // Stable Studionet accepts regular SDK writes, while the preview fee estimator
+  // calls sim_getFeeConfig, which this hosted RPC does not implement.
+  // Only enable the proven no-fee write route after authenticated wallet preflight.
+  if (params.signingProvider) {
+    const payoutMethods = ["cancel_tender", "settle_award", "refund_buyer", "release_milestone", "resolve_dispute"];
+    if (payoutMethods.includes(action.method)) {
+      throw new Error("External transfers require a verified Studionet message-fee policy before LIVE execution.");
+    }
+    const hash = await client.writeContract({
+      address: LIVE_CONTRACT,
+      functionName: action.method,
+      args: [...action.args] as unknown as CalldataEncodable[],
+      value: action.value ?? 0n,
+    }) as Hash;
+    persistPending(storage, action, account, hash);
+    updatePending(storage, action.requestId, { phase: "RECONCILE_SAME_HASH" });
+    const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
+    if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+      updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
+      throw new Error(`${action.method} execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
+    }
+    updatePending(storage, action.requestId, { phase: "FINALITY", finality: "FINALIZED" });
+    updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "SUCCESS" });
+    updatePending(storage, action.requestId, { phase: "CANONICAL_READBACK" });
+    const readback = await canonicalReadback();
+    updatePending(storage, action.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+    return { action, hash, receipt, readback };
+  }
 
   const allocation = ["cancel_tender", "settle_award", "refund_buyer"].includes(action.method)
     ? externalAllocation(action.method, canonicalRecipient ?? (() => { throw new Error(`${action.method} requires canonical recipient`); })())
