@@ -15,6 +15,7 @@
     "@hookform/resolvers": "^4.1.3",
     "@tanstack/react-query": "^5.66.8",
     "genlayer-js": "2.0.0-rc.1",
+    "genlayer-stable": "npm:genlayer-js@1.1.8",
     "lucide-react": "^0.511.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
