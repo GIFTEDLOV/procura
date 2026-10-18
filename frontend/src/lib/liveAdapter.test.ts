@@ -88,6 +88,32 @@ describe("Procura live adapter", () => {
     expect(loadPendingTransaction("once-1", { getItem: (key) => storage.get(key) ?? null, setItem: () => undefined, removeItem: () => undefined })?.txHash).toBe("0xabc");
   });
 
+  it("submits the five V2 LIVE methods without the unavailable Studio-dev fee estimator", async () => {
+    const methods = ["create_tender", "submit_bid", "add_bid_evidence", "create_delivery", "add_delivery_evidence"];
+    for (const method of methods) {
+      const action = { method, args: ["A"], kwargs: {}, requestId: "v2-direct-" + method, value: 0n } as unknown as Parameters<typeof executeLiveWrite>[0]["action"];
+      const writeContract = vi.fn(async () => "0xabc");
+      const estimateTransactionFees = vi.fn();
+      const simulateWriteContract = vi.fn();
+      const client = {
+        chain: { id: LIVE_CHAIN_ID }, writeContract, estimateTransactionFees, simulateWriteContract,
+        waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
+      } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
+      const storage = new Map<string, string>();
+      const result = await executeLiveWrite({
+        client, action, account: BUYER_ROLE_ADDRESS,
+        signingProvider: { request: vi.fn() },
+        roleContext: { buyer: BUYER_ROLE_ADDRESS, supplier: BUYER_ROLE_ADDRESS },
+        storage: { getItem: key => storage.get(key) ?? null, setItem: (key,value) => storage.set(key,value), removeItem: key => storage.delete(key) },
+        canonicalReadback: async () => ({ verified: true }),
+      });
+      expect(result.hash).toBe("0xabc");
+      expect(writeContract).toHaveBeenCalledTimes(1);
+      expect(estimateTransactionFees).not.toHaveBeenCalled();
+      expect(simulateWriteContract).not.toHaveBeenCalled();
+    }
+  });
+
   it("does not broadcast when simulation fails", async () => {
     const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "simulation-fails" });
     const writeContract = vi.fn(async () => "0xnever");
