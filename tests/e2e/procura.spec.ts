@@ -9,10 +9,19 @@ async function noPageOverflow(page: import("@playwright/test").Page) {
     pathname: window.location.pathname,
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
+    overflow: [...document.body.querySelectorAll("*")]
+      .map((element) => {
+        const bounds = element.getBoundingClientRect();
+        if (bounds.width === 0 || bounds.right <= window.innerWidth + 1) return null;
+        const classes = typeof element.className === "string" ? element.className : "";
+        return `${element.tagName.toLowerCase()}.${classes.split(/\s+/).slice(0, 2).join(".")} right=${Math.ceil(bounds.right)} width=${Math.ceil(bounds.width)}`;
+      })
+      .filter((value): value is string => value !== null)
+      .slice(0, 5),
   }));
   expect(
     size.documentWidth <= size.viewportWidth,
-    `Horizontal overflow at ${size.pathname}: document ${size.documentWidth}px, viewport ${size.viewportWidth}px`,
+    `Horizontal overflow at ${size.pathname}: document ${size.documentWidth}px, viewport ${size.viewportWidth}px; elements: ${size.overflow.join(" | ")}`,
   ).toBe(true);
 }
 async function noConsoleErrors(page: import("@playwright/test").Page) { const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); }); return errors; }
