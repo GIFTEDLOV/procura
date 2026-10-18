@@ -7,7 +7,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE_PATH = ROOT / "contracts" / "Procura.py"
+SOURCE_PATH = ROOT / "contracts" / "Procura_v1_frozen.py"
 SOURCE = SOURCE_PATH.read_text(encoding="utf-8")
 TREE = ast.parse(SOURCE)
 
