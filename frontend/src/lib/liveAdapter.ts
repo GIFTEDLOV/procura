@@ -5,6 +5,8 @@ import {
   MessageType,
 } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
+import { createClient as createStableReadClient } from "genlayer-stable";
+import { studionet as stableStudionet } from "genlayer-stable/chains";
 import { ExecutionResult } from "genlayer-js/types";
 import type { CalldataEncodable, Hash, MessageFeeAllocationInput } from "genlayer-js/types";
 import type { Hex } from "viem";
@@ -85,7 +87,9 @@ function storageOrFallback(storage?: StorageLike): StorageLike {
 }
 
 export function createLiveReadClient(): LiveClient {
-  return createClient({ chain: studionet, endpoint: LIVE_RPC });
+  // The hosted Studionet RPC rejects RC gen_call reads; the pinned stable client
+  // returns canonical V2.1.2 contract state. Keep the RC signer isolated.
+  return createStableReadClient({ chain: stableStudionet, endpoint: LIVE_RPC }) as unknown as LiveClient;
 }
 
 export function createLiveWalletClient(address: Address, provider: BrowserProvider): LiveClient {
