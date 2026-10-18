@@ -1,7 +1,8 @@
-export type TransactionPhase = "READ_PRECONDITION" | "BUILD_CANONICAL_ARGS" | "BROADCAST_ONCE" | "PERSIST_HASH" | "RECONCILE_SAME_HASH" | "FINALITY" | "EXECUTION_STATUS" | "CANONICAL_READBACK" | "UI_UPDATE";
-export type TransactionRecord = { requestId: string; method: string; args: unknown[]; txHash?: string; phase: TransactionPhase; finality?: "PENDING" | "FINALIZED" | "UNDETERMINED"; execution?: "SUCCESS" | "ERROR" | "UNKNOWN" };
+export type TransactionPhase = "READ_PRECONDITION" | "BUILD_CANONICAL_ARGS" | "BROADCAST_ONCE" | "PERSIST_HASH" | "RECONCILE_SAME_HASH" | "FINALITY" | "READY_TO_FINALIZE" | "EXECUTION_STATUS" | "CANONICAL_READBACK" | "UI_UPDATE";
+export type TransactionFinality = "UNINITIALIZED" | "PENDING" | "PROPOSING" | "COMMITTING" | "REVEALING" | "ACCEPTED" | "UNDETERMINED" | "READY_TO_FINALIZE" | "APPEAL_REVEALING" | "APPEAL_COMMITTING" | "FINALIZED" | "CANCELED" | "VALIDATORS_TIMEOUT" | "LEADER_TIMEOUT";
+export type TransactionRecord = { requestId: string; method: string; args: unknown[]; txHash?: string; phase: TransactionPhase; finality?: TransactionFinality; execution?: "SUCCESS" | "ERROR" | "UNKNOWN" };
 
-export const phases: TransactionPhase[] = ["READ_PRECONDITION", "BUILD_CANONICAL_ARGS", "BROADCAST_ONCE", "PERSIST_HASH", "RECONCILE_SAME_HASH", "FINALITY", "EXECUTION_STATUS", "CANONICAL_READBACK", "UI_UPDATE"];
+export const phases: TransactionPhase[] = ["READ_PRECONDITION", "BUILD_CANONICAL_ARGS", "BROADCAST_ONCE", "PERSIST_HASH", "RECONCILE_SAME_HASH", "FINALITY", "READY_TO_FINALIZE", "EXECUTION_STATUS", "CANONICAL_READBACK", "UI_UPDATE"];
 
 export function reconcileHash(record: TransactionRecord, returnedHash: string): TransactionRecord {
   if (record.txHash && record.txHash !== returnedHash) throw new Error("Returned hash differs from persisted hash");

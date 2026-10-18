@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildTypedAction, executeLiveWrite } from "./liveAdapter";
 import { LIVE_CHAIN_ID, LIVE_CONTRACT, BUYER_ROLE_ADDRESS, SUPPLIER_ROLE_ADDRESS } from "./liveConfig";
 import { readActionPrecondition, readActionReadback } from "./liveData";
 import { manifestMethod } from "./interfaceManifest";
 import { buildAddBidEvidenceArgs, buildAddDeliveryEvidenceArgs, buildCreateDeliveryArgs, buildCreateTenderArgs, buildSubmitBidArgs, sha256File, type EvidenceForm } from "./serialization";
+import { mockStudionetRpc, stableWalletForTest } from "./stableWalletTestSupport";
+import type { CalldataEncodable } from "genlayer-stable/types";
 
 vi.mock("./liveConfig", async () => ({
   ...(await vi.importActual<typeof import("./liveConfig")>("./liveConfig")),
@@ -32,26 +34,22 @@ function queuedReadClientFor(values: Record<string, unknown[]>) {
   }) };
 }
 
-function sdkClient() {
-  let sequence = 0;
-  const writeContract = vi.fn(async (_request: { functionName: string; args: unknown[] }) => `0x${String(++sequence).padStart(64, "0")}`);
-  const client = {
-    chain: { id: LIVE_CHAIN_ID },
-    simulateWriteContract: vi.fn(async () => ({})),
-    estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-    writeContract,
-    waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
-  } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-  return { client, writeContract };
+function sdkClient(account: `0x${string}`) {
+  const { client, provider } = stableWalletForTest({ account });
+  const sdkWrite = client.writeContract.bind(client);
+  const writeContract = vi.fn((request: { address: `0x${string}`; functionName: string; args: CalldataEncodable[]; value: bigint }) => sdkWrite(request));
+  Object.defineProperty(client, "writeContract", { configurable: true, value: writeContract });
+  return { client, provider, writeContract };
 }
 
 async function runAction(method: string, kwargs: Record<string, unknown>, account: `0x${string}`, readClient: ReturnType<typeof readClientFor>, roleContext?: { buyer?: `0x${string}`; supplier?: `0x${string}` }) {
   const action = buildTypedAction(method, kwargs, { requestId: `live-workflow-${method}` });
-  const { client, writeContract } = sdkClient();
+  const { client, provider, writeContract } = sdkClient(account);
   const result = await executeLiveWrite({
     client,
     action,
     account,
+    signingProvider: provider,
     roleContext,
     readPrecondition: () => readActionPrecondition(readClient, action),
     canonicalReadback: () => readActionReadback(readClient, action),
@@ -64,6 +62,9 @@ async function runAction(method: string, kwargs: Record<string, unknown>, accoun
 }
 
 describe("LIVE workflow action runner", () => {
+  beforeEach(() => { mockStudionetRpc(); });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
   it("executes all five steward workflows through schema args, canonical preconditions, and entity readback", async () => {
     const tender = await buildCreateTenderArgs({ tenderId: "T-LIVE", title: "Live tender", description: "Canonical tender", category: "ENERGY", currencyLabel: "GEN", budgetCeiling: "100", bidDeadline: timestamp, evaluationDeadline: "2026-10-06T08:00:00.000Z", deliveryDeadline: "2026-10-07T08:00:00.000Z", equivalencePolicy: "STRICT", evaluationPolicy: "OBJECTIVE", paymentPolicy: "FULL", supplierBondPolicy: "NONE" });
     await runAction("create_tender", tender, BUYER_ROLE_ADDRESS, readClientFor({ "get_tender:[\"T-LIVE\"]": { tender_id: "T-LIVE" } }), { buyer: BUYER_ROLE_ADDRESS });

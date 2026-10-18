@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.mark.direct
 def test_contract_source_has_fail_closed_semantic_vector():
-    source = (ROOT / "contracts" / "Procura.py").read_text(encoding="utf-8")
+    source = (ROOT / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8")
     assert "malformed semantic output" in source
     assert "mandatory_requirement_breached" in source
     assert "evidence_sufficient" in source

@@ -1,0 +1,50 @@
+{
+  "approved": true,
+  "authorizationBasis": "User's explicit 2026-10-18 directive authorizes the complete Procura engineering, Studionet qualification, GitHub and Vercel release. The prior exact qualification authorization remains the binding public-write scope.",
+  "userAuthorizationText": "All necessary code changes, testing, testnet transactions, GitHub operations and Vercel deployment are approved. Execute zero additional deployments and the exact 13-write qualification sequence against the first verified V2.1.2 Studionet contract, with up to 13 finalization actions only for transactions positively reported READY_TO_FINALIZE. Aggregate GEN debit, including the 0.0001 GEN escrow and all fees, must not exceed 0.001 GEN. No retries of failed public writes, no historical escrow recovery, and no Portal submission.",
+  "network": "studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "consensusMain": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+  "sourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+  "reuseContractAddress": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+  "deploymentCount": 0,
+  "qualificationTransactionCount": 13,
+  "allowConditionalFinalization": true,
+  "lifecycleFinalizationMaxCount": 13,
+  "maximumTotalEvmTransactionCount": 26,
+  "finalizationRule": "Submit finalizeTransaction only for a journaled parent transaction that the stable SDK reports as exactly READY_TO_FINALIZE. Include each finalizer's actual debit in the cumulative cap and journal the EVM receipt.",
+  "buyer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "supplier": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+  "reconciledWalletNoncesAtApproval": {
+    "buyerLatest": 447,
+    "buyerPending": 447,
+    "supplierLatest": 15,
+    "supplierPending": 15
+  },
+  "escrowWei": "100000000000000",
+  "maximumGenDebitWei": "1000000000000000",
+  "existingV212ContractEscrowWei": "200000000000000",
+  "historicalEscrowWei": "2501300000000000000",
+  "historicalEscrowAction": "Preserve all existing contracts and balances; do not withdraw or change them.",
+  "residualConsensusRisk": "Studionet validators may disagree on genuine semantic adjudication. Any failed or uncertain public transaction halts subsequent writes; no retry is authorized.",
+  "authorizedSequence": [
+    "create_tender",
+    "add_requirement",
+    "freeze_tender",
+    "fund_tender",
+    "submit_bid",
+    "add_bid_evidence",
+    "begin_bid_evaluation",
+    "adjudicate_requirement",
+    "finalize_bid_evaluation",
+    "award_bid",
+    "accept_award",
+    "create_delivery",
+    "add_delivery_evidence"
+  ],
+  "publication": {
+    "githubAndVercel": true,
+    "portalSubmission": false
+  }
+}

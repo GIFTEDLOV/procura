@@ -1,11 +1,12 @@
 import type { Address } from "viem";
 export type { Address } from "viem";
 
-export const LIVE_NETWORK = "studio-dev" as const;
-export const LIVE_CHAIN_ID = 61997 as const;
-export const LIVE_RPC = "https://studio-dev.genlayer.com/api" as const;
-export const LIVE_CONTRACT = "0x88634c7868B0659b46C5bd93E4038222697a0170" as Address;
-export const LIVE_CONTRACT_SHA256 = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde" as const;
+export const LIVE_NETWORK = "studionet" as const;
+export const LIVE_CHAIN_ID = 61999 as const;
+export const LIVE_RPC = "https://studio.genlayer.com/api" as const;
+export const LIVE_CONTRACT = "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929" as Address;
+export const LIVE_CONTRACT_SHA256 = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac" as const;
+const VERIFIED_V2_STUDIONET_CONTRACT = "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929";
 
 export const V1_LIVE_READ_ONLY_MESSAGE = "Procura V1 is operating in read-only safety mode. Transaction functionality will resume after V2 qualification.";
 export const LIVE_V1_WRITE_METHODS = [
@@ -37,8 +38,14 @@ export const LIVE_V1_WRITE_METHODS = [
 ] as const;
 
 /** V1 is immutable and has unsafe caller-controlled timestamp write paths. */
-export function liveV1WriteBlockReason(method: string): string | null {
+export function legacyV1WriteBlockReason(method: string): string | null {
   return (LIVE_V1_WRITE_METHODS as readonly string[]).includes(method) ? V1_LIVE_READ_ONLY_MESSAGE : null;
+}
+
+/** Keep V1 fail-closed if a caller targets a legacy deployment; the pinned V2 target stays writable. */
+export function liveV1WriteBlockReason(method: string, target: string = LIVE_CONTRACT): string | null {
+  if (Number(LIVE_CHAIN_ID) === 61999 && sameAddress(target, VERIFIED_V2_STUDIONET_CONTRACT)) return null;
+  return legacyV1WriteBlockReason(method);
 }
 
 export const BUYER_ROLE_ADDRESS = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266" as Address;

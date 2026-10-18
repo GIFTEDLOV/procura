@@ -6,7 +6,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = (ROOT / "contracts" / "Procura.py").read_text(encoding="utf-8")
+SOURCE = (ROOT / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8")
 TREE = ast.parse(SOURCE)
 
 BID_FIELDS = {

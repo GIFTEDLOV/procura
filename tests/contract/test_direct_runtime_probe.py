@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.skip(reason="Installed gltest direct runner currently raises DecodingError while injecting v0.6 message context on Windows/Python 3.14; rerun after the runner patch or in glsim/localnet.")
+@pytest.mark.skip(reason="Installed genlayer-test 0.30.0rc2 direct adapter only supports the v0.3 calldata/storage API; this v0.6 runtime probe needs a compatible GenVM runner.")
 def test_runtime_probe_funds_and_emits_value(direct_vm, direct_deploy, direct_alice, direct_bob):
     probe = direct_deploy("contracts/ValueTransferProbe.py")
     direct_vm.sender = direct_alice

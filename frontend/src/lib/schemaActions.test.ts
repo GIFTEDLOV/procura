@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import schema from "../../../contracts/schema.json";
+import schema from "../../../contracts/schema.v2.evidence.json";
 import iface from "../../../contracts/interface.json";
 import { buildTypedAction } from "./liveAdapter";
 import { manifestMethod } from "./interfaceManifest";
@@ -16,9 +16,12 @@ const workflowArgs: Record<string, Record<string, unknown>> = {
 };
 
 describe("shared schema action boundary", () => {
-  it("uses the same five workflow names and argument order as contracts/schema.json", () => {
+  it("uses the same five workflow names, argument order, and contract types as the deployed shared schema", () => {
     expect([...sharedWorkflowMethods].sort()).toEqual(["add_bid_evidence", "add_delivery_evidence", "create_delivery", "create_tender", "submit_bid"]);
-    for (const method of sharedWorkflowMethods) expect(manifestMethod(method).arguments).toEqual(Object.keys(workflowArgs[method]));
+    for (const method of sharedWorkflowMethods) {
+      expect(manifestMethod(method).arguments).toEqual(Object.keys(workflowArgs[method]));
+      expect(manifestMethod(method).argumentTypes).toEqual(manifestMethod(method).arguments.map((name) => typeof workflowArgs[method][name] === "bigint" ? "u256" : "str"));
+    }
   });
 
   it("maps each workflow to ordered SDK args with runtime types", () => {

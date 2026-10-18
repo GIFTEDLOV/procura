@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { manifestMethod } from "./interfaceManifest";
+import { frontendInterfaceManifest, manifestMethod } from "./interfaceManifest";
 
 /**
  * The contract compares its datetime fields as strings. Every value sent by
@@ -107,14 +107,14 @@ function canonicalJson(value: unknown): string {
 /**
  * Canonical commitment preimage format, version 1:
  * {schemaVersion,method,arguments:[{name,value}, ...]}
- * The argument array follows contracts/schema.json order; object keys are
+ * The argument array follows contracts/schema.v2.evidence.json order; object keys are
  * lexicographically sorted; bigint/u256 values are decimal strings; JSON is
  * compact UTF-8 with no whitespace. The hash field itself is excluded.
  */
 export function canonicalArgumentSerialization(method: string, kwargs: Record<string, unknown>, excludedFields: readonly string[] = []): string {
   const manifest = manifestMethod(method);
   const argumentsInOrder = manifest.arguments.filter((name) => !excludedFields.includes(name)).map((name) => ({ name, value: kwargs[name] as CanonicalValue }));
-  return canonicalJson({ schemaVersion: "PROCUREMENT_V1", method, arguments: argumentsInOrder });
+  return canonicalJson({ schemaVersion: frontendInterfaceManifest.schemaVersion, method, arguments: argumentsInOrder });
 }
 
 export async function sha256HexBytes(bytes: Uint8Array): Promise<string> {
@@ -181,13 +181,18 @@ export async function buildCreateTenderArgs(input: CreateTenderForm): Promise<Re
     ["equivalence_policy", input.equivalencePolicy], ["evaluation_policy", input.evaluationPolicy], ["payment_policy", input.paymentPolicy], ["supplier_bond_policy", input.supplierBondPolicy],
   ];
   for (const [field, value] of requiredText) if (!value.trim()) fail(field, "is required");
+  const paymentPolicy = input.paymentPolicy.trim();
+  const gracePeriod = /^NON_DELIVERY_REFUND_AFTER_DEADLINE:(\d+)$/.exec(paymentPolicy)?.[1];
+  if (paymentPolicy !== "FULL" && (!gracePeriod || Number(gracePeriod) > 31_536_000)) {
+    fail("payment_policy", "is outside the V2 policy grammar");
+  }
   const bidDeadline = normalizeContractTimestamp(input.bidDeadline, "bid_deadline");
   const evaluationDeadline = normalizeContractTimestamp(input.evaluationDeadline, "evaluation_deadline");
   const deliveryDeadline = normalizeContractTimestamp(input.deliveryDeadline, "delivery_deadline");
   assertDeadlineOrder(bidDeadline, evaluationDeadline, deliveryDeadline);
   const kwargs: Record<string, unknown> = {
     tender_id: input.tenderId.trim(), title: input.title.trim(), description: input.description.trim(), category: input.category.trim(), currency_label: input.currencyLabel.trim(), budget_ceiling: parseU256(input.budgetCeiling, "budget_ceiling"),
-    bid_deadline: bidDeadline, evaluation_deadline: evaluationDeadline, delivery_deadline: deliveryDeadline, equivalence_policy: input.equivalencePolicy.trim(), evaluation_policy: input.evaluationPolicy.trim(), payment_policy: input.paymentPolicy.trim(), supplier_bond_policy: input.supplierBondPolicy.trim(),
+    bid_deadline: bidDeadline, evaluation_deadline: evaluationDeadline, delivery_deadline: deliveryDeadline, equivalence_policy: input.equivalencePolicy.trim(), evaluation_policy: input.evaluationPolicy.trim(), payment_policy: paymentPolicy, supplier_bond_policy: input.supplierBondPolicy.trim(),
   };
   kwargs.tender_hash = await commitmentHash("create_tender", kwargs, "tender_hash");
   return kwargs;
@@ -267,14 +272,14 @@ const workflowRuntimeKinds: Record<string, Record<string, RuntimeKind>> = {
 
 export const sharedWorkflowMethods = Object.keys(workflowRuntimeKinds) as Array<keyof typeof workflowRuntimeKinds>;
 
-/** Runtime ABI checks for the five write workflows. Names and order remain sourced from contracts/schema.json. */
+/** Runtime ABI checks for the five write workflows. Names and order remain sourced from the deployed typed schema. */
 export function validateSharedWorkflowArgs(method: string, kwargs: Record<string, unknown>): void {
   const kinds = workflowRuntimeKinds[method];
   if (!kinds) return;
   const manifest = manifestMethod(method);
   const manifestNames = [...manifest.arguments];
   const expectedNames = Object.keys(kinds);
-  if (manifestNames.length !== expectedNames.length || manifestNames.some((name, index) => name !== expectedNames[index])) throw new Error(`${method} runtime validator does not match contracts/schema.json`);
+  if (manifestNames.length !== expectedNames.length || manifestNames.some((name, index) => name !== expectedNames[index])) throw new Error(`${method} runtime validator does not match contracts/schema.v2.evidence.json`);
   for (const name of manifestNames) {
     const value = kwargs[name];
     const kind = kinds[name];

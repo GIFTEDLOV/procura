@@ -1,0 +1,339 @@
+{
+  "mode": "READ_ONLY_PREFLIGHT",
+  "broadcast": false,
+  "network": "studionet",
+  "rpc": "https://studio.genlayer.com/api",
+  "chainId": 61999,
+  "networkIdentity": {
+    "chain": "Genlayer Studio Network",
+    "chainId": 61999,
+    "rpc": "https://studio.genlayer.com/api",
+    "consensusMain": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+    "addressManager": "0x0000000000000000000000000000000000000001",
+    "explorer": "https://explorer-studio.genlayer.com"
+  },
+  "buyer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "supplier": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+  "buyerNonces": {
+    "latest": "447",
+    "pending": "447"
+  },
+  "supplierNonces": {
+    "latest": "8",
+    "pending": "8"
+  },
+  "buyerBalance": "4997700000000000000",
+  "supplierBalance": "5000000000000000000",
+  "deploymentCount": 0,
+  "qualificationTransactionCount": 13,
+  "maximumApprovedDebit": "1000000000000000",
+  "authorizationFile": "evidence\\qualification\\current\\procura-v2-studionet-v2-1-2-authorization.json",
+  "authorizationPresent": false,
+  "feeProfile": {
+    "sampledAt": "2026-10-16T08:23:50.427Z",
+    "estimateMethod": "genlayer-js@1.1.8 estimateTransactionGas + eth_gasPrice",
+    "emptyConsensusMainPayloadGas": "500000",
+    "gasPriceWei": "0",
+    "emptyPayloadFeeWei": "0",
+    "note": "Empty-payload sample is not an estimate for deployment or qualification calldata. For qualification writes, the resumable runner reads the SDK-selected gas limit, gas price, and value before signing, and refuses a transaction that would exceed the cumulative GEN debit cap."
+  },
+  "supportedSdkFeeQuote": "Stable SDK per-transaction gas estimate is applied to exact calldata; pre-signing guard enforces cap for contract calls and conditional READY_TO_FINALIZE actions.",
+  "escrowRequired": "100000000000000",
+  "historicalContracts": {
+    "0x88634c7868B0659b46C5bd93E4038222697a0170": "0",
+    "0xBF23aFAE5188b00491F2E72d956Ef60702430cD0": "1000000000000000",
+    "0x06F2b53C158C6e9a794607d4dB197654eFB3A9b1": "2500000000000000000",
+    "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d": "100000000000000",
+    "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec": "100000000000000",
+    "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537": "100000000000000"
+  },
+  "sourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+  "schemaSha256": "8c9aa8c79135e8a923a7de54e9ef3f680df7cd2894ac5ba7e8fd33dc89e2c074",
+  "abiSha256": "97015697a9252c5c2b86f4e72d76a926775eca14ec7add6c743ece0609edd800",
+  "interfaceSha256": "370468a990b1323ba7091cba6cfa40d93f4ebfeb5aa8a909edd192caedb6b1dd",
+  "qualificationEvidence": {
+    "sha256": "0695982b068f8043a21b6d3ccfc10b5cb7aa5e945186a1e10fbe6f7113dd48cf",
+    "byteLength": 2144,
+    "sourceUrl": "https://raw.githubusercontent.com/genlayerlabs/genlayer-js/1b7f50a3a3f2963ea857941b0fb386081dd5c326/package.json",
+    "mirrorHost": "cdn.jsdelivr.net",
+    "authority": "GenLayer Labs official GitHub repository",
+    "evidenceType": "OFFICIAL_PACKAGE_MANIFEST",
+    "publishedAt": "2026-06-10T14:45:30.000Z",
+    "observedAt": "2026-10-16T08:23:44.296Z",
+    "providersVerified": [
+      "raw.githubusercontent.com",
+      "cdn.jsdelivr.net"
+    ]
+  },
+  "reviewerMethodSchemaParity": {
+    "create_tender": {
+      "runtime": {
+        "names": [
+          "tender_id",
+          "title",
+          "description",
+          "category",
+          "currency_label",
+          "budget_ceiling",
+          "bid_deadline",
+          "evaluation_deadline",
+          "delivery_deadline",
+          "equivalence_policy",
+          "evaluation_policy",
+          "payment_policy",
+          "supplier_bond_policy",
+          "tender_hash"
+        ],
+        "types": [
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "int",
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "string"
+        ]
+      },
+      "frozen": {
+        "arguments": [
+          "tender_id",
+          "title",
+          "description",
+          "category",
+          "currency_label",
+          "budget_ceiling",
+          "bid_deadline",
+          "evaluation_deadline",
+          "delivery_deadline",
+          "equivalence_policy",
+          "evaluation_policy",
+          "payment_policy",
+          "supplier_bond_policy",
+          "tender_hash"
+        ],
+        "argumentTypes": [
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "u256",
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "str"
+        ]
+      }
+    },
+    "submit_bid": {
+      "runtime": {
+        "names": [
+          "bid_id",
+          "tender_id",
+          "price",
+          "currency",
+          "delivery_commitment",
+          "requirement_responses",
+          "submitted_at",
+          "bid_hash"
+        ],
+        "types": [
+          "string",
+          "string",
+          "int",
+          "string",
+          "string",
+          "string",
+          "string",
+          "string"
+        ]
+      },
+      "frozen": {
+        "arguments": [
+          "bid_id",
+          "tender_id",
+          "price",
+          "currency",
+          "delivery_commitment",
+          "requirement_responses",
+          "submitted_at",
+          "bid_hash"
+        ],
+        "argumentTypes": [
+          "str",
+          "str",
+          "u256",
+          "str",
+          "str",
+          "str",
+          "str",
+          "str"
+        ]
+      }
+    },
+    "add_bid_evidence": {
+      "runtime": {
+        "names": [
+          "bid_id",
+          "evidence_id",
+          "authority",
+          "source_url",
+          "content_sha256",
+          "content_byte_length",
+          "observed_at",
+          "published_at",
+          "evidence_type"
+        ],
+        "types": [
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "int",
+          "string",
+          "string",
+          "string"
+        ]
+      },
+      "frozen": {
+        "arguments": [
+          "bid_id",
+          "evidence_id",
+          "authority",
+          "source_url",
+          "content_sha256",
+          "content_byte_length",
+          "observed_at",
+          "published_at",
+          "evidence_type"
+        ],
+        "argumentTypes": [
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "u256",
+          "str",
+          "str",
+          "str"
+        ]
+      }
+    },
+    "create_delivery": {
+      "runtime": {
+        "names": [
+          "delivery_id",
+          "award_id",
+          "delivery_reference",
+          "delivered_items",
+          "quantity",
+          "serial_identifiers",
+          "submitted_at"
+        ],
+        "types": [
+          "string",
+          "string",
+          "string",
+          "string",
+          "int",
+          "string",
+          "string"
+        ]
+      },
+      "frozen": {
+        "arguments": [
+          "delivery_id",
+          "award_id",
+          "delivery_reference",
+          "delivered_items",
+          "quantity",
+          "serial_identifiers",
+          "submitted_at"
+        ],
+        "argumentTypes": [
+          "str",
+          "str",
+          "str",
+          "str",
+          "u256",
+          "str",
+          "str"
+        ]
+      }
+    },
+    "add_delivery_evidence": {
+      "runtime": {
+        "names": [
+          "delivery_id",
+          "evidence_id",
+          "authority",
+          "source_url",
+          "content_sha256",
+          "content_byte_length",
+          "observed_at",
+          "published_at",
+          "evidence_type"
+        ],
+        "types": [
+          "string",
+          "string",
+          "string",
+          "string",
+          "string",
+          "int",
+          "string",
+          "string",
+          "string"
+        ]
+      },
+      "frozen": {
+        "arguments": [
+          "delivery_id",
+          "evidence_id",
+          "authority",
+          "source_url",
+          "content_sha256",
+          "content_byte_length",
+          "observed_at",
+          "published_at",
+          "evidence_type"
+        ],
+        "argumentTypes": [
+          "str",
+          "str",
+          "str",
+          "str",
+          "str",
+          "u256",
+          "str",
+          "str",
+          "str"
+        ]
+      }
+    }
+  },
+  "observedAt": "2026-10-16T08:23:50.427Z",
+  "recommendedReusableContract": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+  "lifecycleFinalizationMaxCount": 13,
+  "lifecycleCapability": {
+    "gen_getTransactionLifecycle": "UNSUPPORTED_BY_STUDIONET_RPC",
+    "rpcError": "Method not found: gen_getTransactionLifecycle",
+    "sdkCanAppeal": "UNSUPPORTED_BY_STUDIONET_CHAIN_CONFIGURATION",
+    "sdkError": "canAppeal not supported on this chain (missing appealsContract)",
+    "stableSdkFinalizer": "finalizeTransaction",
+    "readinessGate": "exact SDK status READY_TO_FINALIZE only"
+  }
+}

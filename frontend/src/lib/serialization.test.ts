@@ -41,6 +41,14 @@ describe("contract serialization", () => {
     await expect(buildCreateTenderArgs({ tenderId: "T-OVER", title: "Overflow", description: "Range", category: "TEST", currencyLabel: "GEN", budgetCeiling: maximum + 1n, bidDeadline: "2026-10-05T09:00", evaluationDeadline: "2026-10-06T09:00", deliveryDeadline: "2026-10-07T09:00", equivalencePolicy: "STRICT", evaluationPolicy: "OBJECTIVE", paymentPolicy: "FULL", supplierBondPolicy: "NONE" })).rejects.toThrow(/u256 maximum/);
   });
 
+  it("accepts only payment policies supported by the deployed V2 contract", async () => {
+    const tender = { tenderId: "T-POLICY", title: "Payment policy", description: "Scope", category: "TEST", currencyLabel: "GEN", budgetCeiling: "10", bidDeadline: "2026-10-05T09:00", evaluationDeadline: "2026-10-06T09:00", deliveryDeadline: "2026-10-07T09:00", equivalencePolicy: "STRICT", evaluationPolicy: "OBJECTIVE", supplierBondPolicy: "NONE" };
+    await expect(buildCreateTenderArgs({ ...tender, paymentPolicy: "FULL" })).resolves.toMatchObject({ payment_policy: "FULL" });
+    await expect(buildCreateTenderArgs({ ...tender, paymentPolicy: "NON_DELIVERY_REFUND_AFTER_DEADLINE:31536000" })).resolves.toMatchObject({ payment_policy: "NON_DELIVERY_REFUND_AFTER_DEADLINE:31536000" });
+    await expect(buildCreateTenderArgs({ ...tender, paymentPolicy: "MILESTONE" })).rejects.toThrow(/payment_policy: is outside the V2 policy grammar/);
+    await expect(buildCreateTenderArgs({ ...tender, paymentPolicy: "NON_DELIVERY_REFUND_AFTER_DEADLINE:31536001" })).rejects.toThrow(/payment_policy: is outside the V2 policy grammar/);
+  });
+
   it("uses lexicographically compatible UTC deadline ordering", () => {
     const bid = normalizeContractTimestamp("2026-10-05T09:00:00+01:00");
     const evaluation = normalizeContractTimestamp("2026-10-05T10:00:00+01:00");

@@ -14,9 +14,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.66.8
         version: 5.104.1(react@19.3.0)
-      genlayer-js:
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1(eslint@9.39.5(jiti@1.21.7))(typescript@5.7.3)(zod@3.25.76)
+      genlayer-stable:
+        specifier: npm:genlayer-js@1.1.8
+        version: genlayer-js@1.1.8(eslint@9.39.5(jiti@1.21.7))(typescript@5.7.3)(zod@3.25.76)
       lucide-react:
         specifier: ^0.511.0
         version: 0.511.0(react@19.3.0)
@@ -1215,8 +1215,8 @@ packages:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
     engines: {node: '>= 0.4'}
 
-  genlayer-js@2.0.0-rc.1:
-    resolution: {integrity: sha512-zvY8ofpl478VC9K7pMhiOm+OpkNVXfmZ17C44s289Ii90fXdNMdqpv3izGIapWgpZEMHoLoDYt1KCDDHC6VfQg==}
+  genlayer-js@1.1.8:
+    resolution: {integrity: sha512-qlqh8oqR9Ad7FVbIdqIrHfsMPLLJ24ZRHUZ2LGMpw6DX5ySjrEWdV1X93bVIHO44cu9CLGdx8m2ubkPv78/RLg==}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -3392,7 +3392,7 @@ snapshots:
 
   generator-function@2.0.1: {}
 
-  genlayer-js@2.0.0-rc.1(eslint@9.39.5(jiti@1.21.7))(typescript@5.7.3)(zod@3.25.76):
+  genlayer-js@1.1.8(eslint@9.39.5(jiti@1.21.7))(typescript@5.7.3)(zod@3.25.76):
     dependencies:
       eslint-plugin-import: 2.32.0(eslint@9.39.5(jiti@1.21.7))
       typescript-parsec: 0.3.4

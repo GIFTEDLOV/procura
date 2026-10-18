@@ -1,16 +1,9 @@
-import {
-  createClient,
-  deriveExternalMessageCallKey,
-  isSuccessful,
-  MessageType,
-} from "genlayer-js";
-import { studioDevnet } from "genlayer-js/chains";
-import { ExecutionResult } from "genlayer-js/types";
-import type { CalldataEncodable, Hash, MessageFeeAllocationInput } from "genlayer-js/types";
-import type { Hex } from "viem";
+import { createClient as createStableReadClient } from "genlayer-stable";
+import { studionet as stableStudionet } from "genlayer-stable/chains";
+import { ExecutionResult } from "genlayer-stable/types";
+import type { CalldataEncodable, Hash } from "genlayer-stable/types";
 import { manifestMethod } from "./interfaceManifest";
 import { buildAction, type WriteAction } from "./domain";
-import { feeEstimateOptions, messageAllocationFor } from "./feeProfile";
 import { validateSharedWorkflowArgs } from "./serialization";
 import {
   BUYER_ROLE_ADDRESS,
@@ -63,12 +56,29 @@ export type TypedAction = WriteAction & {
   kwargs: Record<string, unknown>;
 };
 
-export type LiveClient = ReturnType<typeof createClient>;
+export type LiveClient = ReturnType<typeof createStableReadClient>;
+
+type SubmissionHook = (hash: Hash) => Promise<void> | void;
+const submissionHookArms = new WeakMap<object, (hook: SubmissionHook | null) => boolean>();
+const walletClientProviders = new WeakMap<object, BrowserProvider>();
+
+function armSubmissionHook(client: LiveClient, hook: SubmissionHook | null): boolean {
+  return submissionHookArms.get(client)?.(hook) ?? false;
+}
 
 export type StoredLiveTransaction = TransactionRecord & {
   address: Address;
   account: Address;
   value?: string;
+  submissionHash?: string;
+  evmTxHash?: string;
+  genlayerTxId?: string;
+  consensusStatus?: string;
+  consensusResult?: string;
+  trackingError?: string;
+  finalizationPhase?: "BROADCAST_RESERVED" | "SUBMITTED" | "OUTCOME_UNKNOWN" | "UNAVAILABLE";
+  finalizationTxHash?: string;
+  finalizationError?: string;
 };
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -85,16 +95,46 @@ function storageOrFallback(storage?: StorageLike): StorageLike {
 }
 
 export function createLiveReadClient(): LiveClient {
-  return createClient({ chain: studioDevnet });
+  return createStableReadClient({ chain: stableStudionet, endpoint: LIVE_RPC });
 }
 
 export function createLiveWalletClient(address: Address, provider: BrowserProvider): LiveClient {
-  type ClientConfig = NonNullable<Parameters<typeof createClient>[0]>;
-  const config: ClientConfig = { chain: studioDevnet, account: address, provider: provider as ClientConfig["provider"] };
-  return createClient(config);
+  type ClientConfig = NonNullable<Parameters<typeof createStableReadClient>[0]>;
+  let onSubmitted: SubmissionHook | null = null;
+  let broadcastReserved = false;
+  const trackingProvider = {
+    request: async (request: { method: string; params?: readonly unknown[] }) => {
+      if (request.method === "eth_sendTransaction") {
+        if (!onSubmitted) throw new Error("wallet broadcast is not armed by a persisted Procura request");
+        if (broadcastReserved) throw new Error("stable SDK attempted a second wallet broadcast; reconcile the first transaction hash");
+        broadcastReserved = true;
+      }
+      const result = await provider.request(request);
+      if (request.method === "eth_sendTransaction") {
+        if (typeof result !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(result)) {
+          throw new Error("wallet did not return a transaction hash; submission outcome must be reconciled before retrying");
+        }
+        await onSubmitted?.(result as Hash);
+      }
+      return result;
+    },
+  };
+  const client = createStableReadClient({
+    chain: stableStudionet,
+    endpoint: LIVE_RPC,
+    account: address,
+    provider: trackingProvider as ClientConfig["provider"],
+  });
+  submissionHookArms.set(client, (hook) => {
+    onSubmitted = hook;
+    if (hook) broadcastReserved = false;
+    return true;
+  });
+  walletClientProviders.set(client, provider);
+  return client;
 }
 
-export async function assertStudioDevWallet(provider: BrowserProvider, expectedAddress?: Address): Promise<Address> {
+export async function assertStudionetWallet(provider: BrowserProvider, expectedAddress?: Address): Promise<Address> {
   const chainId = await provider.request({ method: "eth_chainId" });
   const numericChainId = typeof chainId === "string" ? (chainId.startsWith("0x") ? Number.parseInt(chainId, 16) : Number(chainId)) : Number(chainId);
   if (numericChainId !== LIVE_CHAIN_ID) throw new Error(`Wrong network: expected ${LIVE_NETWORK} (${LIVE_CHAIN_ID}), received ${numericChainId}`);
@@ -147,26 +187,16 @@ export function buildTypedAction(
   return { ...action, kwargs: normalized };
 }
 
-export function externalAllocation(method: string, canonicalRecipient: Address): MessageFeeAllocationInput[] {
-  const allocation = messageAllocationFor(method, canonicalRecipient);
-  if (allocation.length !== 1 || allocation[0].messageType !== MessageType.External) {
-    throw new Error(`${method} must have exactly one external message allocation`);
-  }
-  const data = "0x" as Hex;
-  const expectedCallKey = deriveExternalMessageCallKey(data);
-  if (allocation[0].callKey !== expectedCallKey) throw new Error(`${method} external call key does not match its data`);
-  return allocation;
-}
-
 export interface LiveWriteParams {
   client: LiveClient;
   action: TypedAction;
   account: Address;
-  canonicalRecipient?: Address;
+  signingProvider?: BrowserProvider;
   roleContext?: RoleContext;
   storage?: StorageLike;
   readPrecondition?: () => Promise<RoleContext | void>;
   canonicalReadback: () => Promise<unknown>;
+  onTransactionUpdate?: (record: StoredLiveTransaction) => void;
 }
 
 export interface LiveWriteResult {
@@ -174,7 +204,12 @@ export interface LiveWriteResult {
   hash: `0x${string}`;
   receipt: unknown;
   readback: unknown;
-  fees?: Awaited<ReturnType<LiveClient["estimateTransactionFees"]>>;
+}
+
+function successfulFinalizedExecution(receipt: unknown): boolean {
+  if (typeof receipt !== "object" || receipt === null) return false;
+  const result = receipt as { statusName?: unknown; txExecutionResultName?: unknown };
+  return result.statusName === "FINALIZED" && result.txExecutionResultName === ExecutionResult.FINISHED_WITH_RETURN;
 }
 
 function recordKey(requestId: string): string { return `procura:live-tx:${requestId}`; }
@@ -201,13 +236,13 @@ function sameAction(record: StoredLiveTransaction, action: TypedAction, account:
   return typeof record.account === "string" && record.account.toLowerCase() === account.toLowerCase() && record.method === action.method && recordValue === actionValue && recordArgs.length === actionArgs.length && recordArgs.every((value, index) => value === actionArgs[index]);
 }
 
-function persistPending(storage: StorageLike, action: TypedAction, account: Address, hash: `0x${string}`): void {
+function persistPending(storage: StorageLike, action: TypedAction, account: Address, hash?: `0x${string}`): void {
   const record: StoredLiveTransaction = {
     requestId: action.requestId,
     method: action.method,
     args: [...action.args] as unknown as CalldataEncodable[],
-    txHash: hash,
-    phase: "PERSIST_HASH",
+    ...(hash ? { txHash: hash, submissionHash: hash, evmTxHash: hash } : {}),
+    phase: hash ? "PERSIST_HASH" : "BROADCAST_ONCE",
     address: LIVE_CONTRACT,
     account,
     value: action.value?.toString(),
@@ -228,66 +263,210 @@ export function loadPendingTransaction(requestId: string, storage?: StorageLike)
   return raw ? JSON.parse(raw) as StoredLiveTransaction : null;
 }
 
+/**
+ * Studionet stable SDK 1.1.8 uses getTransaction rather than the RC helper.
+ * Require finalized, successful consensus execution. A timeout is ambiguous:
+ * the caller must reconcile the persisted hash, NEVER rebroadcast.
+ */
+type TransactionProgress = (patch: Partial<StoredLiveTransaction>) => void | Promise<void>;
+type StudionetReceipt = Record<string, unknown> & {
+  statusName: string;
+  txExecutionResultName: ExecutionResult;
+};
+
+function sameKnownHash(current: StoredLiveTransaction, hash: Hash): void {
+  if (current.txHash && current.txHash.toLowerCase() !== hash.toLowerCase()) {
+    throw new Error("wallet submission hash differs from the transaction journal; refusing a second broadcast");
+  }
+}
+
+async function finalizeReadyTransaction(client: LiveClient, hash: Hash, storage: StorageLike, requestId: string, progress: TransactionProgress) {
+  const current = loadPendingTransaction(requestId, storage);
+  if (current?.finalizationPhase) return;
+  const finalize = (client as unknown as { finalizeTransaction?: (args: { txId: Hash }) => Promise<Hash> }).finalizeTransaction;
+  if (typeof finalize !== "function") {
+    await progress({ finality: "READY_TO_FINALIZE", phase: "READY_TO_FINALIZE", finalizationPhase: "UNAVAILABLE", finalizationError: "Stable Studionet SDK has no finalizeTransaction action." });
+    return;
+  }
+  await progress({ finality: "READY_TO_FINALIZE", phase: "READY_TO_FINALIZE", finalizationPhase: "BROADCAST_RESERVED", finalizationError: undefined });
+  armSubmissionHook(client, async (finalizationTxHash) => {
+    await progress({ finalizationTxHash, finalizationPhase: "SUBMITTED", finalizationError: undefined });
+  });
+  try {
+    const finalizationTxHash = await finalize.call(client, { txId: current?.genlayerTxId as Hash ?? hash });
+    await progress({ finalizationTxHash, finalizationPhase: "SUBMITTED", finalizationError: undefined });
+  } catch (error) {
+    // The wallet or RPC may have accepted the finalizer before the request timed out.
+    // Keep tracking the same parent transaction and never send a second finalizer.
+    await progress({ finalizationPhase: "OUTCOME_UNKNOWN", finalizationError: String(error instanceof Error ? error.message : error) });
+  } finally {
+    armSubmissionHook(client, null);
+  }
+}
+
+export async function waitForStudionetFinalization(client: LiveClient, hash: Hash, progress: TransactionProgress = async () => undefined, onReady?: () => Promise<void>): Promise<StudionetReceipt> {
+  const stable = client as unknown as {
+    getTransaction?: (args: { hash: Hash }) => Promise<Record<string, unknown>>;
+  };
+  if (!stable.getTransaction) throw new Error("Studionet transaction lookup unavailable; reconcile the persisted hash");
+  let delayMs = 3000;
+  while (true) {
+    let tx: Record<string, unknown>;
+    try {
+      tx = await stable.getTransaction({ hash });
+    } catch (error) {
+      await progress({ phase: "RECONCILE_SAME_HASH", finality: "PENDING", trackingError: String(error instanceof Error ? error.message : error) });
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      delayMs = Math.min(delayMs + 3000, 30_000);
+      continue;
+    }
+    const statusName = String(tx.statusName ?? tx.status_name ?? "PENDING");
+    await progress({
+      phase: statusName === "READY_TO_FINALIZE" ? "READY_TO_FINALIZE" : "RECONCILE_SAME_HASH",
+      finality: statusName as StoredLiveTransaction["finality"],
+      consensusStatus: statusName,
+      consensusResult: String(tx.result_name ?? tx.resultName ?? ""),
+      genlayerTxId: String(tx.tx_id ?? tx.txId ?? hash),
+      evmTxHash: String(tx.hash ?? hash),
+      submissionHash: String(tx.hash ?? hash),
+      trackingError: "",
+    });
+    if (statusName === "READY_TO_FINALIZE" && onReady) await onReady();
+    if (statusName === "FINALIZED") {
+      const consensus = (tx.consensus_data ?? tx.consensusData) as {
+        leader_receipt?: Array<{ execution_result?: string; executionResult?: string; result?: { status?: string } }>;
+        validators?: Array<{ execution_result?: string; executionResult?: string; vote?: string; genvm_result?: { error_code?: string }; genvmResult?: { error_code?: string } }>;
+      } | undefined;
+      const leader = consensus?.leader_receipt?.[0];
+      const validators = consensus?.validators ?? [];
+      const successfulValidators = validators.filter((validator) => {
+        const execution = validator.execution_result ?? validator.executionResult;
+        return execution === "SUCCESS" || execution === "FINISHED_WITH_RETURN";
+      });
+      const invalidValidator = validators.some((validator) => {
+        const execution = validator.execution_result ?? validator.executionResult;
+        if (execution === "SUCCESS" || execution === "FINISHED_WITH_RETURN") return false;
+        const idle = String(validator.vote ?? "").toLowerCase() === "idle";
+        const errorCode = validator.genvm_result?.error_code ?? validator.genvmResult?.error_code;
+        return !(idle && errorCode === "CONSENSUS_VALIDATOR_QUORUM_REACHED");
+      });
+      const resultName = String(tx.result_name ?? tx.resultName ?? "");
+      const leaderExecution = leader?.execution_result ?? leader?.executionResult;
+      const leaderSucceeded = (leaderExecution === "SUCCESS" || leaderExecution === "FINISHED_WITH_RETURN") && leader?.result?.status === "return";
+      const success = resultName === "MAJORITY_AGREE" && leaderSucceeded && successfulValidators.length >= 2 && !invalidValidator;
+      await progress({ phase: "EXECUTION_STATUS", finality: "FINALIZED", consensusStatus: "FINALIZED", consensusResult: resultName, execution: success ? "SUCCESS" : "ERROR" });
+      return {
+        ...tx,
+        statusName,
+        txExecutionResultName: success ? ExecutionResult.FINISHED_WITH_RETURN : ExecutionResult.FINISHED_WITH_ERROR,
+      };
+    }
+    if (["CANCELED", "VALIDATORS_TIMEOUT", "LEADER_TIMEOUT"].includes(statusName)) {
+      await progress({ phase: "EXECUTION_STATUS", finality: statusName as StoredLiveTransaction["finality"], consensusStatus: statusName, execution: "ERROR" });
+      return { ...tx, statusName, txExecutionResultName: ExecutionResult.FINISHED_WITH_ERROR };
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    delayMs = Math.min(delayMs + 3000, 30_000);
+  }
+}
+
 export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
   const blockedReason = liveV1WriteBlockReason(params.action.method);
   if (blockedReason) throw new Error(blockedReason);
-  const { client, action, account, canonicalRecipient, canonicalReadback } = params;
+  const { client, action, account, signingProvider, canonicalReadback } = params;
   const storage = storageOrFallback(params.storage);
   if (client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
   const existing = loadPendingTransaction(action.requestId, storage);
   if (existing && !sameAction(existing, action, account)) {
     throw new Error(`request ${action.requestId} already has a different persisted transaction; refusing a duplicate broadcast`);
   }
+  if (existing && !existing.txHash) throw new Error(`request ${action.requestId} has a reserved but unresolved submission; reconcile it before any retry`);
   const prior = existing ?? persistedTransactions(storage).find((record) => sameAction(record, action, account));
+  if (prior && !prior.txHash) throw new Error(`prior ${action.method} submission has no resolved hash; reconcile it before any retry`);
+  const progress: TransactionProgress = (patch) => {
+    updatePending(storage, action.requestId, patch);
+    const current = loadPendingTransaction(action.requestId, storage);
+    if (current) params.onTransactionUpdate?.(current);
+  };
   if (prior?.txHash) {
-    const receipt = await client.waitForFinalization({ hash: prior.txHash as Hash, fullTransaction: true });
-    if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-      updatePending(storage, prior.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
+    const receipt = await waitForStudionetFinalization(client, prior.txHash as Hash, progress, () => finalizeReadyTransaction(client, prior.txHash as Hash, storage, action.requestId, progress));
+    if (!successfulFinalizedExecution(receipt)) {
+      await progress({ phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
       throw new Error(`${action.method} recovered transaction failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
     }
     const readback = await canonicalReadback();
-    updatePending(storage, prior.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+    await progress({ phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
     return { action, hash: prior.txHash as `0x${string}`, receipt, readback };
   }
   const preconditionContext = params.readPrecondition ? await params.readPrecondition() : undefined;
   assertRole(action.method, account, { ...(params.roleContext ?? {}), ...(preconditionContext ?? {}) });
+  if (!signingProvider) throw new Error("Connect the originating browser wallet before submitting a LIVE write.");
+  if (walletClientProviders.get(client) !== signingProvider) throw new Error("The verified wallet does not match the signer attached to this stable Studionet client.");
+  await assertStudionetWallet(signingProvider, account);
 
-  const allocation = ["cancel_tender", "settle_award", "refund_buyer"].includes(action.method)
-    ? externalAllocation(action.method, canonicalRecipient ?? (() => { throw new Error(`${action.method} requires canonical recipient`); })())
-    : undefined;
-  const estimateOptions = feeEstimateOptions(action.method, canonicalRecipient);
-  const preflight = await client.simulateWriteContract({
-    address: LIVE_CONTRACT,
-    functionName: action.method,
-    args: [...action.args] as unknown as CalldataEncodable[],
-    value: action.value ?? 0n,
-  });
-  void preflight;
-  const fees = await client.estimateTransactionFees({ ...estimateOptions, messageAllocations: allocation ?? estimateOptions.messageAllocations });
-  if (fees.feeValue <= 0n) throw new Error(`${action.method} feeValue must be positive`);
-  if (allocation && (!fees.messageAllocations || fees.messageAllocations.length !== 1 || fees.distribution.totalMessageFees <= 0n)) {
-    throw new Error(`${action.method} fee estimate lost its external message allocation`);
+  const payoutMethods = ["cancel_tender", "settle_award", "refund_buyer", "release_milestone", "resolve_dispute"];
+  if (payoutMethods.includes(action.method)) {
+    throw new Error("External transfers require a verified Studionet message-fee policy before LIVE execution.");
   }
-  const hash = await client.writeContract({
-    address: LIVE_CONTRACT,
-    functionName: action.method,
-    args: [...action.args] as unknown as CalldataEncodable[],
-    value: action.value ?? 0n,
-    fees: { distribution: fees.distribution, feeValue: fees.feeValue, messageAllocations: fees.messageAllocations },
-  }) as Hash;
-  persistPending(storage, action, account, hash);
-  updatePending(storage, action.requestId, { phase: "RECONCILE_SAME_HASH" });
-  const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
-  if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-    updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
+
+  persistPending(storage, action, account);
+  params.onTransactionUpdate?.(loadPendingTransaction(action.requestId, storage)!);
+  let observedHash: Hash | undefined;
+  if (!armSubmissionHook(client, async (submittedHash) => {
+    observedHash = submittedHash;
+    const current = loadPendingTransaction(action.requestId, storage);
+    if (!current) throw new Error("submission journal reservation disappeared before wallet broadcast");
+    sameKnownHash(current, submittedHash);
+    await progress({ txHash: submittedHash, submissionHash: submittedHash, evmTxHash: submittedHash, phase: "PERSIST_HASH", finality: "PENDING", execution: "UNKNOWN", trackingError: "" });
+  })) {
+    throw new Error("wallet signer is not attached to this stable Studionet client; refusing to broadcast");
+  }
+  let returnedHash: Hash;
+  try {
+    returnedHash = await client.writeContract({
+      address: LIVE_CONTRACT,
+      functionName: action.method,
+      args: [...action.args] as unknown as CalldataEncodable[],
+      value: action.value ?? 0n,
+    }) as Hash;
+  } catch (error) {
+    const journal = loadPendingTransaction(action.requestId, storage);
+    if (!journal?.txHash && observedHash) {
+      persistPending(storage, action, account, observedHash);
+      params.onTransactionUpdate?.(loadPendingTransaction(action.requestId, storage)!);
+    }
+    const recoveredHash = loadPendingTransaction(action.requestId, storage)?.txHash;
+    if (!recoveredHash) {
+      await progress({ trackingError: String(error instanceof Error ? error.message : error), execution: "UNKNOWN" });
+      throw new Error(`${action.method} submission outcome is unresolved; its reserved request is persisted and must be reconciled without rebroadcast.`, { cause: error });
+    }
+    returnedHash = recoveredHash as Hash;
+  } finally {
+    armSubmissionHook(client, null);
+  }
+  const journal = loadPendingTransaction(action.requestId, storage);
+  if (!journal?.txHash) {
+    persistPending(storage, action, account, observedHash ?? returnedHash);
+    params.onTransactionUpdate?.(loadPendingTransaction(action.requestId, storage)!);
+  }
+  const saved = loadPendingTransaction(action.requestId, storage);
+  if (!saved?.txHash) throw new Error("submitted transaction hash was not persisted; reconcile the wallet activity before retrying");
+  if (observedHash && returnedHash.toLowerCase() !== observedHash.toLowerCase()) {
+    await progress({ genlayerTxId: returnedHash, evmTxHash: observedHash, submissionHash: observedHash, phase: "RECONCILE_SAME_HASH", finality: "PENDING" });
+  }
+  const hash = saved.txHash as Hash;
+  const ready = () => finalizeReadyTransaction(client, hash, storage, action.requestId, progress);
+  const receipt = await waitForStudionetFinalization(client, hash, progress, ready);
+  if (!successfulFinalizedExecution(receipt)) {
+    await progress({ phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
     throw new Error(`${action.method} execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
   }
-  updatePending(storage, action.requestId, { phase: "FINALITY", finality: "FINALIZED" });
-  updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "SUCCESS" });
-  updatePending(storage, action.requestId, { phase: "CANONICAL_READBACK" });
+  await progress({ phase: "FINALITY", finality: "FINALIZED" });
+  await progress({ phase: "EXECUTION_STATUS", finality: "FINALIZED", execution: "SUCCESS" });
+  await progress({ phase: "CANONICAL_READBACK" });
   const readback = await canonicalReadback();
-  updatePending(storage, action.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
-  return { action, hash, receipt, readback, fees };
+  await progress({ phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+  return { action, hash, receipt, readback };
 }
 
 export async function recoverLiveTransaction(params: {
@@ -295,15 +474,27 @@ export async function recoverLiveTransaction(params: {
   record: StoredLiveTransaction;
   canonicalReadback: () => Promise<unknown>;
   storage?: StorageLike;
+  onTransactionUpdate?: (record: StoredLiveTransaction) => void;
 }): Promise<{ hash: `0x${string}`; receipt: unknown; readback: unknown }> {
   if (params.client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
   if (params.record.address !== LIVE_CONTRACT) throw new Error(`Persisted transaction targets an unexpected contract: ${params.record.address}`);
   if (!params.record.txHash) throw new Error("No persisted transaction hash to recover");
-  const receipt = await params.client.waitForFinalization({ hash: params.record.txHash as Hash, fullTransaction: true });
-  if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+  const storage = storageOrFallback(params.storage);
+  const progress: TransactionProgress = (patch) => {
+    updatePending(storage, params.record.requestId, patch);
+    const current = loadPendingTransaction(params.record.requestId, storage);
+    if (current) params.onTransactionUpdate?.(current);
+  };
+  const receipt = await waitForStudionetFinalization(
+    params.client,
+    params.record.txHash as Hash,
+    progress,
+    () => finalizeReadyTransaction(params.client, params.record.txHash as Hash, storage, params.record.requestId, progress),
+  );
+  if (!successfulFinalizedExecution(receipt)) {
     throw new Error(`Recovered transaction execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
   }
   const readback = await params.canonicalReadback();
-  if (params.storage) updatePending(params.storage, params.record.requestId, { phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
+  await progress({ phase: "UI_UPDATE", finality: "FINALIZED", execution: "SUCCESS" });
   return { hash: params.record.txHash as Hash, receipt, readback };
 }

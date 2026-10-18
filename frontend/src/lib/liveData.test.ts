@@ -41,6 +41,17 @@ describe("canonical LIVE preconditions and readback", () => {
     await expect(readActionPrecondition(evidenceClient, evidenceAction)).resolves.toEqual({ supplier });
   });
 
+  it("derives buyer and acceptance roles from canonical tender and award state", async () => {
+    const buyer = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
+    const supplier = "0x6311de989ab01ae4da77d36cc45d495fbcd4b7a8";
+    const action = buildTypedAction("freeze_tender", { tender_id: "T-ROLE" }, { requestId: "buyer-role" });
+    const client = clientFor({ "get_tender:[\"T-ROLE\"]": { tender_id: "T-ROLE", buyer } });
+    await expect(readActionPrecondition(client, action)).resolves.toEqual({ buyer });
+    const acceptance = buildTypedAction("accept_award", { award_id: "A-ROLE" }, { requestId: "supplier-role" });
+    const awardClient = clientFor({ "get_award:[\"A-ROLE\"]": { award_id: "A-ROLE", state: "AWARDED_PENDING_ACCEPTANCE", supplier } });
+    await expect(readActionPrecondition(awardClient, acceptance)).resolves.toEqual({ supplier });
+  });
+
   it("fails closed when the canonical award read is unavailable", async () => {
     const deliveryAction = buildTypedAction("create_delivery", { delivery_id: "D-RPC", award_id: "A-1", delivery_reference: "GRN-1", delivered_items: "one", quantity: 1n, serial_identifiers: "SN-1", submitted_at: "2026-10-05T08:00:00.000Z" }, { requestId: "precondition-delivery-rpc" });
     const client = clientFor({ "get_award:[\"A-1\"]": new Error("RPC unavailable") });

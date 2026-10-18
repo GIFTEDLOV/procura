@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "PROCUREMENT_V1",
+  "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
   "contract": "Procura",
   "methods": [
     {"name":"create_tender","kind":"write","payable":false,"arguments":["tender_id","title","description","category","currency_label","budget_ceiling","bid_deadline","evaluation_deadline","delivery_deadline","equivalence_policy","evaluation_policy","payment_policy","supplier_bond_policy","tender_hash"]},
