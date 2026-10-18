@@ -5,6 +5,6 @@ export const frontendWrites = schema.methods.filter((method) => method.kind === 
 
 export function manifestMethod(name: string) {
   const method = schema.methods.find((candidate) => candidate.name === name);
-  if (!method) throw new Error(`Unknown Procurement_V1 method: ${name}`);
+  if (!method) throw new Error(`Unknown Procura schema method: ${name}`);
   return method;
 }
