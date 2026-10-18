@@ -18,7 +18,7 @@ def _decorator_tail(decorator):
 
 
 def test_schema_manifest_matches_all_public_methods_and_arguments():
-    source = (ROOT / "contracts" / "Procura.py").read_text(encoding="utf-8")
+    source = (ROOT / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     contract = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "Procura")
     actual = {}
