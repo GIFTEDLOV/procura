@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { manifestMethod } from "./interfaceManifest";
+import { frontendInterfaceManifest, manifestMethod } from "./interfaceManifest";
 
 /**
  * The contract compares its datetime fields as strings. Every value sent by
@@ -114,7 +114,7 @@ function canonicalJson(value: unknown): string {
 export function canonicalArgumentSerialization(method: string, kwargs: Record<string, unknown>, excludedFields: readonly string[] = []): string {
   const manifest = manifestMethod(method);
   const argumentsInOrder = manifest.arguments.filter((name) => !excludedFields.includes(name)).map((name) => ({ name, value: kwargs[name] as CanonicalValue }));
-  return canonicalJson({ schemaVersion: "PROCUREMENT_V1", method, arguments: argumentsInOrder });
+  return canonicalJson({ schemaVersion: frontendInterfaceManifest.schemaVersion, method, arguments: argumentsInOrder });
 }
 
 export async function sha256HexBytes(bytes: Uint8Array): Promise<string> {
