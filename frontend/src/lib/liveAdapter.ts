@@ -4,7 +4,7 @@ import {
   isSuccessful,
   MessageType,
 } from "genlayer-js";
-import { studioDevnet } from "genlayer-js/chains";
+import { studionet } from "genlayer-js/chains";
 import { ExecutionResult } from "genlayer-js/types";
 import type { CalldataEncodable, Hash, MessageFeeAllocationInput } from "genlayer-js/types";
 import type { Hex } from "viem";
@@ -85,12 +85,12 @@ function storageOrFallback(storage?: StorageLike): StorageLike {
 }
 
 export function createLiveReadClient(): LiveClient {
-  return createClient({ chain: studioDevnet });
+  return createClient({ chain: studionet, endpoint: LIVE_RPC });
 }
 
 export function createLiveWalletClient(address: Address, provider: BrowserProvider): LiveClient {
   type ClientConfig = NonNullable<Parameters<typeof createClient>[0]>;
-  const config: ClientConfig = { chain: studioDevnet, account: address, provider: provider as ClientConfig["provider"] };
+  const config: ClientConfig = { chain: studionet, endpoint: LIVE_RPC, account: address, provider: provider as ClientConfig["provider"] };
   return createClient(config);
 }
 
