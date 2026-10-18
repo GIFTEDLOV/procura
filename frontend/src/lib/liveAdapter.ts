@@ -94,8 +94,14 @@ export function createLiveReadClient(): LiveClient {
 
 export function createLiveWalletClient(address: Address, provider: BrowserProvider): LiveClient {
   type ClientConfig = NonNullable<Parameters<typeof createClient>[0]>;
-  const config: ClientConfig = { chain: studionet, endpoint: LIVE_RPC, account: address, provider: provider as ClientConfig["provider"] };
-  return createClient(config);
+  // Studionet is served by the stable SDK; RC wallet writes target a different
+  // transport protocol and can fail even when the transaction is valid.
+  return createStableReadClient({
+    chain: stableStudionet,
+    endpoint: LIVE_RPC,
+    account: address,
+    provider: provider as ClientConfig["provider"],
+  }) as unknown as LiveClient;
 }
 
 export async function assertStudioDevWallet(provider: BrowserProvider, expectedAddress?: Address): Promise<Address> {
@@ -233,6 +239,42 @@ export function loadPendingTransaction(requestId: string, storage?: StorageLike)
   return raw ? JSON.parse(raw) as StoredLiveTransaction : null;
 }
 
+/**
+ * Studionet stable SDK 1.1.8 uses getTransaction rather than the RC helper.
+ * Require finalized, successful consensus execution. A timeout is ambiguous:
+ * the caller must reconcile the persisted hash, NEVER rebroadcast.
+ */
+async function waitForStudionetFinalization(client: LiveClient, hash: Hash) {
+  const stable = client as unknown as {
+    getTransaction?: (args: { hash: Hash }) => Promise<Record<string, unknown>>;
+    waitForFinalization?: (args: { hash: Hash; fullTransaction: true }) => Promise<unknown>;
+  };
+  if (!stable.getTransaction && stable.waitForFinalization) {
+    return stable.waitForFinalization({ hash, fullTransaction: true }) as Promise<Awaited<ReturnType<LiveClient["waitForFinalization"]>>>;
+  }
+  if (!stable.getTransaction) throw new Error("Studionet transaction lookup unavailable; reconcile the persisted hash");
+  for (let i = 0; i < 45; i += 1) {
+    const tx = await stable.getTransaction({ hash });
+    if (tx.statusName === "FINALIZED") {
+      const consensus = tx.consensus_data as {
+        leader_receipt?: Array<{ result?: { status?: string } }>;
+        validators?: Array<{ execution_result?: string }>;
+      } | undefined;
+      const success = tx.result_name === "MAJORITY_AGREE"
+        && consensus?.leader_receipt?.[0]?.result?.status === "return"
+        && (consensus.validators?.filter((v) => v.execution_result === "SUCCESS").length ?? 0) > 0
+        && !consensus.validators?.some((v) => v.execution_result === "ERROR");
+      return {
+        ...tx,
+        txExecutionResultName: success ? ExecutionResult.FINISHED_WITH_RETURN : ExecutionResult.FINISHED_WITH_ERROR,
+      } as Awaited<ReturnType<LiveClient["waitForFinalization"]>>;
+    }
+    if (tx.statusName === "CANCELED" || tx.statusName === "UNDETERMINED") throw new Error("Studionet transaction did not finalize successfully: " + String(hash));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+  throw new Error("Studionet finality timed out; reconcile the same persisted hash before any further write: " + String(hash));
+}
+
 export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWriteResult> {
   const blockedReason = liveV1WriteBlockReason(params.action.method);
   if (blockedReason) throw new Error(blockedReason);
@@ -245,7 +287,7 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
   }
   const prior = existing ?? persistedTransactions(storage).find((record) => sameAction(record, action, account));
   if (prior?.txHash) {
-    const receipt = await client.waitForFinalization({ hash: prior.txHash as Hash, fullTransaction: true });
+    const receipt = await waitForStudionetFinalization(client, prior.txHash as Hash);
     if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
       updatePending(storage, prior.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
       throw new Error(`${action.method} recovered transaction failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
@@ -273,7 +315,7 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
     }) as Hash;
     persistPending(storage, action, account, hash);
     updatePending(storage, action.requestId, { phase: "RECONCILE_SAME_HASH" });
-    const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
+    const receipt = await waitForStudionetFinalization(client, hash);
     if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
       updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
       throw new Error(`${action.method} execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
@@ -311,7 +353,7 @@ export async function executeLiveWrite(params: LiveWriteParams): Promise<LiveWri
   }) as Hash;
   persistPending(storage, action, account, hash);
   updatePending(storage, action.requestId, { phase: "RECONCILE_SAME_HASH" });
-  const receipt = await client.waitForFinalization({ hash, fullTransaction: true });
+  const receipt = await waitForStudionetFinalization(client, hash);
   if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
     updatePending(storage, action.requestId, { phase: "EXECUTION_STATUS", finality: receipt.statusName === "FINALIZED" ? "FINALIZED" : "UNDETERMINED", execution: "ERROR" });
     throw new Error(`${action.method} execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
@@ -333,7 +375,7 @@ export async function recoverLiveTransaction(params: {
   if (params.client.chain.id !== LIVE_CHAIN_ID) throw new Error(`Client chain mismatch: expected ${LIVE_CHAIN_ID}`);
   if (params.record.address !== LIVE_CONTRACT) throw new Error(`Persisted transaction targets an unexpected contract: ${params.record.address}`);
   if (!params.record.txHash) throw new Error("No persisted transaction hash to recover");
-  const receipt = await params.client.waitForFinalization({ hash: params.record.txHash as Hash, fullTransaction: true });
+  const receipt = await waitForStudionetFinalization(params.client, params.record.txHash as Hash);
   if (!isSuccessful(receipt) || receipt.statusName !== "FINALIZED" || receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
     throw new Error(`Recovered transaction execution failed: ${String(receipt.statusName ?? "UNKNOWN_STATUS")} / ${String(receipt.txExecutionResultName ?? "UNKNOWN_EXECUTION")}`);
   }
