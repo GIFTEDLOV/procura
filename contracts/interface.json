@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "PROCUREMENT_V1",
+  "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
   "methods": [
     "create_tender", "add_requirement", "add_certification_requirement", "freeze_tender", "fund_tender", "cancel_tender",
     "submit_bid", "add_bid_evidence", "begin_bid_evaluation", "adjudicate_requirement", "finalize_bid_evaluation",
