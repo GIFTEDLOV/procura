@@ -60,6 +60,7 @@ function Application() {
       client,
       action,
       account,
+      signingProvider: provider,
       roleContext: method === "create_tender" ? { buyer: account } : undefined,
       storage: window.localStorage,
       readPrecondition: () => readActionPrecondition(client, action),
