@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = (ROOT / "contracts" / "Procura.py").read_text(encoding="utf-8")
+SOURCE = (ROOT / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8")
 
 
 def _has(fragment: str) -> bool:
