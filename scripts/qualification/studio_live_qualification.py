@@ -1,4 +1,8 @@
-"""Type-safe Studio-dev qualification writes for the already deployed Procura.
+"""Historical Studio-dev qualification helper for an earlier Procura release.
+
+This helper targets chain 61997 and the former Deployment #6 contract. It is
+not the active Studionet qualification runner. Use
+``studionet_evidence_qualification.mjs`` for the current V2.1.2 workflow.
 
 This module deliberately uses genlayer-py only.  It never invokes the GenLayer
 CLI argument parser, never constructs an RLP transaction manually, and never

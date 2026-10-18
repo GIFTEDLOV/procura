@@ -107,7 +107,7 @@ function canonicalJson(value: unknown): string {
 /**
  * Canonical commitment preimage format, version 1:
  * {schemaVersion,method,arguments:[{name,value}, ...]}
- * The argument array follows contracts/schema.json order; object keys are
+ * The argument array follows contracts/schema.v2.evidence.json order; object keys are
  * lexicographically sorted; bigint/u256 values are decimal strings; JSON is
  * compact UTF-8 with no whitespace. The hash field itself is excluded.
  */
@@ -267,14 +267,14 @@ const workflowRuntimeKinds: Record<string, Record<string, RuntimeKind>> = {
 
 export const sharedWorkflowMethods = Object.keys(workflowRuntimeKinds) as Array<keyof typeof workflowRuntimeKinds>;
 
-/** Runtime ABI checks for the five write workflows. Names and order remain sourced from contracts/schema.json. */
+/** Runtime ABI checks for the five write workflows. Names and order remain sourced from the deployed typed schema. */
 export function validateSharedWorkflowArgs(method: string, kwargs: Record<string, unknown>): void {
   const kinds = workflowRuntimeKinds[method];
   if (!kinds) return;
   const manifest = manifestMethod(method);
   const manifestNames = [...manifest.arguments];
   const expectedNames = Object.keys(kinds);
-  if (manifestNames.length !== expectedNames.length || manifestNames.some((name, index) => name !== expectedNames[index])) throw new Error(`${method} runtime validator does not match contracts/schema.json`);
+  if (manifestNames.length !== expectedNames.length || manifestNames.some((name, index) => name !== expectedNames[index])) throw new Error(`${method} runtime validator does not match contracts/schema.v2.evidence.json`);
   for (const name of manifestNames) {
     const value = kwargs[name];
     const kind = kinds[name];

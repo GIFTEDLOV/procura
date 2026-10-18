@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Shell, legacyRoute, routeFromPath, type RouteKey } from "./components/Shell";
 import { demoData } from "./lib/demoData";
-import { createLiveReadClient, createLiveWalletClient, executeLiveWrite, buildTypedAction, assertStudioDevWallet, loadPendingTransaction, recoverLiveTransaction, type StoredLiveTransaction } from "./lib/liveAdapter";
+import { createLiveReadClient, createLiveWalletClient, executeLiveWrite, buildTypedAction, assertStudionetWallet, loadPendingTransaction, recoverLiveTransaction, type StoredLiveTransaction } from "./lib/liveAdapter";
 import { LIVE_CONTRACT, liveV1WriteBlockReason, sameAddress, type FrontendMode } from "./lib/liveConfig";
 import { readActionPrecondition, readActionReadback, readLiveSnapshot, type LiveSnapshot } from "./lib/liveData";
 import { manifestMethod } from "./lib/interfaceManifest";
@@ -53,7 +53,7 @@ function Application() {
     if (blockedReason) throw new Error(blockedReason);
     const provider = wallet.provider ?? browserProvider();
     if (!provider) throw new Error("Connect a browser wallet before submitting a LIVE write.");
-    const account = await assertStudioDevWallet(provider);
+    const account = await assertStudionetWallet(provider);
     const action = buildTypedAction(method, kwargs, { requestId: crypto.randomUUID(), value });
     const client = createLiveWalletClient(account, provider);
     const readClient = createLiveReadClient();
@@ -65,6 +65,7 @@ function Application() {
       roleContext: method === "create_tender" ? { buyer: account } : undefined,
       storage: window.localStorage,
       readPrecondition: () => readActionPrecondition(readClient, action),
+      onTransactionUpdate: () => setTransactions(storedTransactions()),
       canonicalReadback: async () => {
         const entity = await readActionReadback(readClient, action);
         const snapshot = await readLiveSnapshot();
@@ -77,7 +78,7 @@ function Application() {
   const recoverTransaction = async (requestId: string) => {
     const provider = wallet.provider ?? browserProvider();
     if (!provider) throw new Error("Connect the originating wallet before recovering this hash.");
-    const account = await assertStudioDevWallet(provider);
+    const account = await assertStudionetWallet(provider);
     const record = loadPendingTransaction(requestId, window.localStorage);
     if (!record) throw new Error("No persisted transaction record was found.");
     if (!sameAddress(record.account, account)) throw new Error(`Wrong wallet: recovery belongs to ${record.account}`);
@@ -97,7 +98,7 @@ function Application() {
       const snapshot = await readLiveSnapshot();
       queryClient.setQueryData(["procura", "live", LIVE_CONTRACT], snapshot);
       return { entity, snapshot };
-    } });
+    }, onTransactionUpdate: () => setTransactions(storedTransactions()) });
     void result;
     setTransactions(storedTransactions());
   };

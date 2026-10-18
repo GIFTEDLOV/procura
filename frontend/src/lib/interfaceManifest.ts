@@ -1,4 +1,4 @@
-import schema from "../../../contracts/schema.json";
+import schema from "../../../contracts/schema.v2.evidence.json";
 
 export const frontendInterfaceManifest = schema;
 export const frontendWrites = schema.methods.filter((method) => method.kind === "write");

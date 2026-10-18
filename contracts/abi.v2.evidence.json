@@ -1,0 +1,606 @@
+{
+  "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+  "contractVersion": "2.1.2-evidence-verified-studionet",
+  "contract": "ProcuraV2Evidence",
+  "candidateSourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+  "methods": [
+    {
+      "name": "create_tender",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id",
+        "title",
+        "description",
+        "category",
+        "currency_label",
+        "budget_ceiling",
+        "bid_deadline",
+        "evaluation_deadline",
+        "delivery_deadline",
+        "equivalence_policy",
+        "evaluation_policy",
+        "payment_policy",
+        "supplier_bond_policy",
+        "tender_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "add_requirement",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id",
+        "requirement_id",
+        "title",
+        "description",
+        "requirement_type",
+        "mandatory",
+        "operator",
+        "expected_value",
+        "unit",
+        "equivalence_allowed",
+        "evidence_required",
+        "semantic_question",
+        "materiality"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "bool",
+        "str",
+        "str",
+        "str",
+        "bool",
+        "bool",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "add_certification_requirement",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id",
+        "requirement_id",
+        "title",
+        "description",
+        "certification_name"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "freeze_tender",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "fund_tender",
+      "kind": "write",
+      "payable": true,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "cancel_tender",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "submit_bid",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "bid_id",
+        "tender_id",
+        "price",
+        "currency",
+        "delivery_commitment",
+        "requirement_responses",
+        "submitted_at",
+        "bid_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "add_bid_evidence",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "bid_id",
+        "evidence_id",
+        "authority",
+        "source_url",
+        "content_sha256",
+        "content_byte_length",
+        "observed_at",
+        "published_at",
+        "evidence_type"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "begin_bid_evaluation",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "adjudicate_requirement",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "bid_id",
+        "requirement_id",
+        "evidence_snapshot_root"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "finalize_bid_evaluation",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "award_bid",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "tender_id",
+        "award_id",
+        "winning_bid_id",
+        "awarded_specification",
+        "payment_milestones",
+        "delivery_deadline",
+        "award_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "accept_award",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "post_supplier_bond",
+      "kind": "write",
+      "payable": true,
+      "arguments": [
+        "award_id",
+        "expected_bond_amount"
+      ],
+      "argumentTypes": [
+        "str",
+        "u256"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "create_delivery",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id",
+        "award_id",
+        "delivery_reference",
+        "delivered_items",
+        "quantity",
+        "serial_identifiers",
+        "submitted_at"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "add_delivery_evidence",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id",
+        "evidence_id",
+        "authority",
+        "source_url",
+        "content_sha256",
+        "content_byte_length",
+        "observed_at",
+        "published_at",
+        "evidence_type"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "begin_inspection",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "adjudicate_delivery",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id",
+        "evidence_snapshot_root"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "accept_delivery",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "reject_delivery",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "release_milestone",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id",
+        "milestone_index"
+      ],
+      "argumentTypes": [
+        "str",
+        "u32"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "settle_award",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "refund_buyer",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "open_dispute",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id",
+        "reason"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "resolve_dispute",
+      "kind": "write",
+      "payable": false,
+      "arguments": [
+        "award_id",
+        "decision"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ],
+      "returnType": "None"
+    },
+    {
+      "name": "get_tender",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_requirements",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "list"
+    },
+    {
+      "name": "get_bids",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "list"
+    },
+    {
+      "name": "get_evidence",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "entity_type",
+        "entity_id"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ],
+      "returnType": "list"
+    },
+    {
+      "name": "get_adjudication",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "bid_id",
+        "requirement_id"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_award",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_delivery",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_delivery_adjudication",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_payments",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_refunds",
+      "kind": "view",
+      "payable": false,
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_audit_events",
+      "kind": "view",
+      "payable": false,
+      "arguments": [],
+      "argumentTypes": [],
+      "returnType": "list"
+    },
+    {
+      "name": "get_accounting",
+      "kind": "view",
+      "payable": false,
+      "arguments": [],
+      "argumentTypes": [],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_protocol_info",
+      "kind": "view",
+      "payable": false,
+      "arguments": [],
+      "argumentTypes": [],
+      "returnType": "dict"
+    },
+    {
+      "name": "get_tender_ids",
+      "kind": "view",
+      "payable": false,
+      "arguments": [],
+      "argumentTypes": [],
+      "returnType": "list"
+    }
+  ]
+}

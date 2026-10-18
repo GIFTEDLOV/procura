@@ -1,0 +1,3225 @@
+{
+  "recordedAt": "2026-10-18T14:37:00.314Z",
+  "mode": "READ_ONLY_CANONICAL_RECONCILIATION",
+  "writesPerformed": false,
+  "network": {
+    "name": "Genlayer Studio Network",
+    "chainId": 61999,
+    "rpc": "https://studio.genlayer.com/api",
+    "explorer": "https://explorer-studio.genlayer.com"
+  },
+  "contract": {
+    "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+    "sourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+    "deployedSourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+    "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+    "methodCount": 39,
+    "requiredMethodSchemaParity": {
+      "create_tender": {
+        "runtime": [
+          [
+            "tender_id",
+            "string"
+          ],
+          [
+            "title",
+            "string"
+          ],
+          [
+            "description",
+            "string"
+          ],
+          [
+            "category",
+            "string"
+          ],
+          [
+            "currency_label",
+            "string"
+          ],
+          [
+            "budget_ceiling",
+            "int"
+          ],
+          [
+            "bid_deadline",
+            "string"
+          ],
+          [
+            "evaluation_deadline",
+            "string"
+          ],
+          [
+            "delivery_deadline",
+            "string"
+          ],
+          [
+            "equivalence_policy",
+            "string"
+          ],
+          [
+            "evaluation_policy",
+            "string"
+          ],
+          [
+            "payment_policy",
+            "string"
+          ],
+          [
+            "supplier_bond_policy",
+            "string"
+          ],
+          [
+            "tender_hash",
+            "string"
+          ]
+        ],
+        "shared": {
+          "name": "create_tender",
+          "kind": "write",
+          "payable": false,
+          "arguments": [
+            "tender_id",
+            "title",
+            "description",
+            "category",
+            "currency_label",
+            "budget_ceiling",
+            "bid_deadline",
+            "evaluation_deadline",
+            "delivery_deadline",
+            "equivalence_policy",
+            "evaluation_policy",
+            "payment_policy",
+            "supplier_bond_policy",
+            "tender_hash"
+          ],
+          "argumentTypes": [
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "u256",
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "str"
+          ],
+          "returnType": "None"
+        }
+      },
+      "submit_bid": {
+        "runtime": [
+          [
+            "bid_id",
+            "string"
+          ],
+          [
+            "tender_id",
+            "string"
+          ],
+          [
+            "price",
+            "int"
+          ],
+          [
+            "currency",
+            "string"
+          ],
+          [
+            "delivery_commitment",
+            "string"
+          ],
+          [
+            "requirement_responses",
+            "string"
+          ],
+          [
+            "submitted_at",
+            "string"
+          ],
+          [
+            "bid_hash",
+            "string"
+          ]
+        ],
+        "shared": {
+          "name": "submit_bid",
+          "kind": "write",
+          "payable": false,
+          "arguments": [
+            "bid_id",
+            "tender_id",
+            "price",
+            "currency",
+            "delivery_commitment",
+            "requirement_responses",
+            "submitted_at",
+            "bid_hash"
+          ],
+          "argumentTypes": [
+            "str",
+            "str",
+            "u256",
+            "str",
+            "str",
+            "str",
+            "str",
+            "str"
+          ],
+          "returnType": "None"
+        }
+      },
+      "add_bid_evidence": {
+        "runtime": [
+          [
+            "bid_id",
+            "string"
+          ],
+          [
+            "evidence_id",
+            "string"
+          ],
+          [
+            "authority",
+            "string"
+          ],
+          [
+            "source_url",
+            "string"
+          ],
+          [
+            "content_sha256",
+            "string"
+          ],
+          [
+            "content_byte_length",
+            "int"
+          ],
+          [
+            "observed_at",
+            "string"
+          ],
+          [
+            "published_at",
+            "string"
+          ],
+          [
+            "evidence_type",
+            "string"
+          ]
+        ],
+        "shared": {
+          "name": "add_bid_evidence",
+          "kind": "write",
+          "payable": false,
+          "arguments": [
+            "bid_id",
+            "evidence_id",
+            "authority",
+            "source_url",
+            "content_sha256",
+            "content_byte_length",
+            "observed_at",
+            "published_at",
+            "evidence_type"
+          ],
+          "argumentTypes": [
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "u256",
+            "str",
+            "str",
+            "str"
+          ],
+          "returnType": "None"
+        }
+      },
+      "create_delivery": {
+        "runtime": [
+          [
+            "delivery_id",
+            "string"
+          ],
+          [
+            "award_id",
+            "string"
+          ],
+          [
+            "delivery_reference",
+            "string"
+          ],
+          [
+            "delivered_items",
+            "string"
+          ],
+          [
+            "quantity",
+            "int"
+          ],
+          [
+            "serial_identifiers",
+            "string"
+          ],
+          [
+            "submitted_at",
+            "string"
+          ]
+        ],
+        "shared": {
+          "name": "create_delivery",
+          "kind": "write",
+          "payable": false,
+          "arguments": [
+            "delivery_id",
+            "award_id",
+            "delivery_reference",
+            "delivered_items",
+            "quantity",
+            "serial_identifiers",
+            "submitted_at"
+          ],
+          "argumentTypes": [
+            "str",
+            "str",
+            "str",
+            "str",
+            "u256",
+            "str",
+            "str"
+          ],
+          "returnType": "None"
+        }
+      },
+      "add_delivery_evidence": {
+        "runtime": [
+          [
+            "delivery_id",
+            "string"
+          ],
+          [
+            "evidence_id",
+            "string"
+          ],
+          [
+            "authority",
+            "string"
+          ],
+          [
+            "source_url",
+            "string"
+          ],
+          [
+            "content_sha256",
+            "string"
+          ],
+          [
+            "content_byte_length",
+            "int"
+          ],
+          [
+            "observed_at",
+            "string"
+          ],
+          [
+            "published_at",
+            "string"
+          ],
+          [
+            "evidence_type",
+            "string"
+          ]
+        ],
+        "shared": {
+          "name": "add_delivery_evidence",
+          "kind": "write",
+          "payable": false,
+          "arguments": [
+            "delivery_id",
+            "evidence_id",
+            "authority",
+            "source_url",
+            "content_sha256",
+            "content_byte_length",
+            "observed_at",
+            "published_at",
+            "evidence_type"
+          ],
+          "argumentTypes": [
+            "str",
+            "str",
+            "str",
+            "str",
+            "str",
+            "u256",
+            "str",
+            "str",
+            "str"
+          ],
+          "returnType": "None"
+        }
+      }
+    },
+    "balanceWei": "200000000000000",
+    "accounting": {
+      "escrow_liability": 200000000000000,
+      "total_bond_returns": 0,
+      "total_bond_slashes": 0,
+      "total_buyer_refunds": 0,
+      "total_funded": 200000000000000,
+      "total_supplier_bonds": 0,
+      "total_supplier_payouts": 0
+    },
+    "tenderIds": [
+      "PROCURA-CLOUD-REVIEWER-20261016",
+      "PROCURA-CLOUD-REVIEWER-20261016-B",
+      "PROCURA-CLOUD-REVIEWER-20261016-C",
+      "PROCURA-ONECLOUD-1792316499313",
+      "PROCURA-V212-STEWARD-1792317664954",
+      "PROCURA-STUDIONET-QUAL-20261018143534"
+    ],
+    "cases": {
+      "PROCURA-CLOUD-REVIEWER-20261016": {
+        "tender": {
+          "bid_deadline": "2026-10-16T17:12:20.000Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0xe8682d3e434be9e4eddff02f55f63844880e3bb8",
+          "category": "DIGITAL_ARTIFACT",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-10-19T11:12:20.000Z",
+          "description": "Reviewer-only procurement of an immutable public package manifest demonstrating GenLayer SDK major version 1",
+          "equivalence_policy": "STRICT_EVIDENCE",
+          "escrow_liability": 100000000000000,
+          "evaluation_deadline": "2026-10-16T18:12:20.000Z",
+          "evaluation_policy": "FROZEN_OBJECTIVE",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "FUNDED",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "fc3f8d692cd7639c9375b3cf1d0a5bfcfe7a50cfdcbe7d9a456ba2a6961f6153",
+          "tender_id": "PROCURA-CLOUD-REVIEWER-20261016",
+          "title": "Pinned GenLayer SDK artifact verification",
+          "total_funded": 100000000000000,
+          "version": 1
+        },
+        "requirements": [
+          {
+            "description": "The independently fetched immutable genlayer-js package.json must declare name genlayer-js with a SemVer major version equal to 1.",
+            "equivalence_allowed": false,
+            "evidence_required": true,
+            "expected_value": "1",
+            "mandatory": true,
+            "materiality": "HIGH",
+            "operator": "EQ",
+            "requirement_id": "REQ-GENLAYER-MAJOR",
+            "requirement_type": "OBJECTIVE",
+            "semantic_question": "Does the pinned manifest establish major version 1?",
+            "tender_id": "PROCURA-CLOUD-REVIEWER-20261016",
+            "title": "Pinned SemVer major version",
+            "unit": "semver_major:genlayer-js",
+            "version": 1
+          }
+        ],
+        "bids": [
+          {
+            "bid_hash": "78df8d5fda52e3047642d7b81f9a04efd68768c34921f010fa0f159b5303235d",
+            "bid_id": "BID-CLOUD-REVIEWER-20261016",
+            "currency": "GEN",
+            "delivery_commitment": "Deliver pinned package.json with verified major version 1",
+            "price": 100000000000000,
+            "requirement_responses": "{\"REQ-GENLAYER-MAJOR\":\"1\"}",
+            "state": "SUBMITTED",
+            "submitted_at": "2026-10-16T11:10:50.000Z",
+            "supplier": "0x0d27e07fa7e15927b4c9c2286e1b7a40e690b5a8",
+            "tender_id": "PROCURA-CLOUD-REVIEWER-20261016"
+          }
+        ],
+        "bidEvidence": {
+          "BID-CLOUD-REVIEWER-20261016": [
+            {
+              "authority": "GenLayer Labs pinned source repository",
+              "content_byte_length": 1996,
+              "content_sha256": "3a64066d2a1fea3647b7f67ec84aa498428e15f6e7df8d4a6f18732ceb4a948d",
+              "entity_id": "BID-CLOUD-REVIEWER-20261016",
+              "entity_type": "BID",
+              "evidence_id": "EVID-BID-CLOUD-20261016",
+              "evidence_type": "PINNED_PACKAGE_JSON",
+              "observed_at": "2026-10-16T11:09:20.000Z",
+              "owner": "0x0d27e07fa7e15927b4c9c2286e1b7a40e690b5a8",
+              "published_at": "2026-09-03T00:01:09.000Z",
+              "source_url": "https://raw.githubusercontent.com/genlayerlabs/genlayer-js/facd9e9dc9a289d0110fe3b5b1a14a2938fe6e01/package.json"
+            }
+          ]
+        },
+        "adjudications": {
+          "BID-CLOUD-REVIEWER-20261016:REQ-GENLAYER-MAJOR": null
+        }
+      },
+      "PROCURA-CLOUD-REVIEWER-20261016-B": {
+        "tender": {
+          "bid_deadline": "2026-10-16T17:22:26.000Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0x7ec08b02d72de7f6603d5a51ba5f4c0dec734e2d",
+          "category": "DIGITAL_ARTIFACT",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-10-19T11:22:26.000Z",
+          "description": "Reviewer-only procurement of an immutable public package manifest demonstrating GenLayer SDK major version 1",
+          "equivalence_policy": "STRICT_EVIDENCE",
+          "escrow_liability": 0,
+          "evaluation_deadline": "2026-10-16T18:22:26.000Z",
+          "evaluation_policy": "FROZEN_OBJECTIVE",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "DRAFT",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "5f80a079cc0c48f85a448b439959fc9245bb2b31a06ed452dc5c991e6e10162f",
+          "tender_id": "PROCURA-CLOUD-REVIEWER-20261016-B",
+          "title": "Pinned GenLayer SDK artifact verification",
+          "total_funded": 0,
+          "version": 0
+        },
+        "requirements": [],
+        "bids": [],
+        "bidEvidence": {},
+        "adjudications": {}
+      },
+      "PROCURA-CLOUD-REVIEWER-20261016-C": {
+        "tender": {
+          "bid_deadline": "2026-10-16T17:31:53.000Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+          "category": "DIGITAL_ARTIFACT",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-10-19T11:31:53.000Z",
+          "description": "Reviewer-only procurement of an immutable public package manifest demonstrating GenLayer SDK major version 1",
+          "equivalence_policy": "STRICT_EVIDENCE",
+          "escrow_liability": 100000000000000,
+          "evaluation_deadline": "2026-10-16T18:31:53.000Z",
+          "evaluation_policy": "FROZEN_OBJECTIVE",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "EVALUATING",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "43665d42e842098c9ed0ea2e22ac82d6cf606a39de7ae49e193dc6a3c1e96ca0",
+          "tender_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+          "title": "Pinned GenLayer SDK artifact verification",
+          "total_funded": 100000000000000,
+          "version": 1
+        },
+        "requirements": [
+          {
+            "description": "The independently fetched immutable genlayer-js package.json must declare name genlayer-js with a SemVer major version equal to 1.",
+            "equivalence_allowed": false,
+            "evidence_required": true,
+            "expected_value": "1",
+            "mandatory": true,
+            "materiality": "HIGH",
+            "operator": "EQ",
+            "requirement_id": "REQ-GENLAYER-MAJOR-C",
+            "requirement_type": "OBJECTIVE",
+            "semantic_question": "Does the pinned manifest establish major version 1?",
+            "tender_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+            "title": "Pinned SemVer major version",
+            "unit": "semver_major:genlayer-js",
+            "version": 1
+          }
+        ],
+        "bids": [
+          {
+            "bid_hash": "bd642a5b4cb195884f64cde5204bb598a706ef8a16a9459984751dee7af4674a",
+            "bid_id": "BID-CLOUD-REVIEWER-20261016-C",
+            "currency": "GEN",
+            "delivery_commitment": "Deliver pinned package.json with verified major version 1",
+            "price": 100000000000000,
+            "requirement_responses": "{\"REQ-GENLAYER-MAJOR-C\":\"1\"}",
+            "state": "UNDER_EVALUATION",
+            "submitted_at": "2026-10-16T11:30:23.000Z",
+            "supplier": "0x4cc166615ac8dddf4a9ded5ae8b211567288a416",
+            "tender_id": "PROCURA-CLOUD-REVIEWER-20261016-C"
+          }
+        ],
+        "bidEvidence": {
+          "BID-CLOUD-REVIEWER-20261016-C": [
+            {
+              "authority": "GenLayer Labs pinned source repository",
+              "content_byte_length": 1996,
+              "content_sha256": "3a64066d2a1fea3647b7f67ec84aa498428e15f6e7df8d4a6f18732ceb4a948d",
+              "entity_id": "BID-CLOUD-REVIEWER-20261016-C",
+              "entity_type": "BID",
+              "evidence_id": "EVID-BID-CLOUD-20261016-C",
+              "evidence_type": "PINNED_PACKAGE_JSON",
+              "observed_at": "2026-10-16T11:28:53.000Z",
+              "owner": "0x4cc166615ac8dddf4a9ded5ae8b211567288a416",
+              "published_at": "2026-09-03T00:01:09.000Z",
+              "source_url": "https://raw.githubusercontent.com/genlayerlabs/genlayer-js/facd9e9dc9a289d0110fe3b5b1a14a2938fe6e01/package.json"
+            }
+          ]
+        },
+        "adjudications": {
+          "BID-CLOUD-REVIEWER-20261016-C:REQ-GENLAYER-MAJOR-C": null
+        }
+      },
+      "PROCURA-ONECLOUD-1792316499313": {
+        "tender": {
+          "bid_deadline": "2026-10-19T09:41:39.313Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0x69cab1b79b6256b56bed7330775c6cd1bc1a4f00",
+          "category": "DIGITAL_ARTIFACT",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-10-22T09:41:39.313Z",
+          "description": "Temporary public Studionet qualification tender",
+          "equivalence_policy": "STRICT_EVIDENCE",
+          "escrow_liability": 0,
+          "evaluation_deadline": "2026-10-20T09:41:39.313Z",
+          "evaluation_policy": "FROZEN_OBJECTIVE",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "DRAFT",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "caff9b2a9a22c10181ed80835bf1cfe06045abedf01480d84ca01d07bd047a7a",
+          "tender_id": "PROCURA-ONECLOUD-1792316499313",
+          "title": "Verified SDK mapping",
+          "total_funded": 0,
+          "version": 0
+        },
+        "requirements": [],
+        "bids": [],
+        "bidEvidence": {},
+        "adjudications": {}
+      },
+      "PROCURA-V212-STEWARD-1792317664954": {
+        "tender": {
+          "bid_deadline": "2026-10-18T13:01:05.196Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0x9159febb95efe8c655f8a6d5d2e9850f93d2379a",
+          "category": "DIGITAL_ARTIFACT",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-10-20T10:01:05.196Z",
+          "description": "Temporary procurement of a publicly verifiable GenLayer network specification",
+          "equivalence_policy": "STRICT_EVIDENCE",
+          "escrow_liability": 0,
+          "evaluation_deadline": "2026-10-18T14:01:05.196Z",
+          "evaluation_policy": "FROZEN_OBJECTIVE",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "DRAFT",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "232ae2c8d789a14a30205d302aa5bd0537be72c0df91520c09572081dee90cb0",
+          "tender_id": "PROCURA-V212-STEWARD-1792317664954",
+          "title": "Reviewer LIVE schema and delivery verification",
+          "total_funded": 0,
+          "version": 0
+        },
+        "requirements": [],
+        "bids": [],
+        "bidEvidence": {},
+        "adjudications": {}
+      },
+      "PROCURA-STUDIONET-QUAL-20261018143534": {
+        "tender": {
+          "bid_deadline": "2026-11-17T14:35:34.440Z",
+          "budget_ceiling": 100000000000000,
+          "buyer": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "category": "QUALIFICATION",
+          "currency_label": "GEN",
+          "delivery_deadline": "2026-12-17T14:35:34.440Z",
+          "description": "Qualification-only test. The supplier will identify and deliver one pinned public package manifest; no commercial purchase is represented.",
+          "equivalence_policy": "NO_EQUIVALENCE",
+          "escrow_liability": 0,
+          "evaluation_deadline": "2026-11-18T14:35:34.440Z",
+          "evaluation_policy": "OBJECTIVE_AND_SEMANTIC",
+          "payment_policy": "FULL",
+          "required_certifications": [],
+          "state": "DRAFT",
+          "supplier_bond_policy": "NONE",
+          "tender_hash": "e68f22094155621ed659f28640f53f8d68855cfcbf9cf6f20c5ec002f56de1aa",
+          "tender_id": "PROCURA-STUDIONET-QUAL-20261018143534",
+          "title": "Procura reviewer qualification: official SDK package metadata",
+          "total_funded": 0,
+          "version": 0
+        },
+        "requirements": [],
+        "bids": [],
+        "bidEvidence": {},
+        "adjudications": {}
+      }
+    },
+    "auditEvents": [
+      {
+        "actor": "0xe8682d3e434be9e4eddff02f55f63844880e3bb8",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016:0",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-16T11:12:20.850012Z"
+      },
+      {
+        "actor": "0xe8682d3e434be9e4eddff02f55f63844880e3bb8",
+        "details": "PROCURA-CLOUD-REVIEWER-20261016",
+        "entity_id": "REQ-GENLAYER-MAJOR",
+        "entity_type": "requirement",
+        "event_id": "requirement:REQ-GENLAYER-MAJOR:1",
+        "event_type": "REQUIREMENT_ADDED",
+        "timestamp": "2026-10-16T11:12:59.075913Z"
+      },
+      {
+        "actor": "0xe8682d3e434be9e4eddff02f55f63844880e3bb8",
+        "details": "fc3f8d692cd7639c9375b3cf1d0a5bfcfe7a50cfdcbe7d9a456ba2a6961f6153",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016:2",
+        "event_type": "TENDER_FROZEN",
+        "timestamp": "2026-10-16T11:13:36.693549Z"
+      },
+      {
+        "actor": "0xe8682d3e434be9e4eddff02f55f63844880e3bb8",
+        "details": "100000000000000",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016:3",
+        "event_type": "ESCROW_FUNDED",
+        "timestamp": "2026-10-16T11:14:23.474192Z"
+      },
+      {
+        "actor": "0x0d27e07fa7e15927b4c9c2286e1b7a40e690b5a8",
+        "details": "PROCURA-CLOUD-REVIEWER-20261016",
+        "entity_id": "BID-CLOUD-REVIEWER-20261016",
+        "entity_type": "bid",
+        "event_id": "bid:BID-CLOUD-REVIEWER-20261016:4",
+        "event_type": "BID_SUBMITTED",
+        "timestamp": "2026-10-16T11:15:01.244711Z"
+      },
+      {
+        "actor": "0x0d27e07fa7e15927b4c9c2286e1b7a40e690b5a8",
+        "details": "BID:BID-CLOUD-REVIEWER-20261016",
+        "entity_id": "EVID-BID-CLOUD-20261016",
+        "entity_type": "evidence",
+        "event_id": "evidence:EVID-BID-CLOUD-20261016:5",
+        "event_type": "EVIDENCE_AUTHENTICATED",
+        "timestamp": "2026-10-16T11:15:47.977307Z"
+      },
+      {
+        "actor": "0x7ec08b02d72de7f6603d5a51ba5f4c0dec734e2d",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016-B",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016-B:6",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-16T11:22:26.892475Z"
+      },
+      {
+        "actor": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016-C:7",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-16T11:31:53.642438Z"
+      },
+      {
+        "actor": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+        "details": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_id": "REQ-GENLAYER-MAJOR-C",
+        "entity_type": "requirement",
+        "event_id": "requirement:REQ-GENLAYER-MAJOR-C:8",
+        "event_type": "REQUIREMENT_ADDED",
+        "timestamp": "2026-10-16T11:32:31.378788Z"
+      },
+      {
+        "actor": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+        "details": "43665d42e842098c9ed0ea2e22ac82d6cf606a39de7ae49e193dc6a3c1e96ca0",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016-C:9",
+        "event_type": "TENDER_FROZEN",
+        "timestamp": "2026-10-16T11:33:09.132408Z"
+      },
+      {
+        "actor": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+        "details": "100000000000000",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016-C:10",
+        "event_type": "ESCROW_FUNDED",
+        "timestamp": "2026-10-16T11:33:47.329525Z"
+      },
+      {
+        "actor": "0x4cc166615ac8dddf4a9ded5ae8b211567288a416",
+        "details": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_id": "BID-CLOUD-REVIEWER-20261016-C",
+        "entity_type": "bid",
+        "event_id": "bid:BID-CLOUD-REVIEWER-20261016-C:11",
+        "event_type": "BID_SUBMITTED",
+        "timestamp": "2026-10-16T11:34:24.984378Z"
+      },
+      {
+        "actor": "0x4cc166615ac8dddf4a9ded5ae8b211567288a416",
+        "details": "BID:BID-CLOUD-REVIEWER-20261016-C",
+        "entity_id": "EVID-BID-CLOUD-20261016-C",
+        "entity_type": "evidence",
+        "event_id": "evidence:EVID-BID-CLOUD-20261016-C:12",
+        "event_type": "EVIDENCE_AUTHENTICATED",
+        "timestamp": "2026-10-16T11:35:11.774796Z"
+      },
+      {
+        "actor": "0xd2a0248b8c83f8a39179d2703787edb31b211212",
+        "details": "frozen policy",
+        "entity_id": "PROCURA-CLOUD-REVIEWER-20261016-C",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-CLOUD-REVIEWER-20261016-C:13",
+        "event_type": "BID_EVALUATION_STARTED",
+        "timestamp": "2026-10-16T11:35:58.593131Z"
+      },
+      {
+        "actor": "0x69cab1b79b6256b56bed7330775c6cd1bc1a4f00",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-ONECLOUD-1792316499313",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-ONECLOUD-1792316499313:14",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-18T09:41:39.490789Z"
+      },
+      {
+        "actor": "0x9159febb95efe8c655f8a6d5d2e9850f93d2379a",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-V212-STEWARD-1792317664954",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-V212-STEWARD-1792317664954:15",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-18T10:01:05.324860Z"
+      },
+      {
+        "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+        "details": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "entity_id": "PROCURA-STUDIONET-QUAL-20261018143534",
+        "entity_type": "tender",
+        "event_id": "tender:PROCURA-STUDIONET-QUAL-20261018143534:16",
+        "event_type": "TENDER_CREATED",
+        "timestamp": "2026-10-18T14:35:41.957886Z"
+      }
+    ],
+    "recentContractTransactions": [
+      {
+        "submissionHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+        "genlayerTxId": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "447",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-18T14:35:41.957886+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x1dEcE6A694520b1d3a2e24b9f28500858C756BDb": "agree",
+            "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "agree",
+            "0x8a876C3F3a4783Bd123982bcBF3c672dc0239004": "idle",
+            "0x9244De5F20cB75A0c51d79A9A3208D00a99aFc10": "idle",
+            "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+          "transactionIndex": "0x0",
+          "blockHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+          "blockNumber": "0x0",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+              "transactionIndex": 0,
+              "blockHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+        "genlayerTxId": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+        "from": "0x9159febB95efE8c655F8A6D5d2e9850f93d2379a",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "freeze_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": "tender cannot be frozen",
+        "valueWei": "0",
+        "createdAt": "2026-10-18T10:01:45.345591+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "ERROR",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x1242E9f5bf9b253327f130E8802b7b2F438A21Ef": "idle",
+            "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "agree",
+            "0x8Ce1805d6970d54748dE7160b5b395dCC5c71F44": "agree",
+            "0x8a876C3F3a4783Bd123982bcBF3c672dc0239004": "idle",
+            "0xe7eEe8a1c1690b0322d795B80A76ab2Cd1a0eAFd": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+          "transactionIndex": "0x0",
+          "blockHash": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+          "blockNumber": "0x0",
+          "from": "0x9159febB95efE8c655F8A6D5d2e9850f93d2379a",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000009159febB95efE8c655F8A6D5d2e9850f93d2379a"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+              "transactionIndex": 0,
+              "blockHash": "0x81df42123d4dac21f5758e13dcfc058f7eb1ceb7a64c9c1dbc8f8a886718554f",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+        "genlayerTxId": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+        "from": "0x9159febB95efE8c655F8A6D5d2e9850f93d2379a",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-18T10:01:05.324860+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x0B50B270Eba5D9B780272C4Cf4720260177e761D": "agree",
+            "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "idle",
+            "0xA712cB25a4002666FA9D09477251f238dD9e06b3": "idle",
+            "0xa21bc502E3578E4b3039be8c59a257198f7c3f19": "agree",
+            "0xf1C7551292319EE334e2D8A24eAC108Bd4C63b21": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+          "transactionIndex": "0x0",
+          "blockHash": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+          "blockNumber": "0x0",
+          "from": "0x9159febB95efE8c655F8A6D5d2e9850f93d2379a",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000009159febB95efE8c655F8A6D5d2e9850f93d2379a"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+              "transactionIndex": 0,
+              "blockHash": "0x07660ada0fea39f6dd01f8df78b8f9d5296e82e172598fcd211109e2c3fe7381",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+        "genlayerTxId": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+        "from": "0x69cAB1B79b6256b56bED7330775c6Cd1bC1a4f00",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-18T09:41:39.490789+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x0B50B270Eba5D9B780272C4Cf4720260177e761D": "idle",
+            "0x40533175AfBbAee2c030F88259Afb5aEDbCF0E05": "idle",
+            "0x892C437da9b9CA0b6017B6f046F58E3526B46ec6": "agree",
+            "0xad7d13f269CeAd4379E64a1A3a0803a827e70B43": "agree",
+            "0xb0925568bFbCF00aADBcA053E6D0E1628ff3d530": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+          "transactionIndex": "0x0",
+          "blockHash": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+          "blockNumber": "0x0",
+          "from": "0x69cAB1B79b6256b56bED7330775c6Cd1bC1a4f00",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x00000000000000000000000069cAB1B79b6256b56bED7330775c6Cd1bC1a4f00"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+              "transactionIndex": 0,
+              "blockHash": "0x492bac8186789f7447542e6f604cde15b40abae1af1239e6dd0332bc583322a8",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+        "genlayerTxId": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "5",
+        "method": "adjudicate_requirement",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_DISAGREE",
+        "resultText": "objective semver operator is unsupported",
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:36:36.457885+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "ERROR",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x6737ca1d6BDF8b7C4f19143E2D55581Ca64eb7C3": "disagree",
+            "0x76c25AFC12c75485703cCFfd0083AA6201455B25": "disagree",
+            "0x772ffCd1dF6Cc566eC4b8d3f4F4f8eBbb6B36C84": "disagree",
+            "0x9ea87b28DcA2F79fe108CF06a4c13B4c876AC23d": "idle",
+            "0xE6BD8050758CB15fC88387223E31Ae2708B119dC": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "disagree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "disagree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "disagree",
+              "execution": "ERROR",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+          "transactionIndex": "0x0",
+          "blockHash": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+              "transactionIndex": 0,
+              "blockHash": "0xed1bc445d4bf031bcf9667839480e7b79bf6e82501b9aece5a20334ee5531e02",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+        "genlayerTxId": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "4",
+        "method": "begin_bid_evaluation",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:35:58.593131+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x3E5ee2507cc167C9925Bf10c67D7986581112024": "agree",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "agree",
+            "0x9ea87b28DcA2F79fe108CF06a4c13B4c876AC23d": "agree",
+            "0xE6BD8050758CB15fC88387223E31Ae2708B119dC": "agree",
+            "0xacc2459F341D7a887bcA8FAA62F1EC9378d4Bc67": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+          "transactionIndex": "0x0",
+          "blockHash": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+              "transactionIndex": 0,
+              "blockHash": "0x5733fd895edc7452a3274c02b0fa3ed391a6819fdee6496177ac7336dcf43fda",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+        "genlayerTxId": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+        "from": "0x4cc166615ac8dDDF4A9DEd5Ae8B211567288a416",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "add_bid_evidence",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:35:11.774796+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x4404Fb70d490c935758146f42A73DC850FF95C71": "agree",
+            "0x76c25AFC12c75485703cCFfd0083AA6201455B25": "agree",
+            "0x90402341F0B0e97b23023c0a87de957FB7148E0F": "agree",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+          "transactionIndex": "0x0",
+          "blockHash": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+          "blockNumber": "0x0",
+          "from": "0x4cc166615ac8dDDF4A9DEd5Ae8B211567288a416",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000004cc166615ac8dDDF4A9DEd5Ae8B211567288a416"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+              "transactionIndex": 0,
+              "blockHash": "0x8acf578acebc28400d98f1bc58d04fa32f1d9c3623d167065956a9d1e1b53e0a",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+        "genlayerTxId": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+        "from": "0x4cc166615ac8dDDF4A9DEd5Ae8B211567288a416",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "submit_bid",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:34:24.984378+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "idle",
+            "0x3D83ab507785b95ca5C208bEc80CCe3D5ca98100": "agree",
+            "0x772ffCd1dF6Cc566eC4b8d3f4F4f8eBbb6B36C84": "agree",
+            "0x90402341F0B0e97b23023c0a87de957FB7148E0F": "agree",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+          "transactionIndex": "0x0",
+          "blockHash": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+          "blockNumber": "0x0",
+          "from": "0x4cc166615ac8dDDF4A9DEd5Ae8B211567288a416",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000004cc166615ac8dDDF4A9DEd5Ae8B211567288a416"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+              "transactionIndex": 0,
+              "blockHash": "0xc3729255016e668fb038040ee1bb94d740a0083f6225ae070be3fb126a0eb0cd",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+        "genlayerTxId": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "3",
+        "method": "fund_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "100000000000000",
+        "createdAt": "2026-10-16T11:33:47.329525+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x14402D49f317CE1a2F35BAE01b1804A2A9703dCb": "agree",
+            "0x4404Fb70d490c935758146f42A73DC850FF95C71": "agree",
+            "0x5310dcF075E0BD47d29B8ec6581F736C767f54D2": "agree",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "agree",
+            "0xec2Fb79cd12255Eb34886CEd7332f27B98DEe658": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+          "transactionIndex": "0x0",
+          "blockHash": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+              "transactionIndex": 0,
+              "blockHash": "0xcecce2a1d434e25a7d3f49eeb5e81fdd5ac2a220f9f193c58e58ce9d8726c1e1",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+        "genlayerTxId": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "2",
+        "method": "freeze_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:33:09.132408+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x14402D49f317CE1a2F35BAE01b1804A2A9703dCb": "agree",
+            "0x36728d2a123aB444E603EE5b2ad17d18Bb193557": "idle",
+            "0x772ffCd1dF6Cc566eC4b8d3f4F4f8eBbb6B36C84": "idle",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "agree",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+          "transactionIndex": "0x0",
+          "blockHash": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+              "transactionIndex": 0,
+              "blockHash": "0xbae67ad5043313a128fdb10f0e78f94144d94a2c041693b8fed77c13aeb5f307",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+        "genlayerTxId": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "add_requirement",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:32:31.378788+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x3E5ee2507cc167C9925Bf10c67D7986581112024": "agree",
+            "0x4EDbE1FC9EAeC7b0EBA849b0C76AE73Eb0ad5C47": "agree",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "idle",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+          "transactionIndex": "0x0",
+          "blockHash": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+              "transactionIndex": 0,
+              "blockHash": "0x51e7933e386de7b06a17e28828a2397b3ec0e07a6dcf1dbb21adf11c48b45f43",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+        "genlayerTxId": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+        "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:31:53.642438+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x3E5ee2507cc167C9925Bf10c67D7986581112024": "agree",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "agree",
+            "0x5310dcF075E0BD47d29B8ec6581F736C767f54D2": "agree",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "idle",
+            "0xec2Fb79cd12255Eb34886CEd7332f27B98DEe658": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+          "transactionIndex": "0x0",
+          "blockHash": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+          "blockNumber": "0x0",
+          "from": "0xD2A0248B8c83f8A39179D2703787EDb31b211212",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000D2A0248B8c83f8A39179D2703787EDb31b211212"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+              "transactionIndex": 0,
+              "blockHash": "0xb3414daee7cd8c019c9072d349793ffc677c24415e861f74f9e3d2299f5c73d7",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+        "genlayerTxId": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+        "from": "0x7ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "add_requirement",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": "requirement id already exists",
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:23:04.772432+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "ERROR",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x36728d2a123aB444E603EE5b2ad17d18Bb193557": "agree",
+            "0x3E5ee2507cc167C9925Bf10c67D7986581112024": "agree",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "agree",
+            "0x6737ca1d6BDF8b7C4f19143E2D55581Ca64eb7C3": "idle",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "ERROR",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+          "transactionIndex": "0x0",
+          "blockHash": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+          "blockNumber": "0x0",
+          "from": "0x7ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000007ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+              "transactionIndex": 0,
+              "blockHash": "0x4bab45a44154b04ccf66b659542868acba8c3318fb0bde657fa108fc38314111",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+        "genlayerTxId": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+        "from": "0x7ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:22:26.892475+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x4EDbE1FC9EAeC7b0EBA849b0C76AE73Eb0ad5C47": "agree",
+            "0x76c25AFC12c75485703cCFfd0083AA6201455B25": "agree",
+            "0x90402341F0B0e97b23023c0a87de957FB7148E0F": "idle",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree",
+            "0xE6BD8050758CB15fC88387223E31Ae2708B119dC": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+          "transactionIndex": "0x0",
+          "blockHash": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+          "blockNumber": "0x0",
+          "from": "0x7ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000007ec08B02D72DE7F6603d5a51ba5f4c0dEC734E2D"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+              "transactionIndex": 0,
+              "blockHash": "0x969b6628e431e10a4b6e131f537ad9b8b873f142c56f8d8a068515a870ce0b6a",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+        "genlayerTxId": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+        "from": "0x0D27e07fA7e15927b4C9C2286e1B7a40E690B5a8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "add_bid_evidence",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:15:47.977307+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "idle",
+            "0x36728d2a123aB444E603EE5b2ad17d18Bb193557": "agree",
+            "0x4404Fb70d490c935758146f42A73DC850FF95C71": "idle",
+            "0x5310dcF075E0BD47d29B8ec6581F736C767f54D2": "agree",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+          "transactionIndex": "0x0",
+          "blockHash": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+          "blockNumber": "0x0",
+          "from": "0x0D27e07fA7e15927b4C9C2286e1B7a40E690B5a8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000000D27e07fA7e15927b4C9C2286e1B7a40E690B5a8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+              "transactionIndex": 0,
+              "blockHash": "0x94ca73b7e18bda4d7a065e5668700c626abb4bb09c770f0b049b7aca193fa472",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+        "genlayerTxId": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+        "from": "0x0D27e07fA7e15927b4C9C2286e1B7a40E690B5a8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "submit_bid",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:15:01.244711+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x14402D49f317CE1a2F35BAE01b1804A2A9703dCb": "agree",
+            "0x3D83ab507785b95ca5C208bEc80CCe3D5ca98100": "idle",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "agree",
+            "0x90402341F0B0e97b23023c0a87de957FB7148E0F": "agree",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+          "transactionIndex": "0x0",
+          "blockHash": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+          "blockNumber": "0x0",
+          "from": "0x0D27e07fA7e15927b4C9C2286e1B7a40E690B5a8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x0000000000000000000000000D27e07fA7e15927b4C9C2286e1B7a40E690B5a8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+              "transactionIndex": 0,
+              "blockHash": "0x2d10b807166e7c342258a411365c82474b06bd08cf5cafc6d8d341a33f3f7213",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+        "genlayerTxId": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+        "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "3",
+        "method": "fund_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "100000000000000",
+        "createdAt": "2026-10-16T11:14:23.474192+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x3D83ab507785b95ca5C208bEc80CCe3D5ca98100": "agree",
+            "0x4404Fb70d490c935758146f42A73DC850FF95C71": "idle",
+            "0x4aba638Cf0Cf5249437AaD968fC69dde46ae6BAC": "idle",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "agree",
+            "0xec2Fb79cd12255Eb34886CEd7332f27B98DEe658": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+          "transactionIndex": "0x0",
+          "blockHash": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+          "blockNumber": "0x0",
+          "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000E8682d3e434BE9e4EDdfF02F55F63844880e3BB8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+              "transactionIndex": 0,
+              "blockHash": "0xa89060de1f28028ee084c0a161b4143ad9b48b237f448405dc221e9baaf3b9b1",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+        "genlayerTxId": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+        "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "2",
+        "method": "freeze_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:13:36.693549+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x5310dcF075E0BD47d29B8ec6581F736C767f54D2": "agree",
+            "0x772ffCd1dF6Cc566eC4b8d3f4F4f8eBbb6B36C84": "agree",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree",
+            "0xE6BD8050758CB15fC88387223E31Ae2708B119dC": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+          "transactionIndex": "0x0",
+          "blockHash": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+          "blockNumber": "0x0",
+          "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000E8682d3e434BE9e4EDdfF02F55F63844880e3BB8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+              "transactionIndex": 0,
+              "blockHash": "0x5325b55303e3aee414783f1098e6c8ee2df18f60e8dba704b065a31bd110f036",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+        "genlayerTxId": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+        "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "1",
+        "method": "add_requirement",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:12:59.075913+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x4404Fb70d490c935758146f42A73DC850FF95C71": "idle",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "idle",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree",
+            "0xcE1d6bBB36B744536153966B4DD42276f5ADd0F8": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+          "transactionIndex": "0x0",
+          "blockHash": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+          "blockNumber": "0x0",
+          "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000E8682d3e434BE9e4EDdfF02F55F63844880e3BB8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+              "transactionIndex": 0,
+              "blockHash": "0x28ac56041ee06bfe020afa99c60c7018d9050720f08d1b471a8c72f5a306ed27",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+        "genlayerTxId": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+        "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "0",
+        "method": "create_tender",
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T11:12:20.850012+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x3D83ab507785b95ca5C208bEc80CCe3D5ca98100": "agree",
+            "0x90402341F0B0e97b23023c0a87de957FB7148E0F": "agree",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "agree",
+            "0xec2Fb79cd12255Eb34886CEd7332f27B98DEe658": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+          "transactionIndex": "0x0",
+          "blockHash": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+          "blockNumber": "0x0",
+          "from": "0xE8682d3e434BE9e4EDdfF02F55F63844880e3BB8",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000E8682d3e434BE9e4EDdfF02F55F63844880e3BB8"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+              "transactionIndex": 0,
+              "blockHash": "0x5cc0fe98ec00497981b8e5a9941b331682bd6d5718617a7ece6cf1d08d3bab4f",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      },
+      {
+        "submissionHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+        "genlayerTxId": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+        "nonce": "445",
+        "method": null,
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T08:08:58.752722+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x36728d2a123aB444E603EE5b2ad17d18Bb193557": "agree",
+            "0x6737ca1d6BDF8b7C4f19143E2D55581Ca64eb7C3": "agree",
+            "0x76c25AFC12c75485703cCFfd0083AA6201455B25": "idle",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "idle",
+            "0xE6BD8050758CB15fC88387223E31Ae2708B119dC": "agree"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": {
+          "transactionHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+          "transactionIndex": "0x0",
+          "blockHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+          "blockNumber": "0x0",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "cumulativeGasUsed": "0x7a1200",
+          "gasUsed": "0x7a1200",
+          "effectiveGasPrice": "0x0",
+          "type": "0x0",
+          "contractAddress": null,
+          "logs": [
+            {
+              "address": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+              "topics": [
+                "0xdab9102861c7483a187584d6371d88316f005af507982ccf95c110879f3ed5a5",
+                "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+                "0x000000000000000000000000E8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+                "0x000000000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+              ],
+              "data": "0x",
+              "blockNumber": 0,
+              "transactionHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+              "transactionIndex": 0,
+              "blockHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+              "logIndex": 0,
+              "removed": false
+            }
+          ],
+          "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "status": "0x1"
+        }
+      }
+    ]
+  },
+  "signerAccounts": {
+    "buyer": {
+      "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "balanceWei": "4997700000000001000",
+      "nonceLatest": "448",
+      "noncePending": "448",
+      "pendingNonceCount": "0",
+      "transactionCount": 491,
+      "recentTransactions": [
+        {
+          "submissionHash": "0x418450771700f1e2a13362668964f08080128c9999ea5493dc93e2f79589fbe9",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "nonce": "447",
+          "method": "create_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-18T14:35:41.957886+00:00"
+        },
+        {
+          "submissionHash": "0xe415573c86ebfe2de7e249996fb7e432a3b288aa95a3bff63b9925eab7c24682",
+          "from": null,
+          "to": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "nonce": "15150",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": null,
+          "resultText": null,
+          "valueWei": "1000",
+          "createdAt": "2026-10-16T16:47:28.016029+00:00"
+        },
+        {
+          "submissionHash": "0x542731070b595c29be293768b2f757487b86d61cbc38c72f9e411e804a4c71f4",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3801344A8963F7067f55dA584c0Df156e70326A9",
+          "nonce": "446",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-16T08:09:58.646970+00:00"
+        },
+        {
+          "submissionHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+          "nonce": "445",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-16T08:08:58.752722+00:00"
+        },
+        {
+          "submissionHash": "0x497fc1c638d1e1227fdeefe8ab12526f2a88ddcfe0fcc257d876bd26d58054dc",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "444",
+          "method": "adjudicate_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_DISAGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:36:46.442879+00:00"
+        },
+        {
+          "submissionHash": "0x36fd23e8db12358c7fc17fc5ec89da02d186662e860b59dca004bf1d6a87249b",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "443",
+          "method": "begin_bid_evaluation",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:36:03.047415+00:00"
+        },
+        {
+          "submissionHash": "0xbc81fa9cb719568716cea2044c542b470463dd41030c30ba4f9b188f37fc82e9",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "442",
+          "method": "fund_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "100000000000000",
+          "createdAt": "2026-10-14T15:33:57.475785+00:00"
+        },
+        {
+          "submissionHash": "0xd555768554d60d26ac7de7a97e238701f203a109ea9b24ea5c09b5f8f929daa7",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "441",
+          "method": "freeze_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:33:14.601484+00:00"
+        },
+        {
+          "submissionHash": "0x201aec92e6b7594d7aeafe780d61589d736934eeb3a9d7b72d20d493ea22d8f1",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "440",
+          "method": "add_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:32:35.589033+00:00"
+        },
+        {
+          "submissionHash": "0xe8252932e292f9118a88e454c4cb2b64ccf8b93a5d1e270b91e8a773baadffb0",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "439",
+          "method": "create_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:31:54.981771+00:00"
+        },
+        {
+          "submissionHash": "0x840ee7a7f8595ed3cc8491a694b65e6e1672597f592c2f3a87b436ca16945fe4",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "438",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:31:15.286430+00:00"
+        },
+        {
+          "submissionHash": "0xeeb3abd6a92f0006290db0742c01c4a0060076d127f8aefc51743b1b325f3515",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "437",
+          "method": "adjudicate_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_DISAGREE",
+          "resultText": "wasm_trap StackOverflow",
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:36:10.208132+00:00"
+        },
+        {
+          "submissionHash": "0x84b0f6b78232d04462a65112746af8d9587d5209995b514c0be957154f5941e8",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "436",
+          "method": "begin_bid_evaluation",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:35:27.723180+00:00"
+        },
+        {
+          "submissionHash": "0xd16646db71b27226ebd3c867425b54cf81acc69e0c2f4fa5ab23ffd8c16db9be",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "435",
+          "method": "fund_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "100000000000000",
+          "createdAt": "2026-10-14T14:33:22.137644+00:00"
+        },
+        {
+          "submissionHash": "0x2a7cdeb676d38735e55cf5d8bd7fc2dbd84a6a779542d89c6f6862d011e36c24",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "434",
+          "method": "freeze_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:32:44.627518+00:00"
+        },
+        {
+          "submissionHash": "0x6118e033322ace4e8fbbcd512180b0a347bb1e3c483e183b7a0910823a8c03c5",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "433",
+          "method": "add_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:31:59.610726+00:00"
+        },
+        {
+          "submissionHash": "0x8c49ab46d757ba633050a69c7658512f11a2ca03b25696589782bcd45664dd8e",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "432",
+          "method": "create_tender",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:31:21.010094+00:00"
+        },
+        {
+          "submissionHash": "0xf260c57a2542e9c52bf74ccad3b2dfc1b71ba3c9423982183e09d17a782b1719",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "431",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:27:00.835673+00:00"
+        },
+        {
+          "submissionHash": "0x94bf4fa75b28f0efd92554abb680246850e4ed6f0727b760e8039f5f3b673c30",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d",
+          "nonce": "430",
+          "method": "adjudicate_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_DISAGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-13T21:10:51.940377+00:00"
+        },
+        {
+          "submissionHash": "0x47da5d0af6f2821475078f8ddd28db61fdb025d231c89d094063e55dabc973be",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d",
+          "nonce": "429",
+          "method": "adjudicate_requirement",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_DISAGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-13T17:00:52.207614+00:00"
+        }
+      ]
+    },
+    "supplier": {
+      "address": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+      "balanceWei": "4999999999999999970",
+      "nonceLatest": "15",
+      "noncePending": "15",
+      "pendingNonceCount": "0",
+      "transactionCount": 17,
+      "recentTransactions": [
+        {
+          "submissionHash": "0x2581e9381dbe3f51d618086549349c0c8508d3ab651e436c73b8666688ffaede",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x39570F65AeF66B760cFEf455f8fD5004c34e417d",
+          "nonce": "14",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-18T06:16:00.362213+00:00"
+        },
+        {
+          "submissionHash": "0x1bf50ee5a61a57cd9d7ce04153266d6b3b6da5f0058056bec956f1e1f166edaa",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "nonce": "13",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": "[EXPECTED] settlement entitlement has already been consumed",
+          "valueWei": "0",
+          "createdAt": "2026-10-18T06:02:22.494056+00:00"
+        },
+        {
+          "submissionHash": "0xaec803568440fc693442573de2b4765457bd91a668e118952cacc4e5ff23a873",
+          "from": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "to": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "nonce": "0",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": null,
+          "resultText": null,
+          "valueWei": "10",
+          "createdAt": "2026-10-18T06:02:05.099821+00:00"
+        },
+        {
+          "submissionHash": "0x1ed53154afe02636609329b97e0403955e022531f22962c7c74e53d598420b72",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "nonce": "12",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": "withdraw-df9622d3d838bb01375b51011092edb7227830ed0e6f5f97",
+          "valueWei": "0",
+          "createdAt": "2026-10-18T06:01:29.427342+00:00"
+        },
+        {
+          "submissionHash": "0x8c3e4f1fb5ceebf51f66d61323ac109d0a99c4c0b4b25991c3b138faeb00bab1",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "nonce": "11",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-16T23:55:10.488847+00:00"
+        },
+        {
+          "submissionHash": "0xf9a06a05b5a8f4f5d91ce7bd80300654259225a292111fd62a434ff7732feb65",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "nonce": "10",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-16T23:54:24.159074+00:00"
+        },
+        {
+          "submissionHash": "0x7ce1a616add8da991ebf8f20ae0ca2a41ffdd97cbf118cb4c04196df35097245",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x61F10Cc252eD98Ce7596c73fC557cCA4cc600c82",
+          "nonce": "9",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": null,
+          "resultText": null,
+          "valueWei": "40",
+          "createdAt": "2026-10-16T23:50:22.692505+00:00"
+        },
+        {
+          "submissionHash": "0x0b85e7aa631ed07223e927b2f9310f67beced18be5265ef247c9a74699463951",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xdDB18c41B3033Ec2daD038F9547baAB913BEA2Aa",
+          "nonce": "8",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-16T23:46:29.383701+00:00"
+        },
+        {
+          "submissionHash": "0xe1807932761f5fe1022dfd3e40a76ad05329686100e889c0ea551fd31d911221",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "7",
+          "method": "add_bid_evidence",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:35:24.756490+00:00"
+        },
+        {
+          "submissionHash": "0x2adb763eb3a11e36036e5b2ccecfc89d36fb0185ed56f9e39e18a8509b683df0",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537",
+          "nonce": "6",
+          "method": "submit_bid",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T15:34:40.503781+00:00"
+        },
+        {
+          "submissionHash": "0xdf8c18ab58dd7dd4d96f7b9c2ce760cb2f68028d2bdac9d958dc560b656cbdbc",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "5",
+          "method": "add_bid_evidence",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:34:48.945645+00:00"
+        },
+        {
+          "submissionHash": "0xff9f329e691153c8813f7cedb2aa1677cc1508cdcf447fc70572930f8517fa85",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec",
+          "nonce": "4",
+          "method": "submit_bid",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-14T14:34:05.598823+00:00"
+        },
+        {
+          "submissionHash": "0xded1556a82978c5d4584c784223c5e89261a88e4fc549697e325e491015e7991",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d",
+          "nonce": "3",
+          "method": "add_bid_evidence",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-13T16:59:30.491983+00:00"
+        },
+        {
+          "submissionHash": "0xa1dbcfea1629fe6acdb7d55f195c0b29f70c7967e7b78fe247898244f3a7504a",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d",
+          "nonce": "2",
+          "method": "submit_bid",
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-13T16:58:52.190798+00:00"
+        },
+        {
+          "submissionHash": "0xa3f25170cfa592fa5d289c8c9a9f9662b58815150c02190478f39ed5cb084c20",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0x7Ab4Dc9B84f3fDEB90e9795976065F42Ea0b9528",
+          "nonce": "1",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": "MAJORITY_AGREE",
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-12T20:47:56.298032+00:00"
+        },
+        {
+          "submissionHash": "0x1bf9aa67e9f1456a0de5a3d075225ed69b0be1e2ac31d8db22924db7ed1ba069",
+          "from": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "to": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+          "nonce": "0",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": null,
+          "resultText": null,
+          "valueWei": "0",
+          "createdAt": "2026-10-12T19:44:47.068095+00:00"
+        },
+        {
+          "submissionHash": "0x30a3ff70bc3811ea7ecf448fb976793178eec21600228a829277f557df500f41",
+          "from": "0x4f7a14c8cd83caa18Fafc35aA91a8483Cc95E3E5",
+          "to": "0x33653E6e86807e41682D3346CDf648D6653384B1",
+          "nonce": "20",
+          "method": null,
+          "consensusStatus": "FINALIZED",
+          "consensusResult": null,
+          "resultText": null,
+          "valueWei": "5000000000000000000",
+          "createdAt": "2026-10-12T19:15:02.581689+00:00"
+        }
+      ]
+    }
+  },
+  "duplicateDeployment": {
+    "address": "0x3801344A8963F7067f55dA584c0Df156e70326A9",
+    "balanceWei": "0",
+    "transactions": [
+      {
+        "submissionHash": "0x542731070b595c29be293768b2f757487b86d61cbc38c72f9e411e804a4c71f4",
+        "genlayerTxId": "0x542731070b595c29be293768b2f757487b86d61cbc38c72f9e411e804a4c71f4",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0x3801344A8963F7067f55dA584c0Df156e70326A9",
+        "nonce": "446",
+        "method": null,
+        "consensusStatus": "FINALIZED",
+        "consensusResult": "MAJORITY_AGREE",
+        "resultText": null,
+        "valueWei": "0",
+        "createdAt": "2026-10-16T08:09:58.646970+00:00",
+        "executionOutcome": {
+          "transaction": null,
+          "leaders": [
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            },
+            {
+              "execution": "SUCCESS",
+              "errorCode": null,
+              "errorDescription": null
+            }
+          ],
+          "validatorVotes": {
+            "0x03D58A4DeF6fDFc032A56374785a5F571D07Bc11": "agree",
+            "0x3E5ee2507cc167C9925Bf10c67D7986581112024": "idle",
+            "0x4EDbE1FC9EAeC7b0EBA849b0C76AE73Eb0ad5C47": "agree",
+            "0xBBb165E4c9d73a1493D363280f7067Cd07891dBE": "agree",
+            "0xDB1c35c1f05d885999b8f13e5735307BcC16Be88": "idle"
+          },
+          "validators": [
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            },
+            {
+              "address": null,
+              "vote": "agree",
+              "execution": "SUCCESS",
+              "errorCode": null
+            },
+            {
+              "address": null,
+              "vote": "idle",
+              "execution": "ERROR",
+              "errorCode": "CONSENSUS_VALIDATOR_QUORUM_REACHED"
+            }
+          ]
+        },
+        "evmReceipt": null
+      }
+    ]
+  },
+  "historicalContractBalancesWei": {
+    "0x88634c7868B0659b46C5bd93E4038222697a0170": "0",
+    "0xBF23aFAE5188b00491F2E72d956Ef60702430cD0": "1000000000000000",
+    "0x06F2b53C158C6e9a794607d4dB197654eFB3A9b1": "2500000000000000000",
+    "0x7BDA44c2654ea7595a54A0D15dba29692830eE8d": "100000000000000",
+    "0x3F000D007c4c5Be44FD3B075f13Bca996DD8daec": "100000000000000",
+    "0xEb8222DDc151b06a472eF0F814B8E31c7aF6D537": "100000000000000"
+  },
+  "historicalEscrowUnchanged": true
+}

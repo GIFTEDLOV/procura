@@ -8,9 +8,10 @@ describe("legacy V1 write protection and active V2 LIVE functionality", () => {
       expect(legacyV1WriteBlockReason(method)).toBe(V1_LIVE_READ_ONLY_MESSAGE);
     }
   });
-  it("does not block the verified V2.1.2 methods by treating them as V1", () => {
+  it("allows overlapping method names only at the pinned V2.1.2 target", () => {
     for (const method of ["create_tender","submit_bid","add_bid_evidence","create_delivery","add_delivery_evidence"]) {
       expect(liveV1WriteBlockReason(method)).toBeNull();
+      expect(liveV1WriteBlockReason(method, "0x0000000000000000000000000000000000000001")).toBe(V1_LIVE_READ_ONLY_MESSAGE);
     }
   });
 });

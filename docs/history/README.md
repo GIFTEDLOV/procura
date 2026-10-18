@@ -10,4 +10,6 @@ Current truth is documented in:
 - `docs/RELEASE.md`
 - `docs/TESTING.md`
 
-Deployment #4 and #5 are retained for provenance only. Deployment #6 and the frozen contract SHA in the current documents are canonical.
+The former Studio-dev v1.0.0/v1.0.1 documentation and Deployment #1 through #6 records are retained for provenance only. Current Studionet contract and source hashes in the current documents are canonical.
+
+The archived v1.0.1 documents are available as [LIVE deployment](LIVE_DEPLOYMENT_STUDIODEV.md), [LIVE proofs](LIVE_PROOFS_STUDIODEV.md), [deployment provenance](DEPLOYMENT_PROVENANCE_STUDIODEV.md), and [release notes](RELEASE_V1.0.1_STUDIODEV.md).

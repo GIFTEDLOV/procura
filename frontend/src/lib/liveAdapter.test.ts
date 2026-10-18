@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { MessageType } from "genlayer-js";
-import { deriveExternalMessageCallKey } from "genlayer-js";
-import { buildTypedAction, externalAllocation, assertRole, assertStudioDevWallet, executeLiveWrite, loadPendingTransaction, recoverLiveTransaction, requiredRole } from "./liveAdapter";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildTypedAction, assertRole, assertStudionetWallet, createLiveWalletClient, executeLiveWrite, loadPendingTransaction, requiredRole, waitForStudionetFinalization } from "./liveAdapter";
 import { BUYER_ROLE_ADDRESS, LIVE_CHAIN_ID, LIVE_CONTRACT, SUPPLIER_ROLE_ADDRESS } from "./liveConfig";
+import { mockStudionetRpc, stableWalletForTest, successfulStudionetTransaction } from "./stableWalletTestSupport";
 
 vi.mock("./liveConfig", async () => ({
   ...(await vi.importActual<typeof import("./liveConfig")>("./liveConfig")),
@@ -20,8 +19,11 @@ function createTenderKwargs(tenderHash = numericHash) {
   };
 }
 
-describe("Procura live adapter", () => {
-  it("keeps numeric-only SHA strings as strings through schema ordering", () => {
+describe("Procura stable Studionet adapter", () => {
+  beforeEach(() => { mockStudionetRpc(); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+  it("keeps numeric-only SHA strings as strings through shared schema ordering", () => {
     const action = buildTypedAction("create_tender", createTenderKwargs(), { requestId: "hash-regression" });
     expect(action.kwargs.tender_hash).toBe(numericHash);
     expect(typeof action.kwargs.tender_hash).toBe("string");
@@ -38,171 +40,135 @@ describe("Procura live adapter", () => {
 
   it("rejects wrong network and disconnected wallets before signing", async () => {
     const provider = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0x1" : []) };
-    await expect(assertStudioDevWallet(provider)).rejects.toThrow(`${LIVE_CHAIN_ID}`);
+    await expect(assertStudionetWallet(provider)).rejects.toThrow(`${LIVE_CHAIN_ID}`);
     const disconnected = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22f" : []) };
-    await expect(assertStudioDevWallet(disconnected)).rejects.toThrow("Wallet disconnected");
+    await expect(assertStudionetWallet(disconnected)).rejects.toThrow("Wallet disconnected");
     const wrongWallet = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22f" : [SUPPLIER_ROLE_ADDRESS]) };
-    await expect(assertStudioDevWallet(wrongWallet, BUYER_ROLE_ADDRESS)).rejects.toThrow(/Wrong wallet/);
+    await expect(assertStudionetWallet(wrongWallet, BUYER_ROLE_ADDRESS)).rejects.toThrow(/Wrong wallet/);
   });
 
-  it("derives refund allocation from the canonical buyer and the exact empty calldata", () => {
-    const allocations = externalAllocation("cancel_tender", BUYER_ROLE_ADDRESS);
-    expect(allocations).toHaveLength(1);
-    expect(allocations[0].messageType).toBe(MessageType.External);
-    expect(allocations[0].recipient).toBe(BUYER_ROLE_ADDRESS);
-    expect(allocations[0].callKey).toBe(deriveExternalMessageCallKey("0x"));
-    expect(allocations[0].budget).toBe(125000000000000n);
-  });
-
-  it("derives settlement allocation from the canonical awarded supplier", () => {
-    const allocations = externalAllocation("settle_award", SUPPLIER_ROLE_ADDRESS);
-    expect(allocations[0].recipient).toBe(SUPPLIER_ROLE_ADDRESS);
-    expect(allocations[0].budget).toBeGreaterThan(0n);
-  });
-
-  it("does not attach an external allocation to ordinary writes", () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "freeze-1" });
-    expect(action.method).toBe("freeze_tender");
-  });
-
-  it("broadcasts once, persists the returned hash, finalizes, and reads back", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "once-1" });
+  it("uses the installed stable SDK writer, its supported gas RPCs, and persists the exact wallet hash", async () => {
+    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "stable-sdk-write" });
+    const { client, provider, sentTransactions } = stableWalletForTest();
     const storage = new Map<string, string>();
-    const writeContract = vi.fn(async () => "0xabc");
-    const mockClient = {
-      chain: { id: LIVE_CHAIN_ID },
-      simulateWriteContract: vi.fn(async () => ({})),
-      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-      writeContract,
-      waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
+    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } };
     const result = await executeLiveWrite({
-      client: mockClient,
-      action,
-      account: BUYER_ROLE_ADDRESS,
-      storage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
+      client, action, account: BUYER_ROLE_ADDRESS, signingProvider: provider,
+      roleContext: { buyer: BUYER_ROLE_ADDRESS }, storage: storageLike,
       canonicalReadback: async () => ({ state: "FROZEN" }),
     });
-    expect(result.hash).toBe("0xabc");
-    expect(writeContract).toHaveBeenCalledTimes(1);
-    expect(loadPendingTransaction("once-1", { getItem: (key) => storage.get(key) ?? null, setItem: () => undefined, removeItem: () => undefined })?.txHash).toBe("0xabc");
+    expect(result.hash).toBe(`0x${"11".repeat(32)}`);
+    expect(result.receipt).toMatchObject({ statusName: "FINALIZED", resultName: "MAJORITY_AGREE" });
+    expect(result.readback).toEqual({ state: "FROZEN" });
+    expect(sentTransactions).toHaveLength(1);
+    expect(sentTransactions[0]).toMatchObject({ to: expect.any(String), data: expect.any(String), gas: expect.any(String), gasPrice: expect.any(String), chainId: "0xf22f" });
+    expect(loadPendingTransaction(action.requestId, storageLike)).toMatchObject({
+      txHash: `0x${"11".repeat(32)}`, submissionHash: `0x${"11".repeat(32)}`, evmTxHash: `0x${"11".repeat(32)}`,
+      finality: "FINALIZED", execution: "SUCCESS", address: LIVE_CONTRACT, account: BUYER_ROLE_ADDRESS,
+    });
+    expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(0);
   });
 
-  it("submits the five V2 LIVE methods without the unavailable Studio-dev fee estimator", async () => {
-    const methods = ["create_tender", "submit_bid", "add_bid_evidence", "create_delivery", "add_delivery_evidence"];
-    for (const method of methods) {
-      const action = { method, args: ["A"], kwargs: {}, requestId: "v2-direct-" + method, value: 0n } as unknown as Parameters<typeof executeLiveWrite>[0]["action"];
-      const writeContract = vi.fn(async () => "0xabc");
-      const estimateTransactionFees = vi.fn();
-      const simulateWriteContract = vi.fn();
-      const client = {
-        chain: { id: LIVE_CHAIN_ID }, writeContract, estimateTransactionFees, simulateWriteContract,
-        waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
-      } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
+  it("denies a signer that differs from the wallet bound to the stable client", async () => {
+    const action = buildTypedAction("freeze_tender", { tender_id: "T-SIGNER" }, { requestId: "wrong-signer" });
+    const { client, provider, sentTransactions } = stableWalletForTest();
+    const otherProvider = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22f" : [BUYER_ROLE_ADDRESS]) };
+    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, signingProvider: otherProvider, canonicalReadback: async () => ({}) })).rejects.toThrow(/does not match the signer/);
+    expect(provider).toBeDefined();
+    expect(sentTransactions).toHaveLength(0);
+  });
+
+  it("refuses a second eth_sendTransaction if the stable SDK retries an uncertain request", async () => {
+    const action = buildTypedAction("freeze_tender", { tender_id: "T-DOUBLE" }, { requestId: "wallet-double-send" });
+    const { client, provider, sentTransactions } = stableWalletForTest();
+    const original = client.request.bind(client);
+    const writeContract = vi.fn(async () => {
+      const transaction = { from: BUYER_ROLE_ADDRESS, to: "0x0000000000000000000000000000000000000001", data: "0x", value: "0x0", gas: "0x30d40", gasPrice: "0x3b9aca00", chainId: "0xf22f" };
+      const first = await original({ method: "eth_sendTransaction", params: [transaction] } as never);
+      await expect(original({ method: "eth_sendTransaction", params: [transaction] } as never)).rejects.toThrow(/second wallet broadcast/);
+      return first;
+    });
+    Object.defineProperty(client, "writeContract", { configurable: true, value: writeContract });
+    const result = await executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, signingProvider: provider, canonicalReadback: async () => ({}) });
+    expect(result.hash).toBe(`0x${"11".repeat(32)}`);
+    expect(sentTransactions).toHaveLength(1);
+  });
+
+  it("blocks repeated equivalent writes by reconciling the first persisted hash", async () => {
+    const firstAction = buildTypedAction("freeze_tender", { tender_id: "T-REPLAY" }, { requestId: "reconcile-first" });
+    const secondAction = buildTypedAction("freeze_tender", { tender_id: "T-REPLAY" }, { requestId: "reconcile-second" });
+    const { client, provider, sentTransactions, getTransaction } = stableWalletForTest({ hashes: [`0x${"11".repeat(32)}`] });
+    const storage = new Map<string, string>();
+    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } };
+    await executeLiveWrite({ client, action: firstAction, account: BUYER_ROLE_ADDRESS, signingProvider: provider, storage: storageLike, canonicalReadback: async () => ({ state: "FROZEN" }) });
+    const result = await executeLiveWrite({ client, action: secondAction, account: BUYER_ROLE_ADDRESS, signingProvider: provider, storage: storageLike, canonicalReadback: async () => ({ state: "FROZEN" }) });
+    expect(result.hash).toBe(`0x${"11".repeat(32)}`);
+    expect(sentTransactions).toHaveLength(1);
+    expect(getTransaction).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not treat finalized disagreement or execution errors as success", async () => {
+    const failed = {
+      statusName: "FINALIZED", resultName: "MAJORITY_DISAGREE", hash: `0x${"11".repeat(32)}`, txId: `0x${"11".repeat(32)}`,
+      consensus_data: { leader_receipt: [{ execution_result: "ERROR", result: { status: "error" } }], validators: [{ execution_result: "ERROR", vote: "disagree" }] },
+    };
+    const action = buildTypedAction("freeze_tender", { tender_id: "T-FAIL" }, { requestId: "execution-fails" });
+    const { client, provider } = stableWalletForTest({ transaction: async () => failed });
+    const storage = new Map<string, string>();
+    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } };
+    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, signingProvider: provider, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
+    expect(loadPendingTransaction(action.requestId, storageLike)).toMatchObject({ finality: "FINALIZED", execution: "ERROR", consensusResult: "MAJORITY_DISAGREE" });
+  });
+
+  it("keeps tracking ACCEPTED transactions through a transient read timeout", async () => {
+    vi.useFakeTimers();
+    try {
+      const hash = `0x${"ab".repeat(32)}` as `0x${string}` & { length: 66 };
+      const finalized = { ...successfulStudionetTransaction, hash, txId: hash };
+      const getTransaction = vi.fn()
+        .mockResolvedValueOnce({ statusName: "ACCEPTED", resultName: "MAJORITY_AGREE" })
+        .mockRejectedValueOnce(new Error("temporary RPC timeout"))
+        .mockResolvedValue(finalized);
+      const client = { getTransaction } as unknown as Parameters<typeof waitForStudionetFinalization>[0];
+      const pending: Array<Record<string, unknown>> = [];
+      const receipt = waitForStudionetFinalization(client, hash, (patch) => { pending.push(patch); });
+      await vi.advanceTimersByTimeAsync(9_000);
+      await expect(receipt).resolves.toMatchObject({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" });
+      expect(getTransaction).toHaveBeenCalledTimes(3);
+      expect(pending.some((entry) => entry.consensusStatus === "ACCEPTED" && entry.finality === "ACCEPTED")).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("finalizes only a READY_TO_FINALIZE transaction and persists the finalizer hash", async () => {
+    vi.useFakeTimers();
+    try {
+      const hash = `0x${"11".repeat(32)}`;
+      const ready = { statusName: "READY_TO_FINALIZE", resultName: "MAJORITY_AGREE", txId: "0xparent", hash };
+      const finalized = { ...successfulStudionetTransaction, hash, txId: "0xparent" };
+      const transaction = vi.fn().mockResolvedValueOnce(ready).mockResolvedValue(finalized);
+      const { client, provider } = stableWalletForTest({ transaction });
+      const finalizeTransaction = vi.fn(async () => `0x${"22".repeat(32)}`);
+      Object.defineProperty(client, "finalizeTransaction", { configurable: true, value: finalizeTransaction });
+      const action = buildTypedAction("freeze_tender", { tender_id: "T-READY" }, { requestId: "ready-finalize-once" });
       const storage = new Map<string, string>();
-      const result = await executeLiveWrite({
-        client, action, account: BUYER_ROLE_ADDRESS,
-        signingProvider: { request: vi.fn() },
-        roleContext: { buyer: BUYER_ROLE_ADDRESS, supplier: BUYER_ROLE_ADDRESS },
-        storage: { getItem: key => storage.get(key) ?? null, setItem: (key,value) => storage.set(key,value), removeItem: key => storage.delete(key) },
-        canonicalReadback: async () => ({ verified: true }),
-      });
-      expect(result.hash).toBe("0xabc");
-      expect(writeContract).toHaveBeenCalledTimes(1);
-      expect(estimateTransactionFees).not.toHaveBeenCalled();
-      expect(simulateWriteContract).not.toHaveBeenCalled();
-    }
+      const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } };
+      const write = executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, signingProvider: provider, storage: storageLike, canonicalReadback: async () => ({ state: "FROZEN" }) });
+      await vi.advanceTimersByTimeAsync(3000);
+      await expect(write).resolves.toMatchObject({ hash });
+      expect(finalizeTransaction).toHaveBeenCalledTimes(1);
+      expect(finalizeTransaction).toHaveBeenCalledWith({ txId: "0xparent" });
+      expect(loadPendingTransaction(action.requestId, storageLike)).toMatchObject({ finality: "FINALIZED", execution: "SUCCESS", finalizationPhase: "SUBMITTED", finalizationTxHash: `0x${"22".repeat(32)}` });
+    } finally { vi.useRealTimers(); }
   });
 
-  it("does not broadcast when simulation fails", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "simulation-fails" });
-    const writeContract = vi.fn(async () => "0xnever");
-    const client = {
-      chain: { id: LIVE_CHAIN_ID },
-      simulateWriteContract: vi.fn(async () => { throw new Error("simulation rejected: tender is not frozen"); }),
-      estimateTransactionFees: vi.fn(), writeContract,
-      waitForFinalization: vi.fn(),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, canonicalReadback: async () => ({}) })).rejects.toThrow(/simulation rejected/);
-    expect(writeContract).not.toHaveBeenCalled();
+  it("rejects validator execution disagreement even if the transaction says MAJORITY_AGREE", async () => {
+    const hash = `0x${"ef".repeat(32)}` as `0x${string}` & { length: 66 };
+    const receipt = await waitForStudionetFinalization({ getTransaction: async () => ({
+      ...successfulStudionetTransaction, hash,
+      consensus_data: { leader_receipt: [{ execution_result: "SUCCESS", result: { status: "return" } }], validators: [{ execution_result: "SUCCESS", vote: "agree" }, { execution_result: "SUCCESS", vote: "agree" }, { execution_result: "ERROR", vote: "disagree" }] },
+    }) } as unknown as Parameters<typeof waitForStudionetFinalization>[0], hash);
+    expect(receipt.txExecutionResultName).toBe("FINISHED_WITH_ERROR");
   });
 
-  it("never reports a finalized execution error as success", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "execution-fails" });
-    const storage = new Map<string, string>();
-    const client = {
-      chain: { id: LIVE_CHAIN_ID },
-      simulateWriteContract: vi.fn(async () => ({})),
-      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-      writeContract: vi.fn(async () => "0xfail"),
-      waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_ERROR" })),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
-    expect(loadPendingTransaction("execution-fails", { getItem: (key) => storage.get(key) ?? null, setItem: () => undefined, removeItem: () => undefined })).toMatchObject({ finality: "FINALIZED", execution: "ERROR" });
-  });
-
-  it("recovers the same persisted hash without a second broadcast", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "recover-same" });
-    const storage = new Map<string, string>();
-    const writeContract = vi.fn(async () => "0xsame");
-    const waitForFinalization = vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" }));
-    const client = {
-      chain: { id: LIVE_CHAIN_ID }, simulateWriteContract: vi.fn(async () => ({})),
-      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-      writeContract, waitForFinalization,
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
-    await executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
-    const refreshedAction = buildTypedAction("freeze_tender", { tender_id: "T-1" }, { requestId: "recover-after-refresh" });
-    await executeLiveWrite({ client, action: refreshedAction, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-1" }) });
-    expect(writeContract).toHaveBeenCalledTimes(1);
-    expect(waitForFinalization).toHaveBeenCalledTimes(2);
-  });
-
-  it("does not reconcile payable actions with a different transferred value", async () => {
-    const first = buildTypedAction("fund_tender", { tender_id: "T-VALUE" }, { requestId: "fund-value-1", value: 10n });
-    const second = buildTypedAction("fund_tender", { tender_id: "T-VALUE" }, { requestId: "fund-value-2", value: 11n });
-    const storage = new Map<string, string>();
-    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
-    const writes: Array<{ value: bigint }> = [];
-    const writeContract = vi.fn(async (request: { value: bigint }) => { writes.push(request); return `0x${String(writes.length).padStart(3, "0")}`; });
-    const client = {
-      chain: { id: LIVE_CHAIN_ID }, simulateWriteContract: vi.fn(async () => ({})),
-      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-      writeContract, waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_RETURN" })),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await executeLiveWrite({ client, action: first, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
-    await executeLiveWrite({ client, action: second, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({ tender_id: "T-VALUE" }) });
-    expect(writeContract).toHaveBeenCalledTimes(2);
-    expect(writes.map(({ value }) => value)).toEqual([10n, 11n]);
-  });
-
-  it("does not rebroadcast a persisted hash after a finalized execution error", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-ERROR" }, { requestId: "no-rebroadcast-error" });
-    const storage = new Map<string, string>();
-    const writeContract = vi.fn(async () => "0xerror");
-    const waitForFinalization = vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_ERROR" }));
-    const client = {
-      chain: { id: LIVE_CHAIN_ID }, simulateWriteContract: vi.fn(async () => ({})),
-      estimateTransactionFees: vi.fn(async () => ({ feeValue: 10n, distribution: { totalMessageFees: 0n }, messageAllocations: undefined })),
-      writeContract, waitForFinalization,
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    const storageLike = { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) };
-    await expect(executeLiveWrite({ client, action, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
-    const refreshed = buildTypedAction("freeze_tender", { tender_id: "T-ERROR" }, { requestId: "no-rebroadcast-error-refresh" });
-    await expect(executeLiveWrite({ client, action: refreshed, account: BUYER_ROLE_ADDRESS, storage: storageLike, canonicalReadback: async () => ({}) })).rejects.toThrow(/recovered transaction failed/);
-    expect(writeContract).toHaveBeenCalledTimes(1);
-    expect(waitForFinalization).toHaveBeenCalledTimes(2);
-  });
-
-  it("does not treat a finalized non-success execution as recovered success", async () => {
-    const action = buildTypedAction("freeze_tender", { tender_id: "T-RECOVER-ERROR" }, { requestId: "recover-error" });
-    const client = {
-      chain: { id: LIVE_CHAIN_ID },
-      waitForFinalization: vi.fn(async () => ({ statusName: "FINALIZED", txExecutionResultName: "FINISHED_WITH_ERROR" })),
-    } as unknown as Parameters<typeof executeLiveWrite>[0]["client"];
-    await expect(recoverLiveTransaction({ client, record: { requestId: action.requestId, method: action.method, args: [...action.args], txHash: "0xrecover-error", phase: "PERSIST_HASH", address: LIVE_CONTRACT, account: BUYER_ROLE_ADDRESS }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
-  });
-
-  it("uses the Deployment #6 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929"));
+  it("uses the verified V2.1.2 Studionet contract", () => expect(LIVE_CONTRACT).toBe("0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929"));
 });

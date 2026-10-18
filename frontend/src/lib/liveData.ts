@@ -74,6 +74,26 @@ async function canonicalBid(client: ReadClient, bidId: string): Promise<unknown>
 export async function readActionPrecondition(client: ReadClient, action: TypedAction): Promise<RoleContext> {
   const { method, kwargs } = action;
   if (method === "create_tender") return {};
+  if (["add_requirement", "freeze_tender", "fund_tender", "begin_bid_evaluation", "finalize_bid_evaluation", "award_bid"].includes(method)) {
+    const tenderId = String(kwargs.tender_id);
+    const tender = await read(client, "get_tender", [tenderId]);
+    if (recordId(tender, "tender_id") !== tenderId) throw new Error("canonical readback returned the wrong tender for buyer authorization");
+    return { buyer: addressText(field(tender, "buyer")) as Address };
+  }
+  if (method === "adjudicate_requirement") {
+    const bid = await canonicalBid(client, String(kwargs.bid_id));
+    const tenderId = recordId(bid, "tender_id");
+    if (!tenderId) throw new Error("canonical bid has no tender id for buyer authorization");
+    const tender = await read(client, "get_tender", [tenderId]);
+    if (recordId(tender, "tender_id") !== tenderId) throw new Error("canonical readback returned the wrong tender for adjudication");
+    return { buyer: addressText(field(tender, "buyer")) as Address };
+  }
+  if (method === "accept_award") {
+    const award = await read(client, "get_award", [kwargs.award_id]);
+    if (recordId(award, "award_id") !== kwargs.award_id) throw new Error("canonical readback returned the wrong award for acceptance");
+    if (stateText(award) !== "AWARDED_PENDING_ACCEPTANCE") throw new Error("award is not pending supplier acceptance");
+    return { supplier: addressText(field(award, "supplier")) as Address };
+  }
   if (method === "submit_bid") {
     const tender = await read(client, "get_tender", [kwargs.tender_id]);
     if (recordId(tender, "tender_id") !== kwargs.tender_id) throw new Error("canonical readback returned the wrong tender for bid submission");

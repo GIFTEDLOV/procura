@@ -1,0 +1,136 @@
+{
+  "incident": {
+    "classification": "UNAUTHORIZED_DUPLICATE_DEPLOYMENTS_BY_AGENT",
+    "recordedAt": "2026-10-16T08:19:13.000Z",
+    "description": "Two deployment transactions were broadcast while probing SDK gas estimation. The intended send interception was ineffective. Both transactions are reconciled below. No qualification write or escrow deposit was made by those transactions.",
+    "userAuthorizationPresent": false
+  },
+  "network": "studionet",
+  "chainId": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "consensusMain": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+  "lifecycleCapabilityProbe": {
+    "recordedAt": "2026-10-16T08:31:23.000Z",
+    "gen_getTransactionLifecycle": "UNSUPPORTED_BY_STUDIONET_RPC",
+    "rpcError": "Method not found: gen_getTransactionLifecycle",
+    "sdkCanAppeal": "UNSUPPORTED_BY_STUDIONET_CHAIN_CONFIGURATION",
+    "sdkError": "canAppeal not supported on this chain (missing appealsContract)",
+    "stableSdk": "genlayer-js@1.1.8",
+    "stableSdkStatus": "getTransaction exposes the Studionet status map, including READY_TO_FINALIZE",
+    "stableSdkFinalizer": "finalizeTransaction(txId) is available; runner gates it on exact READY_TO_FINALIZE status and explicit authorization"
+  },
+  "signer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "sourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+  "schemaSha256": "8c9aa8c79135e8a923a7de54e9ef3f680df7cd2894ac5ba7e8fd33dc89e2c074",
+  "abiSha256": "97015697a9252c5c2b86f4e72d76a926775eca14ec7add6c743ece0609edd800",
+  "recommendedReusableContract": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+  "deployments": [
+    {
+      "nonce": "445",
+      "submittedAt": "2026-10-16T08:08:58.752722Z",
+      "submissionHash": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+      "genlayerTxId": "0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33",
+      "contractAddress": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929",
+      "consensusStatus": "FINALIZED",
+      "consensusResult": "MAJORITY_AGREE",
+      "executionOutcome": {
+        "transaction": null,
+        "leader": "SUCCESS",
+        "validatorCount": 4,
+        "validatorResults": [
+          { "execution_result": "SUCCESS", "vote": "agree", "error": null },
+          { "execution_result": "SUCCESS", "vote": "agree", "error": null },
+          { "execution_result": "SUCCESS", "vote": "agree", "error": null },
+          { "execution_result": "ERROR", "vote": "idle", "error": "CONSENSUS_VALIDATOR_QUORUM_REACHED" }
+        ]
+      },
+      "evmReceipt": {
+        "status": "0x1",
+        "blockNumber": "0x0",
+        "gasUsed": "0x7a1200",
+        "effectiveGasPrice": "0x0",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929"
+      },
+      "actualGenFeeWei": "0",
+      "actualDebitWei": "0",
+      "valueTransferredWei": "0",
+      "sourceReadbackSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+      "sourceParity": true,
+      "canonicalReadback": {
+        "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "qualificationStatus": "QUALIFICATION_PENDING",
+        "tenderIds": [],
+        "accounting": {
+          "escrow_liability": 0,
+          "total_bond_returns": 0,
+          "total_bond_slashes": 0,
+          "total_buyer_refunds": 0,
+          "total_funded": 0,
+          "total_supplier_bonds": 0,
+          "total_supplier_payouts": 0
+        }
+      },
+      "completionCheckpoint": "deployment:finalized-source-and-schema-verified"
+    },
+    {
+      "nonce": "446",
+      "submittedAt": "2026-10-16T08:09:58.646970Z",
+      "submissionHash": "0x542731070b595c29be293768b2f757487b86d61cbc38c72f9e411e804a4c71f4",
+      "genlayerTxId": "0x542731070b595c29be293768b2f757487b86d61cbc38c72f9e411e804a4c71f4",
+      "contractAddress": "0x3801344A8963F7067f55dA584c0Df156e70326A9",
+      "consensusStatus": "FINALIZED",
+      "consensusResult": "MAJORITY_AGREE",
+      "executionOutcome": {
+        "transaction": null,
+        "leader": "SUCCESS",
+        "validatorCount": 4,
+        "validatorResults": [
+          { "execution_result": "SUCCESS", "vote": "agree", "error": null },
+          { "execution_result": "ERROR", "vote": "idle", "error": "CONSENSUS_VALIDATOR_QUORUM_REACHED" },
+          { "execution_result": "SUCCESS", "vote": "agree", "error": null },
+          { "execution_result": "ERROR", "vote": "idle", "error": "CONSENSUS_VALIDATOR_QUORUM_REACHED" }
+        ]
+      },
+      "evmReceipt": {
+        "status": "0x1",
+        "blockNumber": "0x0",
+        "gasUsed": "0x7a1200",
+        "effectiveGasPrice": "0x0",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0x3801344A8963F7067f55dA584c0Df156e70326A9"
+      },
+      "actualGenFeeWei": "0",
+      "actualDebitWei": "0",
+      "valueTransferredWei": "0",
+      "sourceReadbackSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+      "sourceParity": true,
+      "canonicalReadback": {
+        "schemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
+        "qualificationStatus": "QUALIFICATION_PENDING",
+        "tenderIds": [],
+        "accounting": {
+          "escrow_liability": 0,
+          "total_bond_returns": 0,
+          "total_bond_slashes": 0,
+          "total_buyer_refunds": 0,
+          "total_funded": 0,
+          "total_supplier_bonds": 0,
+          "total_supplier_payouts": 0
+        }
+      },
+      "completionCheckpoint": "deployment:finalized-source-and-schema-verified-not-selected-for-reuse"
+    }
+  ],
+  "aggregate": {
+    "deploymentTransactions": 2,
+    "qualificationTransactions": 0,
+    "escrowDeposited": "0",
+    "actualGenFees": "0",
+    "actualGenDebit": "0",
+    "buyerBalanceWeiObserved": "4997700000000000000",
+    "buyerNonceLatest": "447",
+    "buyerNoncePending": "447",
+    "historicalEscrowBalancesUnchangedAtReadback": true
+  }
+}

@@ -1,13 +1,19 @@
-# Current live deployment
+# Current LIVE deployment
 
-Procura’s current canonical deployment is deployment #6. It is frozen and is not changed by the v1.0.1 product release.
+The production target is the existing V2.1.2 Studionet deployment. Qualification reused it and did not deploy a contract.
 
-- Network: Studio-dev
-- Chain: 61997
-- Contract: `0x88634c7868B0659b46C5bd93E4038222697a0170`
-- Source SHA256: `daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde`
-- Deployment transaction: `0x5ceef949b50a184d9f5675a174ee6b329acdf61bbb05b853392b5e55b29ba34d`
-- Public methods: 39
-- Schema methods: 39
+| Field | Value |
+| --- | --- |
+| Network | GenLayer Studionet |
+| Chain | `61999` |
+| RPC | `https://studio.genlayer.com/api` |
+| Explorer | `https://explorer-studio.genlayer.com` |
+| Contract | [`0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929`](https://explorer-studio.genlayer.com/address/0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929) |
+| Source SHA-256 | `a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac` |
+| Deployment transaction | [`0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33`](https://explorer-studio.genlayer.com/tx/0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33) |
+| Runtime schema | 39 methods; exact deployed parity verified |
+| Frontend SDK | `genlayer-js@1.1.8` stable |
 
-Deployment #4 (`0x0DAC4cbc32052c07641645c94997cc27EdE9CAbA`) is historical and superseded by the 5jyc semantic runtime incompatibility. Deployment #5 (`0xE9f1319e98F25E301ee167aF41f82E25cC4f8770`) is historical and superseded before publication after its missing successful-result replay protection was found. Neither is current.
+The deployment transaction finalized with `MAJORITY_AGREE`, successful execution, successful EVM receipt, and exact source parity. The qualification journal also reconciles the current contract, signer nonce, all 13 new writes, and pre-existing escrow. See [`release-provenance.json`](../evidence/release-provenance.json) and [LIVE proof links](LIVE_PROOFS.md).
+
+Studio-dev chain 61997 and Bradbury chain 4221 are not the current release network. Their old source, fees, addresses, balances, and proofs are not reused for this Studionet deployment. Previous Studio-dev deployments are archived in [history](history/README.md).

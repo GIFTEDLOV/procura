@@ -78,6 +78,7 @@ jobs:
       - run: pnpm test -- --run
       - run: pnpm typecheck
       - run: pnpm build
+      - run: node ../scripts/qualification/transaction-safety.test.mjs
 
   integration:
     name: integration
@@ -128,7 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
-          # Historical V1 provenance stays immutable, while release code is exact live V2.1.2.
+          # Keep the V1 source/proof immutable while requiring the current release to name live Studionet V2.1.2.
           test "$(sha256sum contracts/Procura_v1_frozen.py | cut -d' ' -f1)" = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde"
           test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac"
           python scripts/check_steward_v212_schema.py
@@ -136,9 +137,45 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          manifest = json.loads(Path('evidence/release-provenance.json').read_text())
-          assert manifest['canonicalContract'] == '0x88634c7868B0659b46C5bd93E4038222697a0170'
-          assert manifest['chainId'] == 61997
-          assert manifest['publicMethodCount'] == 39
-          assert manifest['contractSha256'] == 'daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde'
+          current = json.loads(Path('evidence/release-provenance.json').read_text())
+          historical = json.loads(Path('evidence/qualification/historical/release-provenance-studio-dev-v1.json').read_text())
+          assert historical['canonicalContract'] == '0x88634c7868B0659b46C5bd93E4038222697a0170'
+          assert historical['chainId'] == 61997
+          assert historical['contractSha256'] == 'daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde'
+          assert current['network'] == 'studionet'
+          assert current['chainId'] == 61999
+          assert current['rpc'] == 'https://studio.genlayer.com/api'
+          assert current['canonicalContract'] == '0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929'
+          assert current['deploymentTx'] == '0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33'
+          assert current['contractSha256'] == 'a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac'
+          assert current['schemaSha256'] == '21a63012d333ccb2e29c4cd799034c42b2183f7831f64e61157e75d85bbd1127'
+          assert current['abiSha256'] == '97015697a9252c5c2b86f4e72d76a926775eca14ec7add6c743ece0609edd800'
+          assert current['interfaceSha256'] == 'b32e4393d90962f366a34bfcf6a7e373f324776ba7c95fb6c61a601cf9cdd01f'
+          assert current['qualification']['status'] == 'PASS'
+          qualification = current['qualification']
+          expected = ['create_tender', 'add_requirement', 'freeze_tender', 'fund_tender', 'submit_bid', 'add_bid_evidence', 'begin_bid_evaluation', 'adjudicate_requirement', 'finalize_bid_evaluation', 'award_bid', 'accept_award', 'create_delivery', 'add_delivery_evidence']
+          transactions = qualification['transactions']
+          assert [tx['method'] for tx in transactions] == expected
+          assert qualification['transactionCount'] == len(expected)
+          assert qualification['allTransactionsFinalized'] is True
+          assert qualification['allTransactionsMajorityAgreed'] is True
+          assert qualification['allExecutionsSuccessful'] is True
+          assert qualification['allEvmReceiptsSuccessful'] is True
+          assert all(tx['consensusStatus'] == 'FINALIZED' and tx['consensusResult'] == 'MAJORITY_AGREE' for tx in transactions)
+          assert all(tx['executionOutcome']['leader'] == 'SUCCESS' and tx['executionOutcome']['validatorsExecutedSuccessfully'] >= 2 for tx in transactions)
+          assert all(tx['evmReceiptStatus'] == '0x1' for tx in transactions)
+          assert sum(int(tx['actualGenFeeWei']) for tx in transactions) == 0
+          assert sum(int(tx['actualDebitWei']) for tx in transactions) == 100000000000000
+          readback = qualification['canonicalReadback']
+          assert readback['adjudication']['canonical_verdict'] == 'COMPLIANT'
+          assert readback['adjudication']['evidence_sufficient'] is True
+          assert readback['award']['state'] == 'ACCEPTED'
+          assert readback['delivery']['state'] == 'DELIVERED'
+          assert len(readback['deliveryEvidence']) >= 1
+          assert readback['accounting']['escrow_liability'] == 300000000000000
+          proof_text = Path('docs/LIVE_PROOFS.md').read_text()
+          for tx in transactions:
+              hash_value = tx['submissionHash']
+              assert f'[{hash_value}](https://explorer-studio.genlayer.com/tx/{hash_value})' in proof_text
+          assert 'evidence/release-provenance.json' in Path('README.md').read_text()
           PY
