@@ -3,7 +3,13 @@ export type { Address } from "viem";
 
 export const LIVE_NETWORK = "studionet" as const;
 export const LIVE_CHAIN_ID = 61999 as const;
-export const LIVE_RPC = "https://studio.genlayer.com/api" as const;
+export const STUDIONET_RPC = "https://studio.genlayer.com/api" as const;
+// Studionet omits browser CORS headers, so Vite and Vercel proxy this same-origin path to the canonical RPC.
+export const STUDIONET_RPC_PROXY_PATH = "/_genlayer/studionet" as const;
+export function liveRpcEndpoint(origin: string): string {
+  return new URL(STUDIONET_RPC_PROXY_PATH, origin).toString();
+}
+export const LIVE_RPC = liveRpcEndpoint(typeof window === "undefined" ? "http://localhost" : window.location.origin);
 export const LIVE_CONTRACT = "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929" as Address;
 export const LIVE_CONTRACT_SHA256 = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac" as const;
 const VERIFIED_V2_STUDIONET_CONTRACT = "0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929";
