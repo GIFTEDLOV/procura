@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-SOURCE = (Path(__file__).resolve().parents[2] / "contracts" / "Procura.py").read_text(encoding="utf-8")
+SOURCE = (Path(__file__).resolve().parents[2] / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8")
 
 
 @dataclass(frozen=True)
