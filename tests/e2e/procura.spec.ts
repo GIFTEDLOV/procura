@@ -4,7 +4,17 @@ import path from "node:path";
 const routes = ["command-center", "tenders", "tender-builder", "tender-room", "supplier-portal", "bid-builder", "evaluation-room", "award-desk", "delivery-workspace", "inspection-room", "payments", "disputes", "suppliers", "analytics", "proof-audit", "settings"] as const;
 const screenshotRoot = path.resolve(process.cwd(), "..", "docs", "assets", "screenshots");
 
-async function noPageOverflow(page: import("@playwright/test").Page) { expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true); }
+async function noPageOverflow(page: import("@playwright/test").Page) {
+  const size = await page.evaluate(() => ({
+    pathname: window.location.pathname,
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+  expect(
+    size.documentWidth <= size.viewportWidth,
+    `Horizontal overflow at ${size.pathname}: document ${size.documentWidth}px, viewport ${size.viewportWidth}px`,
+  ).toBe(true);
+}
 async function noConsoleErrors(page: import("@playwright/test").Page) { const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); }); return errors; }
 
 test("landing page communicates the product and opens the app", async ({ page }, testInfo) => {
