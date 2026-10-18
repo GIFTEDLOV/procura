@@ -5,10 +5,27 @@ const routes = ["command-center", "tenders", "tender-builder", "tender-room", "s
 const screenshotRoot = path.resolve(process.cwd(), "..", "docs", "assets", "screenshots");
 
 async function noPageOverflow(page: import("@playwright/test").Page) {
-  const size = await page.evaluate(() => ({
+  const size = await page.evaluate(() => {
+    const ancestors = [...document.querySelectorAll("section.rounded-2xl.border")].slice(0, 1).flatMap((section) => {
+      const chain: string[] = [];
+      let element: Element | null = section;
+      while (element && chain.length < 8) {
+        const bounds = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        const classes = typeof element.className === "string" ? element.className : "";
+        chain.push(`${element.tagName.toLowerCase()}.${classes.split(/\s+/).slice(0, 2).join(".")} x=${Math.round(bounds.x)} right=${Math.round(bounds.right)} width=${Math.round(bounds.width)} css=${style.width} min=${style.minWidth} display=${style.display} overflow-x=${style.overflowX}`);
+        element = element.parentElement;
+      }
+      return chain;
+    });
+    return {
     pathname: window.location.pathname,
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
+    clientWidth: document.documentElement.clientWidth,
+    bodyWidth: document.body.getBoundingClientRect().width,
+    rootWidth: document.querySelector("#root")?.getBoundingClientRect().width,
+    ancestors,
     overflow: [...document.body.querySelectorAll("*")]
       .map((element) => {
         const bounds = element.getBoundingClientRect();
@@ -18,10 +35,11 @@ async function noPageOverflow(page: import("@playwright/test").Page) {
       })
       .filter((value): value is string => value !== null)
       .slice(0, 5),
-  }));
+    };
+  });
   expect(
     size.documentWidth <= size.viewportWidth,
-    `Horizontal overflow at ${size.pathname}: document ${size.documentWidth}px, viewport ${size.viewportWidth}px; elements: ${size.overflow.join(" | ")}`,
+    `Horizontal overflow at ${size.pathname}: document ${size.documentWidth}px, viewport ${size.viewportWidth}px, client ${size.clientWidth}px, body ${size.bodyWidth}px, root ${size.rootWidth}px; ancestors: ${size.ancestors.join(" | ")}; elements: ${size.overflow.join(" | ")}`,
   ).toBe(true);
 }
 async function noConsoleErrors(page: import("@playwright/test").Page) { const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); }); return errors; }
