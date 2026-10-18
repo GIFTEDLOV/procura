@@ -25,6 +25,7 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest -q --basetemp .pytest-tmp-ci
+      - run: python scripts/check_steward_v212_schema.py
 
   security-adversarial:
     name: security/adversarial
@@ -127,7 +128,10 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
-          test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde"
+          # Historical V1 provenance stays immutable, while release code is exact live V2.1.2.
+          test "$(sha256sum contracts/Procura_v1_frozen.py | cut -d' ' -f1)" = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde"
+          test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac"
+          python scripts/check_steward_v212_schema.py
           test "$(rg -c '^    def ' contracts/Procura.py | awk -F: '{s+=$2} END {print s+0}')" -ge 0
           python - <<'PY'
           import json
