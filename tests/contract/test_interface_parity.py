@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def _decorated_public_methods():
-    tree = ast.parse((ROOT / "contracts" / "Procura.py").read_text(encoding="utf-8"))
+    tree = ast.parse((ROOT / "contracts" / "Procura_v1_frozen.py").read_text(encoding="utf-8"))
     methods = []
     for node in ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
