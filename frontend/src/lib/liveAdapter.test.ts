@@ -39,9 +39,9 @@ describe("Procura live adapter", () => {
   it("rejects wrong network and disconnected wallets before signing", async () => {
     const provider = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0x1" : []) };
     await expect(assertStudioDevWallet(provider)).rejects.toThrow(`${LIVE_CHAIN_ID}`);
-    const disconnected = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22d" : []) };
+    const disconnected = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22f" : []) };
     await expect(assertStudioDevWallet(disconnected)).rejects.toThrow("Wallet disconnected");
-    const wrongWallet = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22d" : [SUPPLIER_ROLE_ADDRESS]) };
+    const wrongWallet = { request: vi.fn(async ({ method }: { method: string }) => method === "eth_chainId" ? "0xf22f" : [SUPPLIER_ROLE_ADDRESS]) };
     await expect(assertStudioDevWallet(wrongWallet, BUYER_ROLE_ADDRESS)).rejects.toThrow(/Wrong wallet/);
   });
 
@@ -178,5 +178,5 @@ describe("Procura live adapter", () => {
     await expect(recoverLiveTransaction({ client, record: { requestId: action.requestId, method: action.method, args: [...action.args], txHash: "0xrecover-error", phase: "PERSIST_HASH", address: LIVE_CONTRACT, account: BUYER_ROLE_ADDRESS }, canonicalReadback: async () => ({}) })).rejects.toThrow(/execution failed/);
   });
 
-  it("uses the Deployment #6 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0x88634c7868B0659b46C5bd93E4038222697a0170"));
+  it("uses the Deployment #6 canonical contract address", () => expect(LIVE_CONTRACT).toBe("0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929"));
 });
