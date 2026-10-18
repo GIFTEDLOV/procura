@@ -3,8 +3,8 @@
 // Run from frontend after confirming correct Studionet chain and contract. No blind rebroadcast.
 import fs from "node:fs";
 import {createHash} from "node:crypto";
-import {createAccount,createClient} from "genlayer-js";
-import {studionet} from "genlayer-js/chains";
+import {createAccount,createClient} from "genlayer-stable";
+import {studionet} from "genlayer-stable/chains";
 
 const contract="0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929";
 const rpc="https://studio.genlayer.com/api";
@@ -37,8 +37,10 @@ async function write(role,method,args,value=0n){
     const tx=await base.getTransaction({hash});
     if(tx.statusName==="FINALIZED"){
       record.status=tx.statusName;record.consensus=tx.result_name;
-      console.log("FINALIZED",method,hash,tx.result_name);
-      if(tx.result_name==="NO_MAJORITY"||tx.result_name==="UNDETERMINED")throw Error(method+" no validator majority: "+hash);
+      const execution=tx.consensus_data?.leader_receipt?.[0]?.result?.status;
+      record.execution=execution??"UNKNOWN";
+      console.log("FINALIZED",method,hash,tx.result_name,execution);
+      if(tx.result_name!=="MAJORITY_AGREE"||execution!=="return")throw Error(method+" did not finish with successful validator execution: "+hash);
       return hash;
     }
     if(["CANCELED","UNDETERMINED"].includes(tx.statusName))throw Error(method+" failed with status "+tx.statusName+": "+hash);
@@ -71,11 +73,17 @@ try{
   create.tender_hash=commitment("create_tender",create,"tender_hash");
   await write("buyer","create_tender",schema.methods.find(m=>m.name==="create_tender").arguments.map(k=>create[k]));
   await tenderState("DRAFT");
+  const requirement=tender+"-REQUIREMENT";
+  await write("buyer","add_requirement",[
+    tender,requirement,"Official document verification","Public manifest verifies the submitted artifact",
+    "OBJECTIVE",true,"==","1","count",false,true,
+    "Does the independently authenticated source support this specification?","HIGH"
+  ]);
   await write("buyer","freeze_tender",[tender]);
   await tenderState("FROZEN");
   await write("buyer","fund_tender",[tender],100000000000000n);
   await tenderState("FUNDED");
-  const url="https://docs.genlayer.com/developers/networks";
+  const url="https://cdn.jsdelivr.net/npm/genlayer-js@1.1.8/package.json";
   const response=await fetch(url,{signal:AbortSignal.timeout(20000)});
   if(!response.ok)throw Error("evidence origin unavailable");
   const bytes=Buffer.from(await response.arrayBuffer());
@@ -85,12 +93,13 @@ try{
   await delay(1200);
   const bidArgs={bid_id:bid,tender_id:tender,price:100000000000000n,currency:"GEN",
     delivery_commitment:"Public content hash and package manifest",
-    requirement_responses:"{}",submitted_at:bidTime};
+    requirement_responses:JSON.stringify({[requirement]:"1"}),submitted_at:bidTime};
   bidArgs.bid_hash=commitment("submit_bid",bidArgs,"bid_hash");
   await write("supplier","submit_bid",schema.methods.find(m=>m.name==="submit_bid").arguments.map(k=>bidArgs[k]));
   await write("supplier","add_bid_evidence",[bid,bid+"-EVID","GenLayer official documentation",url,contentSha,BigInt(bytes.length),observed,published,"PUBLIC_SPECIFICATION"]);
   await write("buyer","begin_bid_evaluation",[tender]);
   await tenderState("EVALUATING");
+  await write("buyer","adjudicate_requirement",[bid,requirement,contentSha]);
   await write("buyer","finalize_bid_evaluation",[tender]);
   await tenderState("EVALUATED");
   const deliveryDeadline=iso(Date.now()+86400000);
