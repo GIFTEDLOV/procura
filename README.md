@@ -15,6 +15,7 @@
   <a href="https://procura-kappa-two.vercel.app/app">Command Center</a> ·
   <a href="https://explorer-studio.genlayer.com/address/0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929">Studionet Explorer</a> ·
   <a href="docs/MILESTONE_SUBMISSION.md">Milestone Submission Guide</a> ·
+  <a href="evidence/release-provenance.json">Release Provenance</a> ·
   <a href="docs/SECURITY.md">Security Boundaries</a>
 </p>
 
