@@ -81,7 +81,7 @@
 - **Contract Address**: [`0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929`](https://explorer-studio.genlayer.com/address/0xE8b7FCD95FA54B442e3ed114D6Cb1a016774b929)
 - **Verified Source SHA-256**: `a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac`
 - **Reused Deployment Transaction**: [`0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33`](https://explorer-studio.genlayer.com/tx/0x82cc2deec80db1f383200ad46e8c1062a64108782eced48a7ad7fc9e49f7ec33)
-- **V3 Contract Source**: [`contracts/Procura.py`](contracts/Procura.py) (SHA-256: `d779eb65e70111f76ce4752486aed4511cd593cd732522e1b9219df4d262c215`)
+- **V3 Contract Source**: [`contracts/Procura.py`](contracts/Procura.py) (SHA-256: `e175eded7e5cacb4f2773ca25657195cb662f88bb532df3eab76e8092691be78`)
 
 ---
 

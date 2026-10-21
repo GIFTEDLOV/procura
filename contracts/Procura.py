@@ -2136,12 +2136,16 @@ class ProcuraV2Evidence(gl.Contract):
         tender = self._require_tender(tender_id)
         if tender.state not in (TENDER_ACTIVE, TENDER_FROZEN, TENDER_FUNDED):
             _fail("tender is not accepting bids")
+        now_ts = _canonical_timestamp(_trusted_now(), "submitted_at")
+        if now_ts > tender.bid_deadline:
+            _fail("bid submission deadline has expired")
         _hash(commitment_hash, "commitment_hash")
         if sealed_bid_id in self.sealed_bids:
             _fail("sealed_bid_id already exists")
         sender = gl.message.sender_address
         _nonzero(sender)
-        now_ts = _canonical_timestamp(_trusted_now(), "submitted_at")
+        if sender == tender.buyer:
+            _fail("buyer cannot submit bids on own tender")
         sealed = SealedBid(
             sealed_bid_id,
             tender_id,
@@ -2218,8 +2222,12 @@ class ProcuraV2Evidence(gl.Contract):
     def adjudicate_comparative_bids(self, tender_id: str, candidate_bid_ids: list[str]) -> None:
         tender = self._require_tender(tender_id)
         self._require_buyer(tender)
+        if tender.state == TENDER_AWARDED:
+            _fail("tender is already awarded; comparative evaluation is closed")
         if len(candidate_bid_ids) < 2:
             _fail("comparative adjudication requires at least two candidate bids")
+        if len(set(candidate_bid_ids)) != len(candidate_bid_ids):
+            _fail("duplicate candidate bids in comparative evaluation")
         candidate_bids = []
         for bid_id in candidate_bid_ids:
             if bid_id not in self.bids:
@@ -2312,7 +2320,14 @@ class ProcuraV2Evidence(gl.Contract):
             _fail("weight_bps must be between 1 and 10000")
         if milestone_id in self.tender_milestones:
             _fail("milestone_id already exists")
+        existing_ids = self.milestone_ids_by_tender.get(tender_id, [])
+        current_sum = sum(int(self.tender_milestones[mid].weight_bps) for mid in existing_ids if mid in self.tender_milestones)
+        if current_sum + int(weight_bps) > 10000:
+            _fail("cumulative milestone weight exceeds 10000 basis points")
         dl = _canonical_timestamp(deadline, "deadline")
+        now = _canonical_timestamp(_trusted_now(), "block timestamp")
+        if dl <= now:
+            _fail("milestone deadline must be in the future")
         ms = TenderMilestone(
             milestone_id,
             tender_id,
