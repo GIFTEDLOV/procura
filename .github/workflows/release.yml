@@ -132,7 +132,7 @@ jobs:
           # Keep the V1 and V2.1.2 sources/proofs immutable while requiring V3 Milestone features.
           test "$(sha256sum contracts/Procura_v1_frozen.py | cut -d' ' -f1)" = "daad9b0c43be603e522afbf55623e7b8027d7de3b01708922360ae5a45972cde"
           test "$(sha256sum contracts/Procura_studionet_v2_1_2.py | cut -d' ' -f1)" = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac"
-          test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "d779eb65e70111f76ce4752486aed4511cd593cd732522e1b9219df4d262c215"
+          test "$(sha256sum contracts/Procura.py | cut -d' ' -f1)" = "e175eded7e5cacb4f2773ca25657195cb662f88bb532df3eab76e8092691be78"
           python scripts/check_steward_v212_schema.py
           python - <<'PY'
           import json

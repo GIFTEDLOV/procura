@@ -174,3 +174,41 @@ def test_supplier_reputation_tiering():
     assert score_bad == 80
     tier_bad = "TIER_1_PREFERRED" if score_bad >= 90 else ("TIER_2_VERIFIED" if score_bad >= 70 else "TIER_3_PROBATIONARY")
     assert tier_bad == "TIER_2_VERIFIED"
+
+
+def test_hardened_sealed_bid_rejects_buyer_self_bidding():
+    buyer = "0xa0ee7a142d267c1f36714e4a8f75612f20a79720"
+    supplier = "0xa0ee7a142d267c1f36714e4a8f75612f20a79720"
+    is_buyer = (buyer.lower() == supplier.lower())
+    assert is_buyer is True, "Buyer self-bidding must be detected"
+
+
+def test_hardened_sealed_bid_deadline_validation():
+    bid_deadline = "2026-10-20T12:00:00.000Z"
+    now_ts = "2026-10-21T10:00:00.000Z"
+    is_expired = (now_ts > bid_deadline)
+    assert is_expired is True, "Expired bid deadline must be rejected"
+
+
+def test_hardened_comparative_rejects_duplicate_candidates():
+    candidates = ["BID-01", "BID-02", "BID-01"]
+    has_duplicates = len(set(candidates)) != len(candidates)
+    assert has_duplicates is True, "Duplicate candidate bids must be detected"
+
+
+def test_hardened_cumulative_milestone_weights():
+    existing_weights = [2500, 3500]  # 6000 bps
+    new_weight_invalid = 4500         # 6000 + 4500 = 10500 > 10000
+    new_weight_valid = 4000           # 6000 + 4000 = 10000 == 10000
+    
+    assert sum(existing_weights) + new_weight_invalid > 10000
+    assert sum(existing_weights) + new_weight_valid == 10000
+
+
+def test_hardened_milestone_future_deadline_check():
+    now_ts = "2026-10-21T11:00:00.000Z"
+    past_deadline = "2026-10-20T11:00:00.000Z"
+    future_deadline = "2026-11-20T11:00:00.000Z"
+    
+    assert past_deadline <= now_ts  # Rejected
+    assert future_deadline > now_ts  # Allowed

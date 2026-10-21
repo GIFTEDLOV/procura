@@ -6,7 +6,7 @@
   "status": "DEVELOPED_VERIFIED",
   "baseSchemaVersion": "PROCUREMENT_V2_1_2_EVIDENCE_STUDIONET",
   "baseSourceSha256": "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
-  "candidateSourceSha256": "d779eb65e70111f76ce4752486aed4511cd593cd732522e1b9219df4d262c215",
+  "candidateSourceSha256": "e175eded7e5cacb4f2773ca25657195cb662f88bb532df3eab76e8092691be78",
   "changedMethods": [
     "submit_sealed_bid",
     "reveal_sealed_bid",
