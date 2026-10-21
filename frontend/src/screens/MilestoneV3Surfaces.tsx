@@ -7,14 +7,14 @@ type ActionRunner = (method: string, kwargs: Record<string, unknown>, value?: bi
 // --- Pillar 1: Comparative Multi-Vendor AI Consensus ---
 export function ComparativeAdjudicationRoom({ runAction }: { runAction: ActionRunner }) {
   const [selectedTender, setSelectedTender] = useState("TND-LIVE-001");
-  const [selectedBids, setSelectedBids] = useState(["BID-SOLBRIDGE-01", "BID-APEX-02", "BID-VOLTCORE-03"]);
+  const [selectedBids, setSelectedBids] = useState(["BID-ALPHA-01", "BID-APEX-02", "BID-VOLTCORE-03"]);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any>({
     winner: "BID-APEX-02",
-    ranked_bid_ids: ["BID-APEX-02", "BID-SOLBRIDGE-01", "BID-VOLTCORE-03"],
+    ranked_bid_ids: ["BID-APEX-02", "BID-ALPHA-01", "BID-VOLTCORE-03"],
     scores: [
       { bid_id: "BID-APEX-02", supplier: "Apex Grid Systems (0x89b...3c1)", technical_score: 35, commercial_score: 36, timeline_score: 25, total_score: 96, rank: 1 },
-      { bid_id: "BID-SOLBRIDGE-01", supplier: "Solbridge Systems (0x4a1...9f2)", technical_score: 35, commercial_score: 30, timeline_score: 25, total_score: 90, rank: 2 },
+      { bid_id: "BID-ALPHA-01", supplier: "Alpha Grid Technologies (0x4a1...9f2)", technical_score: 35, commercial_score: 30, timeline_score: 25, total_score: 90, rank: 2 },
       { bid_id: "BID-VOLTCORE-03", supplier: "VoltCore Dynamics (0x6f3...88e)", technical_score: 20, commercial_score: 38, timeline_score: 15, total_score: 73, rank: 3 },
     ],
     rationale: "Bid BID-APEX-02 ranked #1 with composite score 96/100: full requirement compliance, 15% budget savings, and verified 30-day SLA.",
