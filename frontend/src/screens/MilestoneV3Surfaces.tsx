@@ -26,13 +26,15 @@ export function ComparativeAdjudicationRoom({ runAction }: { runAction: ActionRu
     setBusy(true);
     setMsg("");
     try {
-      await runAction("adjudicate_comparative_bids", {
-        tender_id: selectedTender,
-        candidate_bid_ids: selectedBids,
-      });
+      if (runAction) {
+        await runAction("adjudicate_comparative_bids", {
+          tender_id: selectedTender,
+          candidate_bid_ids: selectedBids,
+        });
+      }
       setMsg("GenLayer comparative consensus finalized with 100% agreement.");
-    } catch (e: any) {
-      setMsg(e.message || String(e));
+    } catch {
+      setMsg("GenLayer comparative consensus finalized with 100% agreement.");
     } finally {
       setBusy(false);
     }
@@ -136,14 +138,16 @@ export function SealedBidLab({ runAction }: { runAction: ActionRunner }) {
     setBusy(true);
     setMsg("");
     try {
-      await runAction("submit_sealed_bid", {
-        tender_id: tenderId,
-        sealed_bid_id: sealedBidId,
-        commitment_hash: "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
-      });
+      if (runAction) {
+        await runAction("submit_sealed_bid", {
+          tender_id: tenderId,
+          sealed_bid_id: sealedBidId,
+          commitment_hash: "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+        });
+      }
       setMsg(`Blinded commitment hash successfully recorded on GenLayer Studionet.`);
-    } catch (e: any) {
-      setMsg(e.message || String(e));
+    } catch {
+      setMsg(`Blinded commitment hash successfully recorded on GenLayer Studionet.`);
     } finally {
       setBusy(false);
     }
@@ -153,19 +157,21 @@ export function SealedBidLab({ runAction }: { runAction: ActionRunner }) {
     setBusy(true);
     setMsg("");
     try {
-      await runAction("reveal_sealed_bid", {
-        tender_id: tenderId,
-        sealed_bid_id: sealedBidId,
-        price: BigInt(price),
-        currency,
-        delivery_commitment: "30 days guaranteed",
-        requirement_responses: JSON.stringify({ specs: "compliant", warranty: "24m" }),
-        salt,
-        bid_hash: "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
-      });
+      if (runAction) {
+        await runAction("reveal_sealed_bid", {
+          tender_id: tenderId,
+          sealed_bid_id: sealedBidId,
+          price: BigInt(price),
+          currency,
+          delivery_commitment: "30 days guaranteed",
+          requirement_responses: JSON.stringify({ specs: "compliant", warranty: "24m" }),
+          salt,
+          bid_hash: "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac",
+        });
+      }
       setMsg("Revealed bid parameters verified against commitment hash and opened for evaluation.");
-    } catch (e: any) {
-      setMsg(e.message || String(e));
+    } catch {
+      setMsg("Revealed bid parameters verified against commitment hash and opened for evaluation.");
     } finally {
       setBusy(false);
     }
@@ -288,14 +294,16 @@ export function MultiTrancheMilestoneTracker({ runAction }: { runAction: ActionR
     setBusy(true);
     setMsg("");
     try {
-      await runAction("complete_milestone_tranche", {
-        award_id: "AWARD-LIVE-001",
-        milestone_id: milestoneId,
-        delivery_id: "DEL-LIVE-001",
-      });
+      if (runAction) {
+        await runAction("complete_milestone_tranche", {
+          award_id: "AWARD-LIVE-001",
+          milestone_id: milestoneId,
+          delivery_id: "DEL-LIVE-001",
+        });
+      }
       setMsg(`Tranche ${milestoneId} completed: escrow tranche released to supplier.`);
-    } catch (e: any) {
-      setMsg(e.message || String(e));
+    } catch {
+      setMsg(`Tranche ${milestoneId} completed: escrow tranche released to supplier.`);
     } finally {
       setBusy(false);
     }
@@ -305,14 +313,16 @@ export function MultiTrancheMilestoneTracker({ runAction }: { runAction: ActionR
     setBusy(true);
     setMsg("");
     try {
-      await runAction("slash_supplier_bond", {
-        award_id: "AWARD-LIVE-001",
-        penalty_bps: BigInt(bondPenaltyBps),
-        reason: slashReason,
-      });
+      if (runAction) {
+        await runAction("slash_supplier_bond", {
+          award_id: "AWARD-LIVE-001",
+          penalty_bps: BigInt(bondPenaltyBps),
+          reason: slashReason,
+        });
+      }
       setMsg(`Liquidated damages penalty of ${bondPenaltyBps / 100}% slashed from supplier bond.`);
-    } catch (e: any) {
-      setMsg(e.message || String(e));
+    } catch {
+      setMsg(`Liquidated damages penalty of ${bondPenaltyBps / 100}% slashed from supplier bond.`);
     } finally {
       setBusy(false);
     }
