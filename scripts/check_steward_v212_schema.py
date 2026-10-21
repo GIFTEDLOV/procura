@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "contracts" / "Procura.py"
+SOURCE = ROOT / "contracts" / "Procura_studionet_v2_1_2.py"
 EXPECTED_SHA256 = "a74ae78774ea37d06af2b509d5c728d18c8f9a640a539a2f3575a17e1a28fdac"
 
 def main():

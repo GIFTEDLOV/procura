@@ -1,0 +1,662 @@
+{
+  "contract": "ProcuraV3Enterprise",
+  "schemaVersion": "PROCUREMENT_V3_ENTERPRISE_MILESTONE",
+  "methods": [
+    {
+      "name": "create_tender",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "title",
+        "description",
+        "category",
+        "currency_label",
+        "budget_ceiling",
+        "bid_deadline",
+        "evaluation_deadline",
+        "delivery_deadline",
+        "equivalence_policy",
+        "evaluation_policy",
+        "payment_policy",
+        "supplier_bond_policy",
+        "tender_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "add_requirement",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "requirement_id",
+        "title",
+        "description",
+        "requirement_type",
+        "mandatory",
+        "operator",
+        "expected_value",
+        "unit",
+        "equivalence_allowed",
+        "evidence_required",
+        "semantic_question",
+        "materiality"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "bool",
+        "str",
+        "str",
+        "str",
+        "bool",
+        "bool",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "add_certification_requirement",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "requirement_id",
+        "title",
+        "description",
+        "certification_name"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "freeze_tender",
+      "kind": "write",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "fund_tender",
+      "kind": "write",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "cancel_tender",
+      "kind": "write",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "submit_bid",
+      "kind": "write",
+      "arguments": [
+        "bid_id",
+        "tender_id",
+        "price",
+        "currency",
+        "delivery_commitment",
+        "requirement_responses",
+        "submitted_at",
+        "bid_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "add_bid_evidence",
+      "kind": "write",
+      "arguments": [
+        "bid_id",
+        "evidence_id",
+        "authority",
+        "source_url",
+        "content_sha256",
+        "content_byte_length",
+        "observed_at",
+        "published_at",
+        "evidence_type"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "begin_bid_evaluation",
+      "kind": "write",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "adjudicate_requirement",
+      "kind": "write",
+      "arguments": [
+        "bid_id",
+        "requirement_id",
+        "evidence_snapshot_root"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "finalize_bid_evaluation",
+      "kind": "write",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "award_bid",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "award_id",
+        "winning_bid_id",
+        "awarded_specification",
+        "payment_milestones",
+        "delivery_deadline",
+        "award_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "accept_award",
+      "kind": "write",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "post_supplier_bond",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "expected_bond_amount"
+      ],
+      "argumentTypes": [
+        "str",
+        "u256"
+      ]
+    },
+    {
+      "name": "create_delivery",
+      "kind": "write",
+      "arguments": [
+        "delivery_id",
+        "award_id",
+        "delivery_reference",
+        "delivered_items",
+        "quantity",
+        "serial_identifiers",
+        "submitted_at"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "add_delivery_evidence",
+      "kind": "write",
+      "arguments": [
+        "delivery_id",
+        "evidence_id",
+        "authority",
+        "source_url",
+        "content_sha256",
+        "content_byte_length",
+        "observed_at",
+        "published_at",
+        "evidence_type"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "begin_inspection",
+      "kind": "write",
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "adjudicate_delivery",
+      "kind": "write",
+      "arguments": [
+        "delivery_id",
+        "evidence_snapshot_root"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "accept_delivery",
+      "kind": "write",
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "reject_delivery",
+      "kind": "write",
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "release_milestone",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "milestone_index"
+      ],
+      "argumentTypes": [
+        "str",
+        "u32"
+      ]
+    },
+    {
+      "name": "settle_award",
+      "kind": "write",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "refund_buyer",
+      "kind": "write",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "open_dispute",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "reason"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "resolve_dispute",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "decision"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "get_tender",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_requirements",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_bids",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_evidence",
+      "kind": "view",
+      "arguments": [
+        "entity_type",
+        "entity_id"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "get_adjudication",
+      "kind": "view",
+      "arguments": [
+        "bid_id",
+        "requirement_id"
+      ],
+      "argumentTypes": [
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "get_award",
+      "kind": "view",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_delivery",
+      "kind": "view",
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_delivery_adjudication",
+      "kind": "view",
+      "arguments": [
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_payments",
+      "kind": "view",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_refunds",
+      "kind": "view",
+      "arguments": [
+        "award_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_audit_events",
+      "kind": "view",
+      "arguments": [],
+      "argumentTypes": []
+    },
+    {
+      "name": "get_accounting",
+      "kind": "view",
+      "arguments": [],
+      "argumentTypes": []
+    },
+    {
+      "name": "get_protocol_info",
+      "kind": "view",
+      "arguments": [],
+      "argumentTypes": []
+    },
+    {
+      "name": "get_tender_ids",
+      "kind": "view",
+      "arguments": [],
+      "argumentTypes": []
+    },
+    {
+      "name": "submit_sealed_bid",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "sealed_bid_id",
+        "commitment_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "reveal_sealed_bid",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "sealed_bid_id",
+        "price",
+        "currency",
+        "delivery_commitment",
+        "requirement_responses",
+        "salt",
+        "bid_hash"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "u256",
+        "str",
+        "str",
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "adjudicate_comparative_bids",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "candidate_bid_ids"
+      ],
+      "argumentTypes": [
+        "str",
+        "list[str]"
+      ]
+    },
+    {
+      "name": "add_tender_milestone",
+      "kind": "write",
+      "arguments": [
+        "tender_id",
+        "milestone_id",
+        "title",
+        "weight_bps",
+        "deadline"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str",
+        "u256",
+        "str"
+      ]
+    },
+    {
+      "name": "complete_milestone_tranche",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "milestone_id",
+        "delivery_id"
+      ],
+      "argumentTypes": [
+        "str",
+        "str",
+        "str"
+      ]
+    },
+    {
+      "name": "slash_supplier_bond",
+      "kind": "write",
+      "arguments": [
+        "award_id",
+        "penalty_bps",
+        "reason"
+      ],
+      "argumentTypes": [
+        "str",
+        "u256",
+        "str"
+      ]
+    },
+    {
+      "name": "get_sealed_bids",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_comparative_adjudications",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_tender_milestones",
+      "kind": "view",
+      "arguments": [
+        "tender_id"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    },
+    {
+      "name": "get_supplier_reputation",
+      "kind": "view",
+      "arguments": [
+        "supplier"
+      ],
+      "argumentTypes": [
+        "str"
+      ]
+    }
+  ]
+}
