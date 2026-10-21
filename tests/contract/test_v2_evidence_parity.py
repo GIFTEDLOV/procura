@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "contracts" / "Procura.py"
+SOURCE = ROOT / "contracts" / "Procura_studionet_v2_1_2.py"
 SCHEMA = ROOT / "contracts" / "schema.v2.evidence.json"
 ABI = ROOT / "contracts" / "abi.v2.evidence.json"
 INTERFACE = ROOT / "contracts" / "interface.v2.evidence.json"
